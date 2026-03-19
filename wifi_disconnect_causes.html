@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Κύρια αίτια αποσύνδεσης Wi-Fi</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+    min-height: 100vh;
+  }
+  h2 {
+    font-size: 15px;
+    color: #333;
+    text-align: center;
+    margin-bottom: 28px;
+    max-width: 500px;
+    line-height: 1.5;
+  }
+  .diagram {
+    position: relative;
+    width: 100%;
+    max-width: 580px;
+  }
+  .center-box {
+    background: #667eea;
+    border-radius: 14px;
+    padding: 14px 20px;
+    text-align: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    width: 180px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(102,126,234,0.3);
+  }
+  .center-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(102,126,234,0.45);
+  }
+
+  .causes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .cause-card {
+    background: rgba(102,126,234,0.08);
+    border: 1.8px solid #667eea;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .cause-card:hover {
+    background: rgba(102,126,234,0.18);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(102,126,234,0.2);
+  }
+  .cause-card.active {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+  }
+  .cause-card .emoji { font-size: 18px; display: block; margin-bottom: 4px; }
+  .cause-card .label { font-weight: bold; display: block; margin-bottom: 2px; }
+  .cause-card .sub { font-size: 11px; opacity: 0.75; }
+
+  .badge {
+    background: #28a745;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 10px;
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  .detail-box {
+    margin-top: 20px;
+    background: #f0f4ff;
+    border-left: 4px solid #667eea;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.7;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .detail-box.show { display: block; }
+  .detail-box h3 { font-size: 14px; color: #667eea; margin-bottom: 8px; }
+  .detail-box ul { padding-left: 18px; }
+  .detail-box li { margin-bottom: 4px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<h2>Κύρια αίτια αποσύνδεσης Wi-Fi σε παλιά laptops</h2>
+
+<div class="diagram">
+  <div class="center-box">
+    📶 Αποσύνδεση<br>Wi-Fi
+  </div>
+
+  <div class="causes-grid">
+    <div class="cause-card" onclick="showDetail('windows')">
+      <span class="emoji">⚙️</span>
+      <span class="label">Ενεργειακή διαχείριση</span>
+      <span class="sub">Windows</span>
+      <div class="badge">70–80%</div>
+    </div>
+    <div class="cause-card" onclick="showDetail('driver')">
+      <span class="emoji">🔧</span>
+      <span class="label">Παλιός / ασύμβατος</span>
+      <span class="sub">οδηγός (driver)</span>
+    </div>
+    <div class="cause-card" onclick="showDetail('router')">
+      <span class="emoji">📡</span>
+      <span class="label">Παρεμβολές</span>
+      <span class="sub">κανάλι router</span>
+    </div>
+    <div class="cause-card" onclick="showDetail('card')">
+      <span class="emoji">♨️</span>
+      <span class="label">Φθαρμένη</span>
+      <span class="sub">κάρτα Wi-Fi</span>
+    </div>
+  </div>
+
+  <div class="detail-box" id="detail-windows">
+    <h3>⚙️ Ενεργειακή διαχείριση Windows</h3>
+    <ul>
+      <li>Τα Windows "κοιμίζουν" την κάρτα Wi-Fi για εξοικονόμηση ρεύματος</li>
+      <li>Λύση: Device Manager → Wi-Fi card → Power Management → απενεργοποίησε το "Allow computer to turn off this device"</li>
+      <li>Είναι η πιο συχνή αιτία (70–80% των περιπτώσεων)</li>
+    </ul>
+  </div>
+  <div class="detail-box" id="detail-driver">
+    <h3>🔧 Παλιός / ασύμβατος οδηγός</h3>
+    <ul>
+      <li>Μετά από αναβάθμιση Windows ο driver μπορεί να μην είναι συμβατός</li>
+      <li>Λύση: κατέβασε τον τελευταίο driver από τη σελίδα του κατασκευαστή</li>
+      <li>Ή χρησιμοποίησε Device Manager → Update driver</li>
+    </ul>
+  </div>
+  <div class="detail-box" id="detail-router">
+    <h3>📡 Παρεμβολές / κανάλι router</h3>
+    <ul>
+      <li>Πολλά δίκτυα στο ίδιο κανάλι δημιουργούν παρεμβολές</li>
+      <li>Λύση: άλλαξε κανάλι στις ρυθμίσεις του router (π.χ. 1, 6 ή 11)</li>
+      <li>Δοκίμασε 5GHz αν το laptop το υποστηρίζει</li>
+    </ul>
+  </div>
+  <div class="detail-box" id="detail-card">
+    <h3>♨️ Φθαρμένη κάρτα Wi-Fi</h3>
+    <ul>
+      <li>Σε παλιά laptops η κάρτα μπορεί να έχει φθαρεί από θερμότητα</li>
+      <li>Σύμπτωμα: αποσυνδέσεις που χειροτερεύουν με τον καιρό</li>
+      <li>Λύση: αντικατάσταση κάρτας ή USB Wi-Fi adapter</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+let current = null;
+function showDetail(id) {
+  const cards = document.querySelectorAll('.cause-card');
+  const details = document.querySelectorAll('.detail-box');
+  details.forEach(d => d.classList.remove('show'));
+  cards.forEach(c => c.classList.remove('active'));
+
+  if (current === id) { current = null; return; }
+  current = id;
+
+  document.getElementById('detail-' + id).classList.add('show');
+  const idx = ['windows','driver','router','card'].indexOf(id);
+  if (idx >= 0) cards[idx].classList.add('active');
+}
+</script>
+</body>
+</html>
