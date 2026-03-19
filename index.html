@@ -63,7 +63,7 @@
 <script>
 const REPO = 'evaggelosevaggelou/diagrams';
 const BASE = 'https://evaggelosevaggelou.github.io/diagrams/';
-const API  = `https://api.github.com/repos/${REPO}/contents/`;
+const API  = 'https://api.github.com/repos/' + REPO + '/contents/';
 const grid = document.getElementById('grid');
 
 async function load() {
@@ -85,22 +85,23 @@ async function load() {
     }
 
     htmlFiles.forEach(f => {
+      // ΣΩΣΤΟ URL: github.io όχι github.com
       const url = BASE + f.name;
       const title = f.name.replace('.html', '').replace(/_/g, ' ');
-      const iframe_code = `<iframe src="${url}" width="100%" height="500" frameborder="0" scrolling="no"></iframe>`;
+      const iframe_code = '<iframe src="' + url + '" width="100%" height="500" frameborder="0" scrolling="no"></iframe>';
 
       const card = document.createElement('div');
       card.className = 'card';
-      card.innerHTML = `
-        <iframe class="preview" src="${url}" loading="lazy"></iframe>
-        <div class="card-body">
-          <div class="card-title">${title}</div>
-          <div class="card-file">${f.name}</div>
-          <div class="actions">
-            <a class="btn btn-open" href="${url}" target="_blank">🔗 Άνοιγμα</a>
-            <button class="btn btn-copy" onclick="copyIframe(this, \`${iframe_code.replace(/`/g,'\\`')}\`)">📋 Copy iframe</button>
-          </div>
-        </div>`;
+      card.innerHTML =
+        '<iframe class="preview" src="' + url + '" loading="lazy"></iframe>' +
+        '<div class="card-body">' +
+          '<div class="card-title">' + title + '</div>' +
+          '<div class="card-file">' + f.name + '</div>' +
+          '<div class="actions">' +
+            '<a class="btn btn-open" href="' + url + '" target="_blank">🔗 Άνοιγμα</a>' +
+            '<button class="btn btn-copy" onclick="copyIframe(this, \'' + iframe_code.replace(/'/g, "\\'") + '\')">📋 Copy iframe</button>' +
+          '</div>' +
+        '</div>';
       grid.appendChild(card);
     });
 
