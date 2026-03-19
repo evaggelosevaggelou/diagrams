@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Κατανομή Bandwidth ανά Συσκευή</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red:    #e63946;
+    --blue:   #457b9d;
+    --teal:   #2a9d8f;
+    --yellow: #e9c46a;
+    --gray:   #6b7280;
+    --light:  #f0f4f8;
+    --white:  #ffffff;
+    --dark:   #1a202c;
+    --line:   #c4cdd8;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--white);
+    font-family: 'Sora', sans-serif;
+    color: var(--dark);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  /* ── Language toggle ── */
+  #lang-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--white);
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+    z-index: 100;
+    letter-spacing: .02em;
+  }
+  #lang-btn:hover { background: var(--blue); color: var(--white); }
+
+  /* ── Diagram wrapper ── */
+  .diagram {
+    background: var(--white);
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Title ── */
+  .diagram-title {
+    font-size: clamp(15px, 3.5vw, 20px);
+    font-weight: 700;
+    color: var(--dark);
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: -.01em;
+    line-height: 1.3;
+  }
+
+  /* ── Nodes ── */
+  .node {
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    position: relative;
+    user-select: none;
+  }
+  .node:hover { transform: translateY(-3px) scale(1.04); filter: brightness(1.06); }
+  .node:active { transform: scale(.97); }
+
+  .node-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+  }
+  .node-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,.85);
+    font-family: 'DM Mono', monospace;
+    margin-top: 2px;
+  }
+  .node-sub.dark { color: rgba(0,0,0,.65); }
+  .node-label.dark { color: #222; }
+
+  /* Internet */
+  .node-internet {
+    background: var(--red);
+    width: 130px;
+    height: 44px;
+    box-shadow: 0 4px 18px rgba(230,57,70,.35);
+  }
+
+  /* Router */
+  .node-router {
+    background: var(--blue);
+    width: 130px;
+    height: 56px;
+    box-shadow: 0 4px 18px rgba(69,123,157,.35);
+  }
+
+  /* Connector lines area */
+  .connector-top {
+    width: 2px;
+    height: 30px;
+    background: var(--line);
+    position: relative;
+  }
+
+  /* Devices row */
+  .devices-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 560px;
+    position: relative;
+    padding-top: 30px;
+  }
+
+  /* SVG connector lines */
+  .lines-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 30px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .device-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .node-device {
+    width: 100%;
+    max-width: 110px;
+    height: 48px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.12);
+  }
+  .node-teal  { background: var(--teal); }
+  .node-yellow{ background: var(--yellow); }
+
+  /* ── Modal / Tooltip ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.32);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    max-width: 340px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    position: relative;
+    animation: pop .22s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--gray);
+    line-height: 1;
+    padding: 4px;
+  }
+  .modal-close:hover { color: var(--dark); }
+
+  .modal-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    display: block;
+    text-align: center;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .modal-bw {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    letter-spacing: -.01em;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .modal-bar-wrap {
+    background: var(--light);
+    border-radius: 99px;
+    height: 8px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .modal-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+
+  .modal-percent {
+    text-align: right;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gray);
+    margin-top: 5px;
+  }
+
+  /* ── Caption ── */
+  .caption {
+    margin-top: 22px;
+    font-size: 11.5px;
+    color: #aaa;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .02em;
+  }
+</style>
+</head>
+<body>
+
+<button id="lang-btn" onclick="toggleLang()">🌐 English</button>
+
+<!-- ── Diagram ── -->
+<div class="diagram">
+  <div class="diagram-title" id="title">Κατανομή Bandwidth ανά Συσκευή</div>
+
+  <!-- Internet -->
+  <div class="node node-internet" onclick="showModal('internet')">
+    <span class="node-label" id="n-internet">Internet</span>
+    <span class="node-sub" id="n-internet-sub">100 Mbps σύνολο</span>
+  </div>
+
+  <!-- Vertical line -->
+  <div class="connector-top"></div>
+
+  <!-- Router -->
+  <div class="node node-router" onclick="showModal('router')">
+    <span class="node-label" id="n-router">Router</span>
+    <span class="node-sub" id="n-router-sub">Κεντρικός κόμβος</span>
+  </div>
+
+  <!-- Devices row with SVG lines -->
+  <div class="devices-row" id="devices-row">
+    <svg class="lines-svg" id="lines-svg"></svg>
+
+    <div class="device-col">
+      <div class="node node-device node-teal" onclick="showModal('laptop')">
+        <span class="node-label" id="n-laptop">Laptop</span>
+        <span class="node-sub" id="n-laptop-bw">45 Mbps</span>
+      </div>
+    </div>
+    <div class="device-col">
+      <div class="node node-device node-teal" onclick="showModal('mobile')">
+        <span class="node-label" id="n-mobile">Κινητό</span>
+        <span class="node-sub" id="n-mobile-bw">12 Mbps</span>
+      </div>
+    </div>
+    <div class="device-col">
+      <div class="node node-device node-yellow" onclick="showModal('tv')">
+        <span class="node-label dark" id="n-tv">Smart TV</span>
+        <span class="node-sub dark" id="n-tv-bw">38 Mbps</span>
+      </div>
+    </div>
+    <div class="device-col">
+      <div class="node node-device node-yellow" onclick="showModal('console')">
+        <span class="node-label dark" id="n-console">Console</span>
+        <span class="node-sub dark" id="n-console-bw">5 Mbps</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="caption" id="caption">👆 Κλικ σε κάθε στοιχείο για λεπτομέρειες</p>
+</div>
+
+<!-- ── Modal ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <span class="modal-icon" id="m-icon"></span>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-bw" id="m-bw"></div>
+    <div class="modal-desc" id="m-desc"></div>
+    <div class="modal-bar-wrap">
+      <div class="modal-bar" id="m-bar"></div>
+    </div>
+    <div class="modal-percent" id="m-percent"></div>
+  </div>
+</div>
+
+<script>
+let lang = 'el';
+
+const data = {
+  internet: {
+    icon: '🌐',
+    el: { title: 'Internet', bw: '100 Mbps', desc: 'Η συνολική σύνδεση που παρέχεται από τον ISP. Όλες οι συσκευές μοιράζονται αυτό το bandwidth.', percent: 100, color: '#e63946' },
+    en: { title: 'Internet', bw: '100 Mbps', desc: 'Total connection provided by the ISP. All devices share this bandwidth.', percent: 100, color: '#e63946' }
+  },
+  router: {
+    icon: '📡',
+    el: { title: 'Router', bw: '100 Mbps in / 100 Mbps out', desc: 'Ο κεντρικός κόμβος του δικτύου. Κατανέμει το bandwidth δυναμικά στις συσκευές μέσω NAT και QoS.', percent: 100, color: '#457b9d' },
+    en: { title: 'Router', bw: '100 Mbps in / 100 Mbps out', desc: 'The central network hub. Dynamically distributes bandwidth to devices using NAT and QoS.', percent: 100, color: '#457b9d' }
+  },
+  laptop: {
+    icon: '💻',
+    el: { title: 'Laptop', bw: '45 Mbps', desc: 'Η μεγαλύτερη κατανομή. Χρησιμοποιείται για streaming, τηλεδιάσκεψη και γενική περιήγηση.', percent: 45, color: '#2a9d8f' },
+    en: { title: 'Laptop', bw: '45 Mbps', desc: 'The highest allocation. Used for streaming, video calls and general browsing.', percent: 45, color: '#2a9d8f' }
+  },
+  mobile: {
+    icon: '📱',
+    el: { title: 'Κινητό', bw: '12 Mbps', desc: 'Αρκετό για social media, μουσική και ελαφρύ streaming. Χαμηλή κατανάλωση bandwidth.', percent: 12, color: '#2a9d8f' },
+    en: { title: 'Mobile', bw: '12 Mbps', desc: 'Sufficient for social media, music and light streaming. Low bandwidth consumption.', percent: 12, color: '#2a9d8f' }
+  },
+  tv: {
+    icon: '📺',
+    el: { title: 'Smart TV', bw: '38 Mbps', desc: '4K streaming (Netflix, YouTube) απαιτεί ~25 Mbps. Υψηλή προτεραιότητα για ομαλή αναπαραγωγή.', percent: 38, color: '#e9c46a' },
+    en: { title: 'Smart TV', bw: '38 Mbps', desc: '4K streaming (Netflix, YouTube) requires ~25 Mbps. High priority for smooth playback.', percent: 38, color: '#e9c46a' }
+  },
+  console: {
+    icon: '🎮',
+    el: { title: 'Console', bw: '5 Mbps', desc: 'Online gaming χρειάζεται κυρίως χαμηλό ping και όχι υψηλό bandwidth. Ελάχιστη χρήση.', percent: 5, color: '#e9c46a' },
+    en: { title: 'Console', bw: '5 Mbps', desc: 'Online gaming needs low ping more than high bandwidth. Minimal usage.', percent: 5, color: '#e9c46a' }
+  }
+};
+
+const strings = {
+  el: {
+    title:      'Κατανομή Bandwidth ανά Συσκευή',
+    langBtn:    '🌐 English',
+    nInternet:  'Internet',
+    nInternetSub:'100 Mbps σύνολο',
+    nRouter:    'Router',
+    nRouterSub: 'Κεντρικός κόμβος',
+    nLaptop:    'Laptop',
+    nMobile:    'Κινητό',
+    nTv:        'Smart TV',
+    nConsole:   'Console',
+    caption:    '👆 Κλικ σε κάθε στοιχείο για λεπτομέρειες',
+  },
+  en: {
+    title:      'Bandwidth Distribution per Device',
+    langBtn:    '🌐 Ελληνικά',
+    nInternet:  'Internet',
+    nInternetSub:'100 Mbps total',
+    nRouter:    'Router',
+    nRouterSub: 'Central hub',
+    nLaptop:    'Laptop',
+    nMobile:    'Mobile',
+    nTv:        'Smart TV',
+    nConsole:   'Console',
+    caption:    '👆 Click any element for details',
+  }
+};
+
+function applyLang() {
+  const s = strings[lang];
+  document.getElementById('title').textContent        = s.title;
+  document.getElementById('lang-btn').textContent     = s.langBtn;
+  document.getElementById('n-internet').textContent   = s.nInternet;
+  document.getElementById('n-internet-sub').textContent = s.nInternetSub;
+  document.getElementById('n-router').textContent     = s.nRouter;
+  document.getElementById('n-router-sub').textContent = s.nRouterSub;
+  document.getElementById('n-laptop').textContent     = s.nLaptop;
+  document.getElementById('n-mobile').textContent     = s.nMobile;
+  document.getElementById('n-tv').textContent         = s.nTv;
+  document.getElementById('n-console').textContent    = s.nConsole;
+  document.getElementById('caption').textContent      = s.caption;
+  document.documentElement.lang = lang;
+}
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  applyLang();
+}
+
+function showModal(key) {
+  const d = data[key][lang];
+  document.getElementById('m-icon').textContent  = data[key].icon;
+  document.getElementById('m-title').textContent = d.title;
+  document.getElementById('m-bw').textContent    = d.bw;
+  document.getElementById('m-desc').textContent  = d.desc;
+  document.getElementById('m-bar').style.background = d.color;
+  document.getElementById('m-percent').textContent  = d.percent + '%';
+  document.getElementById('modal-overlay').classList.add('open');
+  // animate bar
+  requestAnimationFrame(() => {
+    document.getElementById('m-bar').style.width = '0%';
+    requestAnimationFrame(() => {
+      document.getElementById('m-bar').style.width = d.percent + '%';
+    });
+  });
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// Draw SVG connector lines from router bottom to each device top
+function drawLines() {
+  const row   = document.getElementById('devices-row');
+  const svg   = document.getElementById('lines-svg');
+  const cols  = row.querySelectorAll('.device-col');
+  const rowRect = row.getBoundingClientRect();
+
+  svg.setAttribute('viewBox', `0 0 ${row.offsetWidth} 30`);
+  svg.innerHTML = '';
+
+  const cx = row.offsetWidth / 2;  // router center x
+
+  cols.forEach(col => {
+    const colRect = col.getBoundingClientRect();
+    const x2 = colRect.left - rowRect.left + colRect.width / 2;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', cx);
+    line.setAttribute('y1', 0);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', 28);
+    line.setAttribute('stroke', '#c4cdd8');
+    line.setAttribute('stroke-width', '1.8');
+    svg.appendChild(line);
+  });
+}
+
+window.addEventListener('load', () => { applyLang(); setTimeout(drawLines, 50); });
+window.addEventListener('resize', drawLines);
+</script>
+</body>
+</html>
