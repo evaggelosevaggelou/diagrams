@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin: 0; padding: 10px; font-family: Arial, sans-serif; background: #fff; }
+  .btn-wrap { text-align: center; margin-bottom: 8px; }
+  button {
+    background: #4a90d9; color: #fff; border: none;
+    padding: 6px 18px; border-radius: 20px; font-size: 13px;
+    cursor: pointer; font-family: Arial, sans-serif;
+  }
+  button:hover { background: #357abd; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="btn-wrap">
+  <button onclick="toggleLang()">🌐 English / Ελληνικά</button>
+</div>
+
+<svg viewBox="0 0 680 360" width="100%" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff;">
+
+  <rect fill="#f8f9fa" height="360" rx="10" width="680"/>
+
+  <!-- Title -->
+  <text id="title" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="16" font-weight="bold" text-anchor="middle" x="340" y="32">CMD vs PowerShell — Ποιο να διαλέξεις;</text>
+
+  <!-- CMD Card -->
+  <rect fill="#4a90d9" height="52" rx="12" width="270" x="40" y="52"/>
+  <rect fill="#4a90d9" height="12" width="270" x="40" y="92"/>
+  <rect fill="#e8f4fd" height="232" rx="12" width="270" x="40" y="52" stroke="#4a90d9" stroke-width="1.5"/>
+  <rect fill="#4a90d9" height="52" rx="12" width="270" x="40" y="52"/>
+  <rect fill="#4a90d9" height="12" width="270" x="40" y="92"/>
+  <text style="fill:#ffffff;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="15" font-weight="bold" text-anchor="middle" x="175" y="78">💻 Command Prompt</text>
+  <text id="cmd-sub" style="fill:#1a5fa8;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" x="175" y="118">Πότε να το χρησιμοποιείς</text>
+
+  <rect fill="#4a90d9" height="8" rx="2" width="8" x="58" y="136"/>
+  <text id="cmd-1" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="76" y="140">Γρήγορες, απλές εντολές</text>
+  <rect fill="#4a90d9" height="8" rx="2" width="8" x="58" y="158"/>
+  <text id="cmd-2" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="76" y="162">Αρχάριοι χρήστες</text>
+  <rect fill="#4a90d9" height="8" rx="2" width="8" x="58" y="180"/>
+  <text id="cmd-3" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="76" y="184">Διαχείριση αρχείων</text>
+  <rect fill="#4a90d9" height="8" rx="2" width="8" x="58" y="202"/>
+  <text id="cmd-4" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="76" y="206">Έλεγχος δικτύου</text>
+  <rect fill="#4a90d9" height="8" rx="2" width="8" x="58" y="224"/>
+  <text id="cmd-5" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="76" y="228">Επισκευή Windows</text>
+
+  <text id="cmd-since" style="fill:#555555;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" x="175" y="264">Διαθέσιμο από Windows 95+</text>
+  <rect fill="#4a90d9" height="26" rx="13" width="200" x="75" y="278"/>
+  <text id="cmd-badge" style="fill:#ffffff;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" x="175" y="291">Ιδανικό για αρχάριους</text>
+
+  <!-- VS -->
+  <circle cx="340" cy="195" fill="#333333" r="22"/>
+  <text style="fill:#ffffff;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="14" font-weight="bold" text-anchor="middle" x="340" y="195">VS</text>
+
+  <!-- PowerShell Card -->
+  <rect fill="#f0ebff" height="232" rx="12" width="270" x="370" y="52" stroke="#7c4dcc" stroke-width="1.5"/>
+  <rect fill="#7c4dcc" height="52" rx="12" width="270" x="370" y="52"/>
+  <rect fill="#7c4dcc" height="12" width="270" x="370" y="92"/>
+  <text style="fill:#ffffff;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="15" font-weight="bold" text-anchor="middle" x="505" y="78">⚡ PowerShell</text>
+  <text id="ps-sub" style="fill:#5b2da8;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" x="505" y="118">Πότε να το χρησιμοποιείς</text>
+
+  <rect fill="#7c4dcc" height="8" rx="2" width="8" x="388" y="136"/>
+  <text id="ps-1" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="406" y="140">Αυτοματοποίηση εργασιών</text>
+  <rect fill="#7c4dcc" height="8" rx="2" width="8" x="388" y="158"/>
+  <text id="ps-2" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="406" y="162">Προχωρημένη διαχείριση</text>
+  <rect fill="#7c4dcc" height="8" rx="2" width="8" x="388" y="180"/>
+  <text id="ps-3" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="406" y="184">Batch scripts (.bat, .ps1)</text>
+  <rect fill="#7c4dcc" height="8" rx="2" width="8" x="388" y="202"/>
+  <text id="ps-4" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="406" y="206">Πλήρης έλεγχος συστήματος</text>
+  <rect fill="#7c4dcc" height="8" rx="2" width="8" x="388" y="224"/>
+  <text id="ps-5" style="fill:#333333;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" x="406" y="228">Get-Process, Get-Service</text>
+
+  <text id="ps-since" style="fill:#555555;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" x="505" y="264">Διαθέσιμο από Windows 7+</text>
+  <rect fill="#7c4dcc" height="26" rx="13" width="200" x="405" y="278"/>
+  <text id="ps-badge" style="fill:#ffffff;" dominant-baseline="central" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" x="505" y="291">Για προχωρημένους</text>
+
+  <!-- Progress bar -->
+  <rect fill="#e0e0e0" height="8" rx="4" width="600" x="40" y="338"/>
+  <rect fill="#4a90d9" height="8" rx="4" width="300" x="40" y="338"/>
+</svg>
+
+<script>
+var lang = 'el';
+
+var texts = {
+  el: {
+    'title':     'CMD vs PowerShell — Ποιο να διαλέξεις;',
+    'cmd-sub':   'Πότε να το χρησιμοποιείς',
+    'cmd-1':     'Γρήγορες, απλές εντολές',
+    'cmd-2':     'Αρχάριοι χρήστες',
+    'cmd-3':     'Διαχείριση αρχείων',
+    'cmd-4':     'Έλεγχος δικτύου',
+    'cmd-5':     'Επισκευή Windows',
+    'cmd-since': 'Διαθέσιμο από Windows 95+',
+    'cmd-badge': 'Ιδανικό για αρχάριους',
+    'ps-sub':    'Πότε να το χρησιμοποιείς',
+    'ps-1':      'Αυτοματοποίηση εργασιών',
+    'ps-2':      'Προχωρημένη διαχείριση',
+    'ps-3':      'Batch scripts (.bat, .ps1)',
+    'ps-4':      'Πλήρης έλεγχος συστήματος',
+    'ps-5':      'Get-Process, Get-Service',
+    'ps-since':  'Διαθέσιμο από Windows 7+',
+    'ps-badge':  'Για προχωρημένους'
+  },
+  en: {
+    'title':     'CMD vs PowerShell — Which one to choose?',
+    'cmd-sub':   'When to use it',
+    'cmd-1':     'Quick, simple commands',
+    'cmd-2':     'Beginners',
+    'cmd-3':     'File management',
+    'cmd-4':     'Network troubleshooting',
+    'cmd-5':     'Windows repair',
+    'cmd-since': 'Available since Windows 95+',
+    'cmd-badge': 'Ideal for beginners',
+    'ps-sub':    'When to use it',
+    'ps-1':      'Task automation',
+    'ps-2':      'Advanced management',
+    'ps-3':      'Batch scripts (.bat, .ps1)',
+    'ps-4':      'Full system control',
+    'ps-5':      'Get-Process, Get-Service',
+    'ps-since':  'Available since Windows 7+',
+    'ps-badge':  'For advanced users'
+  }
+};
+
+function toggleLang() {
+  lang = (lang === 'el') ? 'en' : 'el';
+  var t = texts[lang];
+  for (var id in t) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = t[id];
+  }
+}
+</script>
+</body>
+</html>
