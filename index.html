@@ -32,8 +32,7 @@
   .preview { width: 100%; height: 220px; border: none; background: #fff; display: block; pointer-events: none; }
   .card-body { padding: 16px 20px 20px; border-top: 1px solid var(--border); }
   .card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-  .card-file { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 12px; }
-  .iframe-box { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: var(--mono); font-size: 11px; color: #79c0ff; word-break: break-all; margin-bottom: 12px; user-select: all; cursor: text; }
+  .card-file { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 16px; }
   .actions { display: flex; gap: 8px; }
   .btn { flex: 1; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; font-family: var(--sans); cursor: pointer; border: 1px solid var(--border); text-decoration: none; text-align: center; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .btn-open { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -67,6 +66,9 @@ const BASE = 'https://evaggelosevaggelou.github.io/diagrams/';
 const API  = 'https://api.github.com/repos/' + REPO + '/contents/';
 const grid = document.getElementById('grid');
 
+// Αποθηκεύουμε τους κώδικες εδώ — χωρίς HTML encoding
+const iframeCodes = [];
+
 async function load() {
   try {
     const res = await fetch(API);
@@ -85,11 +87,12 @@ async function load() {
       return;
     }
 
-    htmlFiles.forEach(f => {
+    htmlFiles.forEach(function(f, i) {
       const url = BASE + f.name;
       const title = f.name.replace('.html', '').replace(/_/g, ' ');
-      const iframe_code = '<iframe src="' + url + '" width="100%" height="500" frameborder="0" scrolling="no"></iframe>';
-      const safe_code = iframe_code.replace(/"/g, '&quot;');
+
+      // Αποθηκεύουμε τον καθαρό κώδικα στο array
+      iframeCodes[i] = '<iframe src="' + url + '" width="100%" height="500" frameborder="0" scrolling="no"></iframe>';
 
       const card = document.createElement('div');
       card.className = 'card';
@@ -98,10 +101,9 @@ async function load() {
         '<div class="card-body">' +
           '<div class="card-title">' + title + '</div>' +
           '<div class="card-file">' + f.name + '</div>' +
-          '<div class="iframe-box">' + iframe_code + '</div>' +
           '<div class="actions">' +
             '<a class="btn btn-open" href="' + url + '" target="_blank">🔗 Άνοιγμα</a>' +
-            '<button class="btn btn-copy" data-code="' + encodeURIComponent(iframe_code) + '" onclick="copyIframe(this)">📋 Copy iframe</button>' +
+            '<button class="btn btn-copy" id="copybtn-' + i + '" onclick="copyIframe(' + i + ')">📋 Copy iframe</button>' +
           '</div>' +
         '</div>';
       grid.appendChild(card);
@@ -112,19 +114,18 @@ async function load() {
   }
 }
 
-function copyIframe(btn) {
-  const text = decodeURIComponent(btn.getAttribute('data-code'));
+function copyIframe(i) {
+  const text = iframeCodes[i];
+  const btn = document.getElementById('copybtn-' + i);
 
-  // Μέθοδος 1: σύγχρονη
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(() => flash(btn)).catch(() => fallback(text, btn));
+    navigator.clipboard.writeText(text).then(function() { flash(btn); }).catch(function() { fallback(text, btn); });
   } else {
     fallback(text, btn);
   }
 }
 
 function fallback(text, btn) {
-  // Μέθοδος 2: παλιά — δημιουργεί κρυφό textarea
   const ta = document.createElement('textarea');
   ta.value = text;
   ta.style.position = 'fixed';
@@ -132,19 +133,15 @@ function fallback(text, btn) {
   document.body.appendChild(ta);
   ta.focus();
   ta.select();
-  try {
-    document.execCommand('copy');
-    flash(btn);
-  } catch(e) {
-    alert('Αντέγραψε χειροκίνητα:\n\n' + text);
-  }
+  try { document.execCommand('copy'); flash(btn); }
+  catch(e) { alert('Αντέγραψε χειροκίνητα:\n\n' + text); }
   document.body.removeChild(ta);
 }
 
 function flash(btn) {
   btn.textContent = '✅ Αντιγράφηκε!';
   btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = '📋 Copy iframe'; btn.classList.remove('copied'); }, 2000);
+  setTimeout(function() { btn.textContent = '📋 Copy iframe'; btn.classList.remove('copied'); }, 2000);
 }
 
 load();
