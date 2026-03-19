@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wi-Fi Troubleshooter</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--p:#4f46e5;--g:#16a34a;--r:#dc2626;--t:#1e1b4b;--m:#6b7280;--bd:#e5e7eb;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#fff;color:var(--t);padding:28px 16px 60px;}
+.wrap{max-width:720px;margin:0 auto;}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:10px;}
+h1{font-family:'Space Mono',monospace;font-size:clamp(16px,4vw,24px);color:var(--p);}
+.sub{font-size:13px;color:var(--m);margin-top:3px;}
+.lang-btn{background:var(--p);color:#fff;border:none;border-radius:999px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.lang-btn:hover{background:#3730a3;}
+
+/* flow */
+.flow{display:flex;flex-direction:column;align-items:center;}
+.conn{width:2px;height:26px;background:var(--p);}
+.conn.g{background:var(--g);}
+.conn.r{background:var(--r);}
+
+.pill{background:var(--p);color:#fff;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;border-radius:999px;padding:12px 36px;text-align:center;}
+
+.diamond-wrap{position:relative;width:220px;height:90px;}
+.diamond-wrap svg{width:100%;height:100%;}
+.d-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 30px;pointer-events:none;font-size:12px;font-weight:500;line-height:1.4;}
+
+.brow{display:flex;width:100%;align-items:flex-start;}
+.bcol{display:flex;flex-direction:column;align-items:center;flex:1;}
+.blabel{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;margin-bottom:4px;}
+.blabel.y{background:rgba(22,163,74,.12);color:var(--g);}
+.blabel.n{background:rgba(220,38,38,.12);color:var(--r);}
+.hline{height:2px;width:100%;}
+.hline.g{background:var(--g);}
+.hline.r{background:var(--r);}
+
+.rbox{border-radius:12px;padding:13px 18px;text-align:center;font-weight:600;font-size:13px;border:1.5px solid;}
+.rbox.gr{background:rgba(22,163,74,.1);border-color:rgba(22,163,74,.35);color:var(--g);}
+.rbox.rd{background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.35);color:var(--r);}
+.rbox.pr{background:rgba(79,70,229,.1);border-color:rgba(79,70,229,.35);color:var(--p);}
+
+.final-box{border-radius:14px;padding:16px 22px;border:1.5px solid rgba(220,38,38,.35);background:rgba(220,38,38,.08);color:var(--r);width:100%;max-width:420px;cursor:pointer;}
+.final-box .ft{font-size:15px;font-weight:700;margin-bottom:4px;}
+.final-box .fs{font-size:12px;font-weight:400;color:#991b1b;}
+
+/* steps */
+.steps{margin-top:44px;}
+.steps h2{font-family:'Space Mono',monospace;font-size:15px;color:var(--p);margin-bottom:16px;}
+.card{border:1.5px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:8px;background:#f9f9fd;cursor:pointer;transition:border-color .2s,box-shadow .2s;}
+.card:hover{border-color:rgba(79,70,229,.4);box-shadow:0 2px 16px rgba(79,70,229,.08);}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 18px;}
+.badge{width:26px;height:26px;border-radius:50%;background:var(--p);color:#fff;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-title{flex:1;font-size:14px;font-weight:600;}
+.chev{font-size:11px;color:var(--m);transition:transform .25s;}
+.card.open .chev{transform:rotate(180deg);}
+.card-body{display:none;padding:0 18px 14px 18px;font-size:13px;color:#374151;line-height:1.7;border-top:1px solid var(--bd);}
+.card.open .card-body{display:block;}
+.card-body{padding-top:12px!important;}
+code{background:#f3f4f6;padding:3px 7px;border-radius:5px;font-size:12px;display:block;margin:8px 0;line-height:1.8;}
+
+.detail-hidden{display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(220,38,38,.25);font-size:13px;color:#7f1d1d;line-height:1.7;}
+
+footer{text-align:center;margin-top:48px;font-size:12px;color:var(--m);font-family:'Space Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1 data-k="title">📡 Wi-Fi Troubleshooter</h1>
+    <div class="sub" data-k="sub">Διαδραστικός οδηγός αντιμετώπισης προβλημάτων</div>
+  </div>
+  <button class="lang-btn" id="lb" onclick="sw()">🌐 English</button>
+</header>
+
+<div class="flow">
+
+  <!-- START -->
+  <div class="pill" data-k="start">Wi-Fi πέφτει συνεχώς</div>
+  <div class="conn"></div>
+
+  <!-- Q1 -->
+  <div class="diamond-wrap">
+    <svg viewBox="0 0 220 90"><polygon points="110,4 216,45 110,86 4,45" fill="rgba(79,70,229,.08)" stroke="#4f46e5" stroke-width="2"/></svg>
+    <div class="d-text" data-k="q1">Δουλεύει σε άλλη συσκευή;</div>
+  </div>
+
+  <!-- Q1 branches -->
+  <div class="brow">
+    <div class="bcol" style="align-items:flex-end;padding-right:6px;">
+      <div class="blabel y" data-k="yes">Ναι</div>
+      <div style="display:flex;align-items:center;width:100%;"><div class="hline g"></div></div>
+      <div class="conn g" style="height:14px;"></div>
+      <div class="rbox pr" style="width:120px;" data-k="rbox">📡 Router<br>πρόβλημα</div>
+    </div>
+    <div style="width:2px;background:var(--r);align-self:stretch;flex-shrink:0;"></div>
+    <div class="bcol" style="flex:.8;visibility:hidden;"><div class="blabel n">x</div></div>
+  </div>
+
+  <!-- No label -->
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <div class="blabel n" style="margin-top:4px;" data-k="no">Όχι</div>
+    <div class="conn r" style="height:18px;"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="diamond-wrap">
+    <svg viewBox="0 0 220 90"><polygon points="110,4 216,45 110,86 4,45" fill="rgba(79,70,229,.08)" stroke="#4f46e5" stroke-width="2"/></svg>
+    <div class="d-text" data-k="q2">Έλυσαν οι λύσεις 1–6 το πρόβλημα;</div>
+  </div>
+
+  <!-- Q2 branches -->
+  <div class="brow">
+    <div class="bcol" style="align-items:flex-end;padding-right:6px;">
+      <div class="blabel y" data-k="yes2">Ναι</div>
+      <div style="display:flex;align-items:center;width:100%;"><div class="hline g"></div></div>
+      <div class="conn g" style="height:14px;"></div>
+      <div class="rbox gr" style="width:120px;" data-k="fbox">✅ Λύθηκε!<br>Τέλος</div>
+    </div>
+    <div style="width:2px;background:var(--r);align-self:stretch;flex-shrink:0;"></div>
+    <div class="bcol" style="flex:.8;visibility:hidden;"><div class="blabel n">x</div></div>
+  </div>
+
+  <!-- No label -->
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <div class="blabel n" style="margin-top:4px;" data-k="no2">Όχι</div>
+    <div class="conn r" style="height:18px;"></div>
+  </div>
+
+  <!-- Solution 7 -->
+  <div class="final-box" onclick="tog7()">
+    <div class="ft" data-k="s7t">🔌 Λύση 7: USB Wi-Fi Adapter</div>
+    <div class="fs" data-k="s7s">Παρακάμπτει πλήρως την παλιά κάρτα — κλίκ για λεπτομέρειες</div>
+    <div class="detail-hidden" id="d7" data-k="s7d">
+      Αγόρασε έναν USB Wi-Fi adapter (π.χ. TP-Link TL-WN823N ή Archer T3U). Συνδέσου μέσω USB και εγκατέστησε τα drivers. Παρακάμπτει εντελώς την ενσωματωμένη κάρτα, λύνοντας τα περισσότερα hardware προβλήματα.
+    </div>
+  </div>
+
+</div>
+
+<!-- STEPS 1-6 -->
+<div class="steps">
+  <h2 data-k="stitle">⚙️ Λύσεις 1–6: Κλίκ για λεπτομέρειες</h2>
+
+  <div class="card" onclick="tog(this)">
+    <div class="card-head">
+      <div class="badge">1</div>
+      <div class="card-title" data-k="s1t">Επανεκκίνηση Router &amp; Υπολογιστή</div>
+      <div class="chev">▼</div>
+    </div>
+    <div class="card-body" data-k="s1d">Απόσυνδεσε το ρεύμα του router για 30 δευτερόλεπτα, μετά κάνε επανεκκίνηση και στον υπολογιστή. Περίμενε 2 λεπτά πριν ελέγξεις τη σύνδεση.</div>
+  </div>
+
+  <div class="card" onclick="tog(this)">
+    <div class="card-head">
+      <div class="badge">2</div>
+      <div class="card-title" data-k="s2t">Ανανέωση IP / Flush DNS</div>
+      <div class="chev">▼</div>
+    </div>
+    <div class="card-body">
+      <span data-k="s2d">Άνοιξε CMD ως Διαχειριστής και τρέξε:</span>
+      <code>ipconfig /release<br>ipconfig /flushdns<br>ipconfig /renew</code>
+      <span data-k="s2d2">Επιλύει IP conflicts και κατεστραμμένη DNS cache.</span>
+    </div>
+  </div>
+
+  <div class="card" onclick="tog(this)">
+    <div class="card-head">
+      <div class="badge">3</div>
+      <div class="card-title" data-k="s3t">Ενημέρωση / Επαναφορά Drivers Wi-Fi</div>
+      <div class="chev">▼</div>
+    </div>
+    <div class="card-body" data-k="s3d">Διαχείριση Συσκευών → Προσαρμογείς Δικτύου → Κάρτα Wi-Fi → δεξί κλικ → «Ενημέρωση». Αν δεν βοηθήσει, «Κατάργηση» και επανεκκίνηση για αυτόματη επαναφορά.</div>
+  </div>
+
+  <div class="card" onclick="tog(this)">
+    <div class="card-head">
+      <div class="badge">4</div>
+      <div class="card-title" data-k="s4t">Έλεγχος Power Management</div>
+      <div class="chev">▼</div>
+    </div>
+    <div class="card-body" data-k="s4d">Διαχείριση Συσκευών → κάρτα Wi-Fi → Ιδιότητες → Διαχείριση Ενέργειας → αποεπιλέγεις «Να επιτρέπεται απενεργοποίηση για εξοικονόμηση ενέργειας» → Εφαρμογή.</div>
+  </div>
+
+  <div class="card" onclick="tog(this)">
+    <div class="card-head">
+      <div class="badge">5</div>
+      <div class="card-title" data-k="s5t">Αλλαγή DNS Server (8.8.8.8)</div>
+      <div class="chev">▼</div>
+    </div>
+    <div class="card-body">
+      <span data-k="s5d">Ρυθμίσεις → Δίκτυο → Wi-Fi → IPv4 → Αλλαγή DNS:</span>
+      <code>Κύριο: 8.8.8.8 &nbsp; Δευτερεύον: 8.8.4.4</code>
+      <span data-k="s5d2">Επιλύει αργούς/αναξιόπιστους DNS servers του ISP.</span>
+    </div>
+  </div>
+
+  <div class="card" onclick="tog(this)">
+    <div class="card-head">
+      <div class="badge">6</div>
+      <div class="card-title" data-k="s6t">Network Reset (Windows)</div>
+      <div class="chev">▼</div>
+    </div>
+    <div class="card-body" data-k="s6d">Ρυθμίσεις → Δίκτυο &amp; Internet → Σύνθετες ρυθμίσεις → Επαναφορά δικτύου. Επαναφέρει όλους τους προσαρμογείς στις εργοστασιακές ρυθμίσεις. Θα χρειαστεί επανεισαγωγή κωδικών Wi-Fi.</div>
+  </div>
+
+</div>
+
+<footer>wifi_troubleshoot.html · Interactive Flowchart</footer>
+</div>
+
+<script>
+const T={
+el:{
+  title:"📡 Wi-Fi Troubleshooter",sub:"Διαδραστικός οδηγός αντιμετώπισης προβλημάτων",btn:"🌐 English",
+  start:"Wi-Fi πέφτει συνεχώς",q1:"Δουλεύει σε άλλη συσκευή;",q2:"Έλυσαν οι λύσεις 1–6 το πρόβλημα;",
+  yes:"Ναι",yes2:"Ναι",no:"Όχι",no2:"Όχι",
+  rbox:"📡 Router<br>πρόβλημα",fbox:"✅ Λύθηκε!<br>Τέλος",
+  s7t:"🔌 Λύση 7: USB Wi-Fi Adapter",s7s:"Παρακάμπτει πλήρως την παλιά κάρτα — κλίκ για λεπτομέρειες",
+  s7d:"Αγόρασε έναν USB Wi-Fi adapter (π.χ. TP-Link TL-WN823N ή Archer T3U). Συνδέσου μέσω USB και εγκατέστησε τα drivers. Παρακάμπτει εντελώς την ενσωματωμένη κάρτα, λύνοντας τα περισσότερα hardware προβλήματα.",
+  stitle:"⚙️ Λύσεις 1–6: Κλίκ για λεπτομέρειες",
+  s1t:"Επανεκκίνηση Router & Υπολογιστή",s1d:"Απόσυνδεσε το ρεύμα του router για 30 δευτερόλεπτα, μετά κάνε επανεκκίνηση και στον υπολογιστή. Περίμενε 2 λεπτά πριν ελέγξεις τη σύνδεση.",
+  s2t:"Ανανέωση IP / Flush DNS",s2d:"Άνοιξε CMD ως Διαχειριστής και τρέξε:",s2d2:"Επιλύει IP conflicts και κατεστραμμένη DNS cache.",
+  s3t:"Ενημέρωση / Επαναφορά Drivers Wi-Fi",s3d:"Διαχείριση Συσκευών → Προσαρμογείς Δικτύου → Κάρτα Wi-Fi → δεξί κλικ → «Ενημέρωση». Αν δεν βοηθήσει, «Κατάργηση» και επανεκκίνηση για αυτόματη επαναφορά.",
+  s4t:"Έλεγχος Power Management",s4d:"Διαχείριση Συσκευών → κάρτα Wi-Fi → Ιδιότητες → Διαχείριση Ενέργειας → αποεπιλέγεις «Να επιτρέπεται απενεργοποίηση για εξοικονόμηση ενέργειας» → Εφαρμογή.",
+  s5t:"Αλλαγή DNS Server (8.8.8.8)",s5d:"Ρυθμίσεις → Δίκτυο → Wi-Fi → IPv4 → Αλλαγή DNS:",s5d2:"Επιλύει αργούς/αναξιόπιστους DNS servers του ISP.",
+  s6t:"Network Reset (Windows)",s6d:"Ρυθμίσεις → Δίκτυο & Internet → Σύνθετες ρυθμίσεις → Επαναφορά δικτύου. Επαναφέρει όλους τους προσαρμογείς στις εργοστασιακές ρυθμίσεις. Θα χρειαστεί επανεισαγωγή κωδικών Wi-Fi."
+},
+en:{
+  title:"📡 Wi-Fi Troubleshooter",sub:"Interactive troubleshooting guide",btn:"🌐 Ελληνικά",
+  start:"Wi-Fi keeps dropping",q1:"Does it work on another device?",q2:"Did solutions 1–6 fix the issue?",
+  yes:"Yes",yes2:"Yes",no:"No",no2:"No",
+  rbox:"📡 Router<br>issue",fbox:"✅ Fixed!<br>Done",
+  s7t:"🔌 Solution 7: USB Wi-Fi Adapter",s7s:"Fully bypasses the old card — click for details",
+  s7d:"Buy a USB Wi-Fi adapter (e.g. TP-Link TL-WN823N or Archer T3U). Plug it in via USB and install the drivers. This completely bypasses the built-in network card, resolving most hardware issues.",
+  stitle:"⚙️ Solutions 1–6: Click for details",
+  s1t:"Restart Router & Computer",s1d:"Unplug the router for 30 seconds, then restart your computer. Wait 2 minutes before checking the connection again.",
+  s2t:"Renew IP / Flush DNS",s2d:"Open CMD as Administrator and run:",s2d2:"Fixes IP conflicts and corrupted DNS cache.",
+  s3t:"Update / Reinstall Wi-Fi Drivers",s3d:"Device Manager → Network Adapters → Wi-Fi Card → right-click → 'Update driver'. If that doesn't help, try 'Uninstall device' and restart to auto-reinstall.",
+  s4t:"Check Power Management",s4d:"Device Manager → Wi-Fi card → Properties → Power Management → uncheck 'Allow the computer to turn off this device to save power' → Apply.",
+  s5t:"Change DNS Server (8.8.8.8)",s5d:"Settings → Network → Wi-Fi → IPv4 → Change DNS:",s5d2:"Fixes slow or unreliable DNS servers from your ISP.",
+  s6t:"Network Reset (Windows)",s6d:"Settings → Network & Internet → Advanced network settings → Network reset. Restores all adapters to factory settings. You'll need to re-enter Wi-Fi passwords."
+}};
+
+let lang='el';
+function sw(){
+  lang=lang==='el'?'en':'el';
+  const t=T[lang];
+  document.getElementById('lb').textContent=t.btn;
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k');
+    if(t[k]!==undefined) el.innerHTML=t[k];
+  });
+}
+function tog(card){card.classList.toggle('open');}
+function tog7(){
+  const d=document.getElementById('d7');
+  d.style.display=d.style.display==='block'?'none':'block';
+}
+</script>
+</body>
+</html>
