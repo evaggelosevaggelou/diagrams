@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Usage Breakdown</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#fff;color:#1e1b4b;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;}
+.wrap{width:100%;max-width:680px;}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px;}
+h1{font-family:'Space Mono',monospace;font-size:clamp(14px,3.5vw,20px);color:#1e1b4b;line-height:1.3;}
+.lang-btn{background:#4f46e5;color:#fff;border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.lang-btn:hover{background:#3730a3;}
+
+.bars{display:flex;flex-direction:column;gap:10px;}
+
+.bar-row{border-radius:12px;overflow:hidden;border:1.5px solid rgba(0,0,0,0.08);cursor:pointer;transition:box-shadow .2s,transform .15s;}
+.bar-row:hover{box-shadow:0 4px 16px rgba(0,0,0,0.10);transform:translateY(-1px);}
+
+.bar-top{display:flex;align-items:center;gap:0;height:52px;}
+.bar-color{height:100%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;white-space:nowrap;padding:0 14px;flex-shrink:0;}
+.bar-label{padding:0 16px;font-size:13px;font-weight:500;color:#555;flex:1;}
+.bar-chevron{padding:0 14px;font-size:11px;color:#aaa;transition:transform .25s;flex-shrink:0;}
+.bar-row.open .bar-chevron{transform:rotate(180deg);}
+
+.bar-detail{display:none;padding:13px 18px;background:#f9f9fc;border-top:1px solid rgba(0,0,0,0.07);font-size:13px;color:#374151;line-height:1.7;}
+.bar-row.open .bar-detail{display:block;}
+
+/* colors */
+.c1{background:#F0997B;color:#4A1B0C;}
+.c2{background:#85B7EB;color:#042C53;}
+.c3{background:#5DCAA5;color:#04342C;}
+.c4{background:#FAC775;color:#412402;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 data-k="title">📊 Κατανομή Κατανάλωσης Δεδομένων</h1>
+    <button class="lang-btn" id="lb" onclick="sw()">🌐 English</button>
+  </header>
+
+  <div class="bars">
+
+    <div class="bar-row" onclick="tog(this)">
+      <div class="bar-top">
+        <div class="bar-color c1" style="width:38%">Netflix / YouTube · 38%</div>
+        <div class="bar-label" data-k="l1">Streaming βίντεο</div>
+        <div class="bar-chevron">▼</div>
+      </div>
+      <div class="bar-detail" data-k="d1">
+        Το streaming βίντεο είναι η μεγαλύτερη κατηγορία κατανάλωσης. Το Netflix σε Full HD καταναλώνει ~3GB/ώρα, ενώ το YouTube σε 1080p περίπου 2.5GB/ώρα. Μείωσε την ποιότητα αναπαραγωγής για εξοικονόμηση δεδομένων.
+      </div>
+    </div>
+
+    <div class="bar-row" onclick="tog(this)">
+      <div class="bar-top">
+        <div class="bar-color c2" style="width:25%">Cloud Sync · 25%</div>
+        <div class="bar-label" data-k="l2">OneDrive / Google Drive</div>
+        <div class="bar-chevron">▼</div>
+      </div>
+      <div class="bar-detail" data-k="d2">
+        Η αυτόματη συγχρονισμός αρχείων τρέχει στο παρασκήνιο και μπορεί να καταναλώνει σημαντικό εύρος ζώνης. Μπορείς να ορίσεις ώρες συγχρονισμού ή να περιορίσεις το upload/download bandwidth από τις ρυθμίσεις.
+      </div>
+    </div>
+
+    <div class="bar-row" onclick="tog(this)">
+      <div class="bar-top">
+        <div class="bar-color c3" style="width:18%">Updates · 18%</div>
+        <div class="bar-label" data-k="l3">Windows / App updates</div>
+        <div class="bar-chevron">▼</div>
+      </div>
+      <div class="bar-detail" data-k="d3">
+        Οι ενημερώσεις των Windows και των εφαρμογών γίνονται αυτόματα. Μια μεγάλη ενημέρωση Windows μπορεί να φτάσει τα 3–5GB. Πήγαινε στις Ρυθμίσεις → Windows Update → Σύνθετες επιλογές για να ορίσεις ώρες ή όριο δεδομένων.
+      </div>
+    </div>
+
+    <div class="bar-row" onclick="tog(this)">
+      <div class="bar-top">
+        <div class="bar-color c4" style="width:19%">Λοιπά · 19%</div>
+        <div class="bar-label" data-k="l4">Browser, gaming, κ.λπ.</div>
+        <div class="bar-chevron">▼</div>
+      </div>
+      <div class="bar-detail" data-k="d4">
+        Περιλαμβάνει web browsing, online gaming, email και άλλες εφαρμογές. Τα online παιχνίδια καταναλώνουν σχετικά λίγα δεδομένα (~50–150MB/ώρα), αλλά τα patches μπορεί να είναι πολλά GB.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const T={
+  el:{
+    title:"📊 Κατανομή Κατανάλωσης Δεδομένων",btn:"🌐 English",
+    l1:"Streaming βίντεο",l2:"OneDrive / Google Drive",l3:"Windows / App updates",l4:"Browser, gaming, κ.λπ.",
+    d1:"Το streaming βίντεο είναι η μεγαλύτερη κατηγορία κατανάλωσης. Το Netflix σε Full HD καταναλώνει ~3GB/ώρα, ενώ το YouTube σε 1080p περίπου 2.5GB/ώρα. Μείωσε την ποιότητα αναπαραγωγής για εξοικονόμηση δεδομένων.",
+    d2:"Η αυτόματη συγχρονισμός αρχείων τρέχει στο παρασκήνιο και μπορεί να καταναλώνει σημαντικό εύρος ζώνης. Μπορείς να ορίσεις ώρες συγχρονισμού ή να περιορίσεις το bandwidth από τις ρυθμίσεις.",
+    d3:"Οι ενημερώσεις των Windows και των εφαρμογών γίνονται αυτόματα. Μια μεγάλη ενημέρωση Windows μπορεί να φτάσει τα 3–5GB. Πήγαινε στις Ρυθμίσεις → Windows Update → Σύνθετες επιλογές για να ορίσεις ώρες ή όριο δεδομένων.",
+    d4:"Περιλαμβάνει web browsing, online gaming, email και άλλες εφαρμογές. Τα online παιχνίδια καταναλώνουν σχετικά λίγα δεδομένα (~50–150MB/ώρα), αλλά τα patches μπορεί να είναι πολλά GB."
+  },
+  en:{
+    title:"📊 Data Usage Breakdown",btn:"🌐 Ελληνικά",
+    l1:"Video Streaming",l2:"OneDrive / Google Drive",l3:"Windows / App updates",l4:"Browser, gaming, etc.",
+    d1:"Video streaming is the biggest data category. Netflix in Full HD uses ~3GB/hour, while YouTube at 1080p uses about 2.5GB/hour. Lower the playback quality to save data.",
+    d2:"Automatic file sync runs in the background and can consume significant bandwidth. You can schedule sync hours or limit upload/download bandwidth in the app settings.",
+    d3:"Windows and app updates happen automatically. A major Windows update can reach 3–5GB. Go to Settings → Windows Update → Advanced options to set active hours or a data limit.",
+    d4:"Includes web browsing, online gaming, email and other apps. Online games use relatively little data (~50–150MB/hour), but patches can be several GB."
+  }
+};
+let lang='el';
+function sw(){
+  lang=lang==='el'?'en':'el';
+  const t=T[lang];
+  document.getElementById('lb').textContent=t.btn;
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k');
+    if(t[k]!==undefined) el.textContent=t[k];
+  });
+}
+function tog(row){row.classList.toggle('open');}
+</script>
+</body>
+</html>
