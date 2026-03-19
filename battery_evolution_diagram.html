@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Εξέλιξη Μπαταριών Κινητών</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .lang-btn {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-bottom: 18px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #1558b0; }
+
+  h1 {
+    text-align: center;
+    color: #1a1a2e;
+    font-size: clamp(1.1rem, 3vw, 1.6rem);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: #555;
+    font-size: 0.88rem;
+    margin-bottom: 22px;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #9b59b6, #3498db, #27ae60, #e67e22, #e74c3c);
+    transform: translateX(-50%);
+    border-radius: 3px;
+  }
+
+  .era {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: calc(50% + 28px);
+    margin-bottom: 18px;
+    position: relative;
+    cursor: pointer;
+  }
+  .era:nth-child(even) {
+    justify-content: flex-start;
+    padding-right: 0;
+    padding-left: calc(50% + 28px);
+  }
+
+  .era-dot {
+    position: absolute;
+    left: 50%;
+    top: 22px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #3498db;
+    transform: translateX(-50%);
+    z-index: 2;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .era:hover .era-dot { transform: translateX(-50%) scale(1.4); }
+
+  .era:nth-child(1) .era-dot { border-color: #9b59b6; }
+  .era:nth-child(2) .era-dot { border-color: #2980b9; }
+  .era:nth-child(3) .era-dot { border-color: #27ae60; }
+  .era:nth-child(4) .era-dot { border-color: #e67e22; }
+  .era:nth-child(5) .era-dot { border-color: #e74c3c; }
+
+  .era-card {
+    background: #f8f9ff;
+    border: 2px solid #dde;
+    border-radius: 12px;
+    padding: 14px 16px;
+    max-width: 300px;
+    transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .era:hover .era-card, .era.active .era-card {
+    box-shadow: 0 6px 20px rgba(52,152,219,0.18);
+    border-color: #3498db;
+    background: #eef6ff;
+  }
+
+  .era-year {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .era-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+  .era-emoji { font-size: 1.6rem; float: right; margin-left: 8px; }
+
+  .era-details {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #dde;
+  }
+  .era.active .era-details { display: block; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 5px;
+    color: #444;
+  }
+  .stat-label { color: #777; }
+  .stat-val { font-weight: 700; color: #1a1a2e; }
+
+  .era-desc {
+    font-size: 0.83rem;
+    color: #555;
+    line-height: 1.5;
+    margin-top: 7px;
+  }
+
+  /* Battery bar */
+  .bar-wrap { margin-top: 8px; }
+  .bar-label { font-size: 0.76rem; color: #888; margin-bottom: 3px; }
+  .bar-bg { background: #e0e0e0; border-radius: 6px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+
+  /* Comparison section */
+  .compare-section {
+    max-width: 760px;
+    width: 100%;
+    margin-top: 30px;
+  }
+  .compare-title {
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 14px;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .cmp-card {
+    background: #f8f9ff;
+    border: 2px solid #e0e4ef;
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cmp-card:hover, .cmp-card.active {
+    border-color: #3498db;
+    background: #eef6ff;
+    box-shadow: 0 4px 14px rgba(52,152,219,0.15);
+  }
+  .cmp-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .cmp-name { font-size: 0.82rem; font-weight: 700; color: #1a1a2e; }
+  .cmp-sub { font-size: 0.73rem; color: #888; margin-top: 2px; }
+
+  .cmp-detail {
+    display: none;
+    max-width: 760px;
+    width: 100%;
+    background: #eef6ff;
+    border: 2px solid #3498db;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .cmp-detail.active { display: block; }
+  .cmp-detail h3 { font-size: 1rem; color: #1558b0; margin-bottom: 10px; }
+  .cmp-detail .stat-row { border-bottom: 1px solid #cce0ff; padding-bottom: 5px; }
+
+  .hint {
+    text-align: center;
+    color: #aaa;
+    font-size: 0.78rem;
+    margin-top: 10px;
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 540px) {
+    .timeline::before { left: 16px; }
+    .era { justify-content: flex-start !important; padding-right: 0 !important; padding-left: 44px !important; }
+    .era-dot { left: 16px; }
+    .era-card { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<button class="lang-btn" onclick="toggleLang()" id="langBtn">🌐 English</button>
+
+<h1 id="mainTitle">📱 Εξέλιξη Μπαταριών Κινητών</h1>
+<p class="subtitle" id="mainSubtitle">Κάνε κλικ σε κάθε εποχή για λεπτομέρειες</p>
+
+<div class="timeline" id="timeline"></div>
+
+<div class="compare-section">
+  <div class="compare-title" id="compareTitle">⚡ Σύγκριση Τεχνολογιών Φόρτισης</div>
+  <p class="hint" id="compareHint">Κάνε κλικ για να δεις λεπτομέρειες</p>
+  <div class="compare-grid" id="compareGrid"></div>
+  <div class="cmp-detail" id="cmpDetail"></div>
+</div>
+
+<script>
+const data = {
+  el: {
+    mainTitle: "📱 Εξέλιξη Μπαταριών Κινητών",
+    mainSubtitle: "Κάνε κλικ σε κάθε εποχή για λεπτομέρειες",
+    compareTitle: "⚡ Σύγκριση Τεχνολογιών Φόρτισης",
+    compareHint: "Κάνε κλικ για να δεις λεπτομέρειες",
+    langBtn: "🌐 English",
+    statLabels: { charge: "Χρόνος φόρτισης", talk: "Αυτονομία ομιλίας", weight: "Βάρος συσκευής", cap: "Χωρητικότητα" },
+    eras: [
+      { year: "1973–1984", title: "Η Εποχή των Τούβλων", emoji: "🧱",
+        stats: { charge: "10 ώρες", talk: "30–60 λεπτά", weight: "~1.100 γρ.", cap: "~500 mAh" },
+        desc: "Το Motorola DynaTAC ήταν ογκώδες και ακριβό (4.000$). Η μπαταρία Νικελίου-Καδμίου έπρεπε να αδειάζει εντελώς πριν ξαναφορτίσεις — αλλιώς «ξεχνούσε» πώς να φορτίσει πλήρως!",
+        barPct: 8, barColor: "#9b59b6" },
+      { year: "1985–1995", title: "Πρώτες Βελτιώσεις", emoji: "📟",
+        stats: { charge: "5–8 ώρες", talk: "2–4 ώρες", weight: "~400 γρ.", cap: "~1.000 mAh" },
+        desc: "Έρχονται τα NiMH — ελαφρύτερα, με μικρότερο πρόβλημα μνήμης. Τα κινητά αρχίζουν να μικραίνουν αλλά εξακολουθούν να είναι βαριά.",
+        barPct: 20, barColor: "#2980b9" },
+      { year: "1996–2005", title: "Η Επανάσταση του Λιθίου", emoji: "⚡",
+        stats: { charge: "2–3 ώρες", talk: "4–8 ώρες", weight: "~130 γρ.", cap: "~1.000–1.500 mAh" },
+        desc: "Οι μπαταρίες ιόντων λιθίου (Li-Ion) αλλάζουν τα πάντα. 40% πιο ελαφριές, χωρίς «μνήμη», πολύ μεγαλύτερη χωρητικότητα. Τα Nokia κυριαρχούν.",
+        barPct: 45, barColor: "#27ae60" },
+      { year: "2006–2017", title: "Η Εποχή των Smartphones", emoji: "📱",
+        stats: { charge: "1–2 ώρες", talk: "8–15 ώρες", weight: "~150 γρ.", cap: "~2.000–3.500 mAh" },
+        desc: "iPhone, Android, τεράστιες οθόνες. Οι μπαταρίες Li-Polymer ευέλικτες και λεπτές. Εμφανίζεται η γρήγορη φόρτιση (18–25W).",
+        barPct: 68, barColor: "#e67e22" },
+      { year: "2018–σήμερα", title: "Η Εποχή της Υπερφόρτισης", emoji: "🚀",
+        stats: { charge: "15–30 λεπτά", talk: "24–40+ ώρες", weight: "~180–230 γρ.", cap: "~4.000–6.500 mAh" },
+        desc: "Φόρτιση 120–240W, ασύρματη φόρτιση 50W+, τεχνητή νοημοσύνη για διαχείριση ενέργειας, silicon-carbon anodes για μεγαλύτερη πυκνότητα.",
+        barPct: 100, barColor: "#e74c3c" },
+    ]
+  },
+  en: {
+    mainTitle: "📱 Mobile Phone Battery Evolution",
+    mainSubtitle: "Click each era for details",
+    compareTitle: "⚡ Charging Technology Comparison",
+    compareHint: "Click to see details",
+    langBtn: "🌐 Ελληνικά",
+    statLabels: { charge: "Charging time", talk: "Talk time", weight: "Device weight", cap: "Capacity" },
+    eras: [
+      { year: "1973–1984", title: "The Brick Era", emoji: "🧱",
+        stats: { charge: "10 hours", talk: "30–60 min", weight: "~1,100 g", cap: "~500 mAh" },
+        desc: "The Motorola DynaTAC was bulky and expensive ($4,000). Nickel-Cadmium batteries had a 'memory effect' — you had to fully drain them before recharging or they'd lose capacity!",
+        barPct: 8, barColor: "#9b59b6" },
+      { year: "1985–1995", title: "Early Improvements", emoji: "📟",
+        stats: { charge: "5–8 hours", talk: "2–4 hours", weight: "~400 g", cap: "~1,000 mAh" },
+        desc: "NiMH batteries arrived — lighter with less memory effect. Phones started shrinking but were still heavy.",
+        barPct: 20, barColor: "#2980b9" },
+      { year: "1996–2005", title: "The Lithium Revolution", emoji: "⚡",
+        stats: { charge: "2–3 hours", talk: "4–8 hours", weight: "~130 g", cap: "~1,000–1,500 mAh" },
+        desc: "Li-Ion batteries changed everything. 40% lighter, no memory effect, much higher capacity. Nokia dominated the market.",
+        barPct: 45, barColor: "#27ae60" },
+      { year: "2006–2017", title: "The Smartphone Era", emoji: "📱",
+        stats: { charge: "1–2 hours", talk: "8–15 hours", weight: "~150 g", cap: "~2,000–3,500 mAh" },
+        desc: "iPhone, Android, huge displays. Flexible Li-Polymer batteries. Fast charging (18–25W) appeared.",
+        barPct: 68, barColor: "#e67e22" },
+      { year: "2018–today", title: "The Supercharging Era", emoji: "🚀",
+        stats: { charge: "15–30 min", talk: "24–40+ hours", weight: "~180–230 g", cap: "~4,000–6,500 mAh" },
+        desc: "120–240W wired charging, 50W+ wireless, AI power management, silicon-carbon anodes for higher energy density.",
+        barPct: 100, barColor: "#e74c3c" },
+    ]
+  }
+};
+
+const charging = {
+  el: [
+    { icon: "🐢", name: "Κλασική Φόρτιση", sub: "5W", details: {
+      title: "Κλασική Φόρτιση — 5W",
+      rows: [["Ισχύς", "5 Watt"], ["Χρόνος (5000mAh)", "~6 ώρες"], ["Θερμοκρασία", "Χαμηλή"], ["Πότε το βρίσκεις", "Παλιοί φορτιστές"]]
+    }},
+    { icon: "🚗", name: "Γρήγορη Φόρτιση", sub: "45–65W", details: {
+      title: "Γρήγορη Φόρτιση — 45–65W",
+      rows: [["Ισχύς", "45–65 Watt"], ["Χρόνος (5000mAh)", "~50–70 λεπτά"], ["Θερμοκρασία", "Μέτρια"], ["Πότε το βρίσκεις", "Samsung, Pixel, OnePlus"]]
+    }},
+    { icon: "🏎️", name: "Υπερ-Γρήγορη", sub: "120–240W", details: {
+      title: "Υπερ-Γρήγορη Φόρτιση — 120–240W",
+      rows: [["Ισχύς", "120–240 Watt"], ["Χρόνος (5000mAh)", "~10–25 λεπτά"], ["Θερμοκρασία", "Υψηλή (ελεγχόμενη)"], ["Πότε το βρίσκεις", "Xiaomi, OPPO, OnePlus (Κίνα)"]]
+    }},
+    { icon: "📡", name: "Ασύρματη", sub: "15–65W", details: {
+      title: "Ασύρματη Φόρτιση — 15–65W",
+      rows: [["Ισχύς", "15–65 Watt"], ["Χρόνος (5000mAh)", "~1–3 ώρες"], ["Θερμοκρασία", "Υψηλότερη"], ["Πρότυπα", "Qi2 / MagSafe / proprietary"]]
+    }},
+    { icon: "🔄", name: "Αντίστροφη", sub: "5–15W", details: {
+      title: "Αντίστροφη Φόρτιση — 5–15W",
+      rows: [["Ισχύς", "5–15 Watt"], ["Χρήση", "Φορτίζεις άλλη συσκευή"], ["Διάρκεια", "~1 ώρα για ακουστικά"], ["Πότε το βρίσκεις", "Pixel, Samsung Galaxy"]]
+    }},
+    { icon: "🔋", name: "Μελλοντική (2027+)", sub: "Solid-State", details: {
+      title: "Solid-State Μπαταρίες — 2027+",
+      rows: [["Φόρτιση", "~10–15 λεπτά", ], ["Χωρητικότητα", "2–3x της σημερινής"], ["Ασφάλεια", "Δεν παίρνουν φωτιά"], ["Πότε", "Samsung 2027, wearables 2025–26"]]
+    }},
+  ],
+  en: [
+    { icon: "🐢", name: "Classic Charging", sub: "5W", details: {
+      title: "Classic Charging — 5W",
+      rows: [["Power", "5 Watt"], ["Time (5000mAh)", "~6 hours"], ["Heat", "Low"], ["Found in", "Old chargers"]]
+    }},
+    { icon: "🚗", name: "Fast Charging", sub: "45–65W", details: {
+      title: "Fast Charging — 45–65W",
+      rows: [["Power", "45–65 Watt"], ["Time (5000mAh)", "~50–70 min"], ["Heat", "Moderate"], ["Found in", "Samsung, Pixel, OnePlus"]]
+    }},
+    { icon: "🏎️", name: "Ultra-Fast", sub: "120–240W", details: {
+      title: "Ultra-Fast Charging — 120–240W",
+      rows: [["Power", "120–240 Watt"], ["Time (5000mAh)", "~10–25 min"], ["Heat", "High (controlled)"], ["Found in", "Xiaomi, OPPO, OnePlus (China)"]]
+    }},
+    { icon: "📡", name: "Wireless", sub: "15–65W", details: {
+      title: "Wireless Charging — 15–65W",
+      rows: [["Power", "15–65 Watt"], ["Time (5000mAh)", "~1–3 hours"], ["Heat", "Higher"], ["Standards", "Qi2 / MagSafe / proprietary"]]
+    }},
+    { icon: "🔄", name: "Reverse", sub: "5–15W", details: {
+      title: "Reverse Charging — 5–15W",
+      rows: [["Power", "5–15 Watt"], ["Use", "Charges another device"], ["Duration", "~1 hr for earbuds"], ["Found in", "Pixel, Samsung Galaxy"]]
+    }},
+    { icon: "🔋", name: "Future (2027+)", sub: "Solid-State", details: {
+      title: "Solid-State Batteries — 2027+",
+      rows: [["Charging", "~10–15 minutes"], ["Capacity", "2–3x of today"], ["Safety", "Won't catch fire"], ["When", "Samsung 2027, wearables 2025–26"]]
+    }},
+  ]
+};
+
+let lang = 'el';
+let activeEra = null;
+let activeCmp = null;
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  render();
+}
+
+function render() {
+  const d = data[lang];
+  document.getElementById('mainTitle').textContent = d.mainTitle;
+  document.getElementById('mainSubtitle').textContent = d.mainSubtitle;
+  document.getElementById('compareTitle').textContent = d.compareTitle;
+  document.getElementById('compareHint').textContent = d.compareHint;
+  document.getElementById('langBtn').textContent = d.langBtn;
+
+  // Timeline
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  d.eras.forEach((era, i) => {
+    const div = document.createElement('div');
+    div.className = 'era' + (activeEra === i ? ' active' : '');
+    div.innerHTML = `
+      <div class="era-dot"></div>
+      <div class="era-card">
+        <span class="era-emoji">${era.emoji}</span>
+        <div class="era-year">${era.year}</div>
+        <div class="era-title">${era.title}</div>
+        <div class="era-details">
+          <div class="stat-row"><span class="stat-label">${d.statLabels.charge}</span><span class="stat-val">${era.stats.charge}</span></div>
+          <div class="stat-row"><span class="stat-label">${d.statLabels.talk}</span><span class="stat-val">${era.stats.talk}</span></div>
+          <div class="stat-row"><span class="stat-label">${d.statLabels.weight}</span><span class="stat-val">${era.stats.weight}</span></div>
+          <div class="stat-row"><span class="stat-label">${d.statLabels.cap}</span><span class="stat-val">${era.stats.cap}</span></div>
+          <div class="bar-wrap">
+            <div class="bar-label">${lang === 'el' ? 'Απόδοση σχετικά με σήμερα' : 'Performance vs today'}</div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${era.barPct}%;background:${era.barColor}"></div></div>
+          </div>
+          <p class="era-desc">${era.desc}</p>
+        </div>
+      </div>`;
+    div.onclick = () => { activeEra = activeEra === i ? null : i; render(); };
+    tl.appendChild(div);
+  });
+
+  // Compare grid
+  const cg = document.getElementById('compareGrid');
+  cg.innerHTML = '';
+  const chg = charging[lang];
+  chg.forEach((c, i) => {
+    const d2 = document.createElement('div');
+    d2.className = 'cmp-card' + (activeCmp === i ? ' active' : '');
+    d2.innerHTML = `<div class="cmp-icon">${c.icon}</div><div class="cmp-name">${c.name}</div><div class="cmp-sub">${c.sub}</div>`;
+    d2.onclick = () => { activeCmp = activeCmp === i ? null : i; render(); };
+    cg.appendChild(d2);
+  });
+
+  // Compare detail
+  const cd = document.getElementById('cmpDetail');
+  if (activeCmp !== null) {
+    const det = chg[activeCmp].details;
+    cd.className = 'cmp-detail active';
+    cd.innerHTML = `<h3>${det.title}</h3>` + det.rows.map(r =>
+      `<div class="stat-row"><span class="stat-label">${r[0]}</span><span class="stat-val">${r[1]}</span></div>`
+    ).join('');
+  } else {
+    cd.className = 'cmp-detail';
+    cd.innerHTML = '';
+  }
+}
+
+render();
+</script>
+</body>
+</html>
