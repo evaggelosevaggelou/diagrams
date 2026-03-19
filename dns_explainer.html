@@ -6,7 +6,12 @@
 <title>Πώς λειτουργεί το DNS</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #fff; padding: 16px; }
+  body {
+    font-family: Arial, sans-serif; background: #fff;
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .wrap { width: 100%; max-width: 600px; }
   .btn-wrap { text-align: center; margin-bottom: 12px; }
   .lang-btn {
     background: #4a90d9; color: #fff; border: none;
@@ -15,13 +20,11 @@
   }
   .lang-btn:hover { background: #357abd; }
   h2 { text-align: center; font-size: 14px; color: #333; margin-bottom: 16px; line-height: 1.5; }
-
   .diagram {
     max-width: 580px; margin: 0 auto;
     display: flex; align-items: center; justify-content: center;
     gap: 0; flex-wrap: wrap;
   }
-
   .node {
     border-radius: 10px; padding: 12px 14px; text-align: center;
     cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
@@ -31,31 +34,15 @@
   .node .emoji { font-size: 22px; display: block; margin-bottom: 4px; }
   .node .label { font-size: 11px; color: #444; font-weight: bold; }
   .node .sub { font-size: 10px; color: #888; margin-top: 2px; }
-
-  .node-laptop {
-    background: rgba(102,126,234,0.12);
-    border: 2px solid #667eea;
-  }
-  .node-bad {
-    background: rgba(220,53,69,0.10);
-    border: 1.8px solid #dc3545;
-  }
+  .node-laptop { background: rgba(102,126,234,0.12); border: 2px solid #667eea; }
+  .node-bad { background: rgba(220,53,69,0.10); border: 1.8px solid #dc3545; }
   .node-bad .label { color: #dc3545; }
   .node-bad .sub { color: #dc3545; opacity: 0.8; }
-
-  .node-good {
-    background: rgba(40,167,69,0.10);
-    border: 1.8px solid #28a745;
-  }
+  .node-good { background: rgba(40,167,69,0.10); border: 1.8px solid #28a745; }
   .node-good .label { color: #28a745; }
   .node-good .sub { color: #28a745; opacity: 0.8; }
-
-  .node-result {
-    background: rgba(40,167,69,0.12);
-    border: 2px solid #28a745;
-  }
+  .node-result { background: rgba(40,167,69,0.12); border: 2px solid #28a745; }
   .node-result .label { color: #444; }
-
   .arrows-col {
     display: flex; flex-direction: column;
     align-items: center; gap: 8px; padding: 0 6px;
@@ -63,7 +50,6 @@
   .arrow-bad  { color: #dc3545; font-size: 16px; }
   .arrow-good { color: #28a745; font-size: 16px; }
   .arrow-label { font-size: 10px; color: #888; text-align: center; max-width: 80px; }
-
   .detail-box {
     max-width: 560px; margin: 18px auto 0;
     border-radius: 8px; padding: 14px 18px;
@@ -79,170 +65,149 @@
   .detail-green h3 { color: #28a745; margin-bottom: 8px; font-size: 14px; }
   .detail-box ul { padding-left: 18px; }
   .detail-box li { margin-bottom: 4px; }
-
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 </style>
 </head>
 <body>
 
-<div class="btn-wrap">
-  <button class="lang-btn" onclick="toggleLang()">🌐 English / Ελληνικά</button>
-</div>
-
-<h2 id="main-title">Πώς λειτουργεί το DNS — και γιατί το "κολλάει"</h2>
-
-<div class="diagram">
-
-  <!-- Laptop -->
-  <div class="node node-laptop" onclick="showDetail('laptop')">
-    <span class="emoji">💻</span>
-    <div class="label">Laptop</div>
-    <div class="sub" id="laptop-sub">google.com?</div>
+<div class="wrap">
+  <div class="btn-wrap">
+    <button class="lang-btn" onclick="toggleLang()">🌐 English / Ελληνικά</button>
   </div>
 
-  <!-- Arrows to bad/good DNS -->
-  <div class="arrows-col">
-    <div class="arrow-bad">- - →</div>
-    <div class="arrow-label" id="arr-bad-label">Αργός / ασταθής</div>
-    <div class="arrow-good">——→</div>
-    <div class="arrow-label" id="arr-good-label">Γρήγορος</div>
-  </div>
+  <h2 id="main-title">Πώς λειτουργεί το DNS — και γιατί το "κολλάει"</h2>
 
-  <!-- Bad and Good DNS stacked -->
-  <div style="display:flex; flex-direction:column; gap:12px;">
-    <div class="node node-bad" onclick="showDetail('bad')">
-      <div class="label" id="bad-label">❌ DNS πάροχου</div>
-      <div class="sub" id="bad-sub">Αργός / ασταθής</div>
+  <div class="diagram">
+    <div class="node node-laptop" onclick="showDetail('laptop')">
+      <span class="emoji">💻</span>
+      <div class="label">Laptop</div>
+      <div class="sub" id="laptop-sub">google.com?</div>
     </div>
-    <div class="node node-good" onclick="showDetail('good')">
-      <div class="label" id="good-label">✅ 1.1.1.1 / 8.8.8.8</div>
-      <div class="sub" id="good-sub">Γρήγορος & σταθερός</div>
+
+    <div class="arrows-col">
+      <div class="arrow-bad">- - →</div>
+      <div class="arrow-label" id="arr-bad-label">Αργός / ασταθής</div>
+      <div class="arrow-good">——→</div>
+      <div class="arrow-label" id="arr-good-label">Γρήγορος</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="node node-bad" onclick="showDetail('bad')">
+        <div class="label" id="bad-label">❌ DNS πάροχου</div>
+        <div class="sub" id="bad-sub">Αργός / ασταθής</div>
+      </div>
+      <div class="node node-good" onclick="showDetail('good')">
+        <div class="label" id="good-label">✅ 1.1.1.1 / 8.8.8.8</div>
+        <div class="sub" id="good-sub">Γρήγορος & σταθερός</div>
+      </div>
+    </div>
+
+    <div class="arrows-col">
+      <div style="height:30px;"></div>
+      <div class="arrow-good">——→</div>
+    </div>
+
+    <div class="node node-result" onclick="showDetail('result')">
+      <span class="emoji">🌐</span>
+      <div class="label" id="result-label">Σελίδα φορτώνει!</div>
     </div>
   </div>
 
-  <!-- Arrow to result -->
-  <div class="arrows-col">
-    <div style="height:30px;"></div>
-    <div class="arrow-good">——→</div>
+  <div class="detail-box detail-blue" id="detail-laptop">
+    <h3 id="d-laptop-title">💻 Τι κάνει το laptop</h3>
+    <ul>
+      <li id="d-laptop-1">Όταν πληκτρολογείς "google.com", το laptop ρωτά τον DNS server: "ποια είναι η IP αυτής της σελίδας;"</li>
+      <li id="d-laptop-2">Ο DNS είναι σαν τηλεφωνικός κατάλογος — μετατρέπει ονόματα σε αριθμούς IP</li>
+      <li id="d-laptop-3">Αν ο DNS αργεί ή δεν απαντά, η σελίδα "κολλάει" ακόμα κι αν το internet λειτουργεί κανονικά</li>
+    </ul>
   </div>
-
-  <!-- Result -->
-  <div class="node node-result" onclick="showDetail('result')">
-    <span class="emoji">🌐</span>
-    <div class="label" id="result-label">Σελίδα φορτώνει!</div>
+  <div class="detail-box detail-red" id="detail-bad">
+    <h3 id="d-bad-title">❌ DNS πάροχου — το πρόβλημα</h3>
+    <ul>
+      <li id="d-bad-1">Ο DNS που δίνει αυτόματα ο πάροχος (ISP) είναι συχνά αργός ή αναξιόπιστος</li>
+      <li id="d-bad-2">Μπορεί να προκαλεί "κόλλημα" κατά τη φόρτωση σελίδων</li>
+      <li id="d-bad-3">Η λύση: αλλαγή σε δημόσιο DNS όπως το Cloudflare (1.1.1.1) ή Google (8.8.8.8)</li>
+    </ul>
   </div>
-
-</div>
-
-<!-- Details -->
-<div class="detail-box detail-blue" id="detail-laptop">
-  <h3 id="d-laptop-title">💻 Τι κάνει το laptop</h3>
-  <ul>
-    <li id="d-laptop-1">Όταν πληκτρολογείς "google.com", το laptop ρωτά τον DNS server: "ποια είναι η IP αυτής της σελίδας;"</li>
-    <li id="d-laptop-2">Ο DNS είναι σαν τηλεφωνικός κατάλογος — μετατρέπει ονόματα σε αριθμούς IP</li>
-    <li id="d-laptop-3">Αν ο DNS αργεί ή δεν απαντά, η σελίδα "κολλάει" ακόμα κι αν το internet λειτουργεί κανονικά</li>
-  </ul>
-</div>
-<div class="detail-box detail-red" id="detail-bad">
-  <h3 id="d-bad-title">❌ DNS πάροχου — το πρόβλημα</h3>
-  <ul>
-    <li id="d-bad-1">Ο DNS που δίνει αυτόματα ο πάροχος (ISP) είναι συχνά αργός ή αναξιόπιστος</li>
-    <li id="d-bad-2">Μπορεί να προκαλεί "κόλλημα" κατά τη φόρτωση σελίδων</li>
-    <li id="d-bad-3">Η λύση: αλλαγή σε δημόσιο DNS όπως το Cloudflare (1.1.1.1) ή Google (8.8.8.8)</li>
-  </ul>
-</div>
-<div class="detail-box detail-green" id="detail-good">
-  <h3 id="d-good-title">✅ 1.1.1.1 / 8.8.8.8 — η λύση</h3>
-  <ul>
-    <li id="d-good-1">1.1.1.1 (Cloudflare) — ο πιο γρήγορος DNS παγκοσμίως, με προστασία απορρήτου</li>
-    <li id="d-good-2">8.8.8.8 (Google) — αξιόπιστος και γρήγορος DNS της Google</li>
-    <li id="d-good-3">Αλλαγή: Ρυθμίσεις δικτύου → IPv4 → DNS → εισαγωγή 1.1.1.1 και 1.0.0.1</li>
-  </ul>
-</div>
-<div class="detail-box detail-green" id="detail-result">
-  <h3 id="d-result-title">🌐 Αποτέλεσμα: Σελίδα φορτώνει!</h3>
-  <ul>
-    <li id="d-result-1">Με σωστό DNS, οι σελίδες φορτώνουν αμέσως χωρίς "κόλλημα"</li>
-    <li id="d-result-2">Η αλλαγή DNS είναι δωρεάν, γρήγορη (1 λεπτό) και ασφαλής</li>
-    <li id="d-result-3">Δεν χρειάζεται επανεκκίνηση router — αρκεί η αλλαγή στον υπολογιστή</li>
-  </ul>
+  <div class="detail-box detail-green" id="detail-good">
+    <h3 id="d-good-title">✅ 1.1.1.1 / 8.8.8.8 — η λύση</h3>
+    <ul>
+      <li id="d-good-1">1.1.1.1 (Cloudflare) — ο πιο γρήγορος DNS παγκοσμίως, με προστασία απορρήτου</li>
+      <li id="d-good-2">8.8.8.8 (Google) — αξιόπιστος και γρήγορος DNS της Google</li>
+      <li id="d-good-3">Αλλαγή: Ρυθμίσεις δικτύου → IPv4 → DNS → εισαγωγή 1.1.1.1 και 1.0.0.1</li>
+    </ul>
+  </div>
+  <div class="detail-box detail-green" id="detail-result">
+    <h3 id="d-result-title">🌐 Αποτέλεσμα: Σελίδα φορτώνει!</h3>
+    <ul>
+      <li id="d-result-1">Με σωστό DNS, οι σελίδες φορτώνουν αμέσως χωρίς "κόλλημα"</li>
+      <li id="d-result-2">Η αλλαγή DNS είναι δωρεάν, γρήγορη (1 λεπτό) και ασφαλής</li>
+      <li id="d-result-3">Δεν χρειάζεται επανεκκίνηση router — αρκεί η αλλαγή στον υπολογιστή</li>
+    </ul>
+  </div>
 </div>
 
 <script>
-var lang = 'el';
-var current = null;
-
-var texts = {
-  el: {
-    'main-title': 'Πώς λειτουργεί το DNS — και γιατί το "κολλάει"',
-    'laptop-sub': 'google.com?',
-    'arr-bad-label': 'Αργός / ασταθής',
-    'arr-good-label': 'Γρήγορος',
-    'bad-label': '❌ DNS πάροχου',
-    'bad-sub': 'Αργός / ασταθής',
-    'good-label': '✅ 1.1.1.1 / 8.8.8.8',
-    'good-sub': 'Γρήγορος & σταθερός',
-    'result-label': 'Σελίδα φορτώνει!',
-    'd-laptop-title': '💻 Τι κάνει το laptop',
-    'd-laptop-1': 'Όταν πληκτρολογείς "google.com", το laptop ρωτά τον DNS server: "ποια είναι η IP αυτής της σελίδας;"',
-    'd-laptop-2': 'Ο DNS είναι σαν τηλεφωνικός κατάλογος — μετατρέπει ονόματα σε αριθμούς IP',
-    'd-laptop-3': 'Αν ο DNS αργεί ή δεν απαντά, η σελίδα "κολλάει" ακόμα κι αν το internet λειτουργεί κανονικά',
-    'd-bad-title': '❌ DNS πάροχου — το πρόβλημα',
-    'd-bad-1': 'Ο DNS που δίνει αυτόματα ο πάροχος (ISP) είναι συχνά αργός ή αναξιόπιστος',
-    'd-bad-2': 'Μπορεί να προκαλεί "κόλλημα" κατά τη φόρτωση σελίδων',
-    'd-bad-3': 'Η λύση: αλλαγή σε δημόσιο DNS όπως το Cloudflare (1.1.1.1) ή Google (8.8.8.8)',
-    'd-good-title': '✅ 1.1.1.1 / 8.8.8.8 — η λύση',
-    'd-good-1': '1.1.1.1 (Cloudflare) — ο πιο γρήγορος DNS παγκοσμίως, με προστασία απορρήτου',
-    'd-good-2': '8.8.8.8 (Google) — αξιόπιστος και γρήγορος DNS της Google',
-    'd-good-3': 'Αλλαγή: Ρυθμίσεις δικτύου → IPv4 → DNS → εισαγωγή 1.1.1.1 και 1.0.0.1',
-    'd-result-title': '🌐 Αποτέλεσμα: Σελίδα φορτώνει!',
-    'd-result-1': 'Με σωστό DNS, οι σελίδες φορτώνουν αμέσως χωρίς "κόλλημα"',
-    'd-result-2': 'Η αλλαγή DNS είναι δωρεάν, γρήγορη (1 λεπτό) και ασφαλής',
-    'd-result-3': 'Δεν χρειάζεται επανεκκίνηση router — αρκεί η αλλαγή στον υπολογιστή'
+var lang='el', current=null;
+var texts={
+  el:{
+    'main-title':'Πώς λειτουργεί το DNS — και γιατί το "κολλάει"',
+    'laptop-sub':'google.com?','arr-bad-label':'Αργός / ασταθής','arr-good-label':'Γρήγορος',
+    'bad-label':'❌ DNS πάροχου','bad-sub':'Αργός / ασταθής',
+    'good-label':'✅ 1.1.1.1 / 8.8.8.8','good-sub':'Γρήγορος & σταθερός',
+    'result-label':'Σελίδα φορτώνει!',
+    'd-laptop-title':'💻 Τι κάνει το laptop',
+    'd-laptop-1':'Όταν πληκτρολογείς "google.com", το laptop ρωτά τον DNS server: "ποια είναι η IP αυτής της σελίδας;"',
+    'd-laptop-2':'Ο DNS είναι σαν τηλεφωνικός κατάλογος — μετατρέπει ονόματα σε αριθμούς IP',
+    'd-laptop-3':'Αν ο DNS αργεί ή δεν απαντά, η σελίδα "κολλάει" ακόμα κι αν το internet λειτουργεί κανονικά',
+    'd-bad-title':'❌ DNS πάροχου — το πρόβλημα',
+    'd-bad-1':'Ο DNS που δίνει αυτόματα ο πάροχος (ISP) είναι συχνά αργός ή αναξιόπιστος',
+    'd-bad-2':'Μπορεί να προκαλεί "κόλλημα" κατά τη φόρτωση σελίδων',
+    'd-bad-3':'Η λύση: αλλαγή σε δημόσιο DNS όπως το Cloudflare (1.1.1.1) ή Google (8.8.8.8)',
+    'd-good-title':'✅ 1.1.1.1 / 8.8.8.8 — η λύση',
+    'd-good-1':'1.1.1.1 (Cloudflare) — ο πιο γρήγορος DNS παγκοσμίως, με προστασία απορρήτου',
+    'd-good-2':'8.8.8.8 (Google) — αξιόπιστος και γρήγορος DNS της Google',
+    'd-good-3':'Αλλαγή: Ρυθμίσεις δικτύου → IPv4 → DNS → εισαγωγή 1.1.1.1 και 1.0.0.1',
+    'd-result-title':'🌐 Αποτέλεσμα: Σελίδα φορτώνει!',
+    'd-result-1':'Με σωστό DNS, οι σελίδες φορτώνουν αμέσως χωρίς "κόλλημα"',
+    'd-result-2':'Η αλλαγή DNS είναι δωρεάν, γρήγορη (1 λεπτό) και ασφαλής',
+    'd-result-3':'Δεν χρειάζεται επανεκκίνηση router — αρκεί η αλλαγή στον υπολογιστή'
   },
-  en: {
-    'main-title': 'How DNS works — and why pages "freeze"',
-    'laptop-sub': 'google.com?',
-    'arr-bad-label': 'Slow / unstable',
-    'arr-good-label': 'Fast',
-    'bad-label': '❌ ISP DNS',
-    'bad-sub': 'Slow / unstable',
-    'good-label': '✅ 1.1.1.1 / 8.8.8.8',
-    'good-sub': 'Fast & stable',
-    'result-label': 'Page loads!',
-    'd-laptop-title': '💻 What the laptop does',
-    'd-laptop-1': 'When you type "google.com", the laptop asks the DNS server: "what is the IP address of this site?"',
-    'd-laptop-2': 'DNS is like a phone book — it converts domain names into IP addresses',
-    'd-laptop-3': 'If DNS is slow or unresponsive, pages "freeze" even if the internet is working normally',
-    'd-bad-title': '❌ ISP DNS — the problem',
-    'd-bad-1': 'The DNS automatically provided by your ISP is often slow or unreliable',
-    'd-bad-2': 'It can cause pages to "freeze" while loading',
-    'd-bad-3': 'Solution: switch to a public DNS like Cloudflare (1.1.1.1) or Google (8.8.8.8)',
-    'd-good-title': '✅ 1.1.1.1 / 8.8.8.8 — the solution',
-    'd-good-1': '1.1.1.1 (Cloudflare) — the fastest DNS worldwide, with privacy protection',
-    'd-good-2': '8.8.8.8 (Google) — reliable and fast DNS by Google',
-    'd-good-3': 'Change: Network settings → IPv4 → DNS → enter 1.1.1.1 and 1.0.0.1',
-    'd-result-title': '🌐 Result: Page loads!',
-    'd-result-1': 'With the right DNS, pages load instantly without freezing',
-    'd-result-2': 'Changing DNS is free, quick (1 minute) and safe',
-    'd-result-3': 'No router restart needed — just change it on your computer'
+  en:{
+    'main-title':'How DNS works — and why pages "freeze"',
+    'laptop-sub':'google.com?','arr-bad-label':'Slow / unstable','arr-good-label':'Fast',
+    'bad-label':'❌ ISP DNS','bad-sub':'Slow / unstable',
+    'good-label':'✅ 1.1.1.1 / 8.8.8.8','good-sub':'Fast & stable',
+    'result-label':'Page loads!',
+    'd-laptop-title':'💻 What the laptop does',
+    'd-laptop-1':'When you type "google.com", the laptop asks the DNS server: "what is the IP address of this site?"',
+    'd-laptop-2':'DNS is like a phone book — it converts domain names into IP addresses',
+    'd-laptop-3':'If DNS is slow or unresponsive, pages "freeze" even if the internet is working normally',
+    'd-bad-title':'❌ ISP DNS — the problem',
+    'd-bad-1':'The DNS automatically provided by your ISP is often slow or unreliable',
+    'd-bad-2':'It can cause pages to "freeze" while loading',
+    'd-bad-3':'Solution: switch to a public DNS like Cloudflare (1.1.1.1) or Google (8.8.8.8)',
+    'd-good-title':'✅ 1.1.1.1 / 8.8.8.8 — the solution',
+    'd-good-1':'1.1.1.1 (Cloudflare) — the fastest DNS worldwide, with privacy protection',
+    'd-good-2':'8.8.8.8 (Google) — reliable and fast DNS by Google',
+    'd-good-3':'Change: Network settings → IPv4 → DNS → enter 1.1.1.1 and 1.0.0.1',
+    'd-result-title':'🌐 Result: Page loads!',
+    'd-result-1':'With the right DNS, pages load instantly without freezing',
+    'd-result-2':'Changing DNS is free, quick (1 minute) and safe',
+    'd-result-3':'No router restart needed — just change it on your computer'
   }
 };
-
-function toggleLang() {
-  lang = (lang === 'el') ? 'en' : 'el';
-  var t = texts[lang];
-  for (var id in t) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = t[id];
-  }
+function toggleLang(){
+  lang=lang==='el'?'en':'el';
+  var t=texts[lang];
+  for(var id in t){var el=document.getElementById(id);if(el)el.textContent=t[id];}
+  document.documentElement.lang=lang;
 }
-
-function showDetail(id) {
-  document.querySelectorAll('.detail-box').forEach(function(d){ d.classList.remove('show'); });
-  if (current === id) { current = null; return; }
-  current = id;
-  document.getElementById('detail-' + id).classList.add('show');
+function showDetail(id){
+  document.querySelectorAll('.detail-box').forEach(function(d){d.classList.remove('show');});
+  if(current===id){current=null;return;}
+  current=id;
+  document.getElementById('detail-'+id).classList.add('show');
 }
 </script>
 </body>
