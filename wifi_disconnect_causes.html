@@ -6,19 +6,28 @@
 <title>Κύρια αίτια αποσύνδεσης Wi-Fi</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #fff; padding: 10px; }
-  .btn-wrap { text-align: center; margin-bottom: 8px; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .btn-wrap { text-align: center; margin-bottom: 12px; }
   button {
     background: #4a90d9; color: #fff; border: none;
     padding: 6px 18px; border-radius: 20px; font-size: 13px;
     cursor: pointer; font-family: Arial, sans-serif;
   }
   button:hover { background: #357abd; }
-  .diagram { max-width: 580px; margin: 0 auto; }
+  .diagram { max-width: 580px; width: 100%; }
   .center-box {
     background: #667eea; border-radius: 14px; padding: 14px 20px;
     text-align: center; color: #fff; font-weight: bold; font-size: 14px;
-    width: 180px; margin: 0 auto; position: relative; z-index: 2;
+    width: 180px; margin: 0 auto;
     box-shadow: 0 4px 16px rgba(102,126,234,0.3);
   }
   .causes-grid {
@@ -38,7 +47,7 @@
   .cause-card .sub { font-size: 11px; opacity: 0.75; }
   .badge { background: #28a745; color: #fff; border-radius: 10px; font-size: 11px; font-weight: bold; padding: 3px 10px; display: inline-block; margin-top: 10px; }
   .detail-box {
-    margin-top: 20px; background: #f0f4ff; border-left: 4px solid #667eea;
+    margin-top: 16px; background: #f0f4ff; border-left: 4px solid #667eea;
     border-radius: 8px; padding: 14px 18px; font-size: 13px; color: #333;
     line-height: 1.7; display: none; animation: fadeIn 0.3s ease;
   }
@@ -122,15 +131,13 @@
 <script>
 var lang = 'el';
 var current = null;
-
 var texts = {
   el: {
-    'center-line1': '📶 Αποσύνδεση',
-    'center-line2': 'Wi-Fi',
-    'card1-label': 'Ενεργειακή διαχείριση', 'card1-sub': 'Windows', 'card1-badge': '70–80%',
-    'card2-label': 'Παλιός / ασύμβατος', 'card2-sub': 'οδηγός (driver)',
-    'card3-label': 'Παρεμβολές', 'card3-sub': 'κανάλι router',
-    'card4-label': 'Φθαρμένη', 'card4-sub': 'κάρτα Wi-Fi',
+    'center-line1': '📶 Αποσύνδεση','center-line2': 'Wi-Fi',
+    'card1-label': 'Ενεργειακή διαχείριση','card1-sub': 'Windows','card1-badge': '70–80%',
+    'card2-label': 'Παλιός / ασύμβατος','card2-sub': 'οδηγός (driver)',
+    'card3-label': 'Παρεμβολές','card3-sub': 'κανάλι router',
+    'card4-label': 'Φθαρμένη','card4-sub': 'κάρτα Wi-Fi',
     'd1-title': '⚙️ Ενεργειακή διαχείριση Windows',
     'd1-1': 'Τα Windows "κοιμίζουν" την κάρτα Wi-Fi για εξοικονόμηση ρεύματος',
     'd1-2': 'Λύση: Device Manager → Wi-Fi card → Power Management → απενεργοποίησε το "Allow computer to turn off this device"',
@@ -149,12 +156,11 @@ var texts = {
     'd4-3': 'Λύση: αντικατάσταση κάρτας ή USB Wi-Fi adapter'
   },
   en: {
-    'center-line1': '📶 Wi-Fi',
-    'center-line2': 'Disconnection',
-    'card1-label': 'Power Management', 'card1-sub': 'Windows', 'card1-badge': '70–80%',
-    'card2-label': 'Outdated / incompatible', 'card2-sub': 'driver',
-    'card3-label': 'Interference', 'card3-sub': 'router channel',
-    'card4-label': 'Faulty', 'card4-sub': 'Wi-Fi card',
+    'center-line1': '📶 Wi-Fi','center-line2': 'Disconnection',
+    'card1-label': 'Power Management','card1-sub': 'Windows','card1-badge': '70–80%',
+    'card2-label': 'Outdated / incompatible','card2-sub': 'driver',
+    'card3-label': 'Interference','card3-sub': 'router channel',
+    'card4-label': 'Faulty','card4-sub': 'Wi-Fi card',
     'd1-title': '⚙️ Windows Power Management',
     'd1-1': 'Windows puts the Wi-Fi card to sleep to save power',
     'd1-2': 'Fix: Device Manager → Wi-Fi card → Power Management → uncheck "Allow computer to turn off this device"',
@@ -173,16 +179,12 @@ var texts = {
     'd4-3': 'Fix: replace the card or use a USB Wi-Fi adapter'
   }
 };
-
 function toggleLang() {
-  lang = (lang === 'el') ? 'en' : 'el';
+  lang = lang === 'el' ? 'en' : 'el';
   var t = texts[lang];
-  for (var id in t) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = t[id];
-  }
+  for (var id in t) { var el = document.getElementById(id); if (el) el.textContent = t[id]; }
+  document.documentElement.lang = lang;
 }
-
 function showDetail(id) {
   var details = document.querySelectorAll('.detail-box');
   var cards = document.querySelectorAll('.cause-card');
