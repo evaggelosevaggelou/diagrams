@@ -98,10 +98,10 @@ async function load() {
         '<div class="card-body">' +
           '<div class="card-title">' + title + '</div>' +
           '<div class="card-file">' + f.name + '</div>' +
-          '<div class="iframe-box" id="code-' + f.name + '">' + iframe_code + '</div>' +
+          '<div class="iframe-box">' + iframe_code + '</div>' +
           '<div class="actions">' +
             '<a class="btn btn-open" href="' + url + '" target="_blank">🔗 Άνοιγμα</a>' +
-            '<button class="btn btn-copy" id="btn-' + f.name + '" onclick="copyIframe(\'' + f.name + '\')">📋 Copy iframe</button>' +
+            '<button class="btn btn-copy" data-code="' + encodeURIComponent(iframe_code) + '" onclick="copyIframe(this)">📋 Copy iframe</button>' +
           '</div>' +
         '</div>';
       grid.appendChild(card);
@@ -112,10 +112,8 @@ async function load() {
   }
 }
 
-function copyIframe(name) {
-  const box = document.getElementById('code-' + name);
-  const btn = document.getElementById('btn-' + name);
-  const text = box.innerText;
+function copyIframe(btn) {
+  const text = decodeURIComponent(btn.getAttribute('data-code'));
 
   // Μέθοδος 1: σύγχρονη
   if (navigator.clipboard && window.isSecureContext) {
