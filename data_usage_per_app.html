@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Κατανάλωση Δεδομένων ανά Εφαρμογή</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --c1: #e63946;
+    --c2: #f4a261;
+    --c3: #e9c46a;
+    --c4: #2a9d8f;
+    --c5: #457b9d;
+    --c6: #6c757d;
+    --c7: #adb5bd;
+    --gray: #6b7280;
+    --gridline: #e8ecf0;
+    --white: #ffffff;
+    --dark: #1a202c;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--white);
+    font-family: 'Sora', sans-serif;
+    color: var(--dark);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  /* ── Language toggle ── */
+  #lang-btn {
+    position: fixed;
+    top: 16px; right: 16px;
+    background: var(--white);
+    border: 2px solid var(--c5);
+    color: var(--c5);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+    z-index: 100;
+  }
+  #lang-btn:hover { background: var(--c5); color: var(--white); }
+
+  /* ── Wrapper ── */
+  .chart-wrap {
+    width: 100%;
+    max-width: 580px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chart-title {
+    font-size: clamp(15px, 3.5vw, 19px);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -.01em;
+    line-height: 1.3;
+  }
+  .chart-subtitle {
+    font-size: 11.5px;
+    color: var(--gray);
+    font-family: 'DM Mono', monospace;
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  /* ── Chart area ── */
+  .chart-area {
+    display: flex;
+    width: 100%;
+    gap: 0;
+  }
+
+  /* Y-axis labels */
+  .y-axis {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    padding-bottom: 34px;
+    padding-top: 4px;
+    min-width: 42px;
+    align-items: flex-end;
+    padding-right: 8px;
+  }
+  .y-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gray);
+    line-height: 1;
+  }
+
+  /* Bar chart grid + bars */
+  .bars-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Gridlines */
+  .gridlines {
+    position: absolute;
+    inset: 0;
+    bottom: 34px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+  }
+  .gridline {
+    width: 100%;
+    height: 1px;
+    background: var(--gridline);
+  }
+
+  /* Bars row */
+  .bars-row {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 4px 0 0;
+    position: relative;
+  }
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .bar-spacer { flex: 1; }
+
+  .bar {
+    width: 100%;
+    max-width: 44px;
+    border-radius: 5px 5px 0 0;
+    transition: filter .18s, transform .18s;
+    position: relative;
+  }
+  .bar-col:hover .bar {
+    filter: brightness(1.12);
+    transform: scaleY(1.03);
+    transform-origin: bottom;
+  }
+
+  /* Value label above bar */
+  .bar-val {
+    font-size: 9.5px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gray);
+    margin-bottom: 3px;
+    white-space: nowrap;
+  }
+
+  /* X-axis labels */
+  .x-labels {
+    display: flex;
+    gap: 8px;
+    padding-top: 6px;
+    height: 34px;
+  }
+  .x-label {
+    flex: 1;
+    font-size: 9px;
+    font-family: 'Sora', sans-serif;
+    color: var(--dark);
+    text-align: center;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: color .15s;
+  }
+  .x-label:hover { color: var(--c5); }
+
+  .caption {
+    margin-top: 18px;
+    font-size: 11.5px;
+    color: #bbb;
+    font-family: 'DM Mono', monospace;
+    text-align: center;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.3);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px 28px 22px;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    position: relative;
+    animation: pop .22s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop {
+    from { opacity:0; transform:scale(.88); }
+    to   { opacity:1; transform:scale(1); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none; border: none;
+    font-size: 20px; cursor: pointer;
+    color: var(--gray); line-height:1; padding:4px;
+  }
+  .modal-close:hover { color: var(--dark); }
+
+  .modal-icon  { font-size:36px; text-align:center; display:block; margin-bottom:8px; }
+  .modal-title { font-size:17px; font-weight:700; text-align:center; margin-bottom:4px; }
+  .modal-gb    {
+    text-align:center;
+    font-family:'DM Mono',monospace;
+    font-size:24px; font-weight:500;
+    margin-bottom:12px;
+    letter-spacing:-.01em;
+  }
+  .modal-desc  { font-size:13px; color:var(--gray); line-height:1.6; text-align:center; }
+
+  .modal-bar-wrap {
+    background:#f0f4f8; border-radius:99px;
+    height:8px; margin-top:16px; overflow:hidden;
+  }
+  .modal-bar { height:100%; border-radius:99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .modal-percent {
+    text-align:right; font-size:11px;
+    font-family:'DM Mono',monospace;
+    color:var(--gray); margin-top:5px;
+  }
+</style>
+</head>
+<body>
+
+<button id="lang-btn" onclick="toggleLang()">🌐 English</button>
+
+<div class="chart-wrap">
+  <div class="chart-title" id="title">Κατανάλωση Δεδομένων ανά Εφαρμογή</div>
+  <div class="chart-subtitle" id="subtitle">MB / GB ανά ώρα χρήσης</div>
+
+  <div class="chart-area">
+    <!-- Y axis -->
+    <div class="y-axis">
+      <span class="y-label">0</span>
+      <span class="y-label">1 GB</span>
+      <span class="y-label">2 GB</span>
+      <span class="y-label">4 GB</span>
+      <span class="y-label">7 GB</span>
+    </div>
+
+    <!-- Bars + grid -->
+    <div class="bars-area">
+      <div class="gridlines">
+        <div class="gridline"></div>
+        <div class="gridline"></div>
+        <div class="gridline"></div>
+        <div class="gridline"></div>
+        <div class="gridline"></div>
+      </div>
+
+      <div class="bars-row" id="bars-row">
+        <!-- bars injected by JS -->
+      </div>
+
+      <div class="x-labels" id="x-labels">
+        <!-- labels injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <p class="caption" id="caption">👆 Κλικ σε κάθε μπάρα για λεπτομέρειες</p>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <span class="modal-icon" id="m-icon"></span>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-gb"    id="m-gb"></div>
+    <div class="modal-desc"  id="m-desc"></div>
+    <div class="modal-bar-wrap"><div class="modal-bar" id="m-bar"></div></div>
+    <div class="modal-percent" id="m-percent"></div>
+  </div>
+</div>
+
+<script>
+let lang = 'el';
+
+// max = 7 GB = 7000 MB  →  heights mapped 0–160px
+const MAX_MB = 7000;
+const MAX_H  = 160; // px
+
+const apps = [
+  {
+    key: 'netflix4k', color: '#e63946', icon: '🎬',
+    mb: 3975,
+    el: { label: 'Netflix 4K', desc: 'Streaming 4K Ultra HD καταναλώνει περίπου 7 GB/ώρα. Η υψηλότερη κατηγορία κατανάλωσης.' },
+    en: { label: 'Netflix 4K', desc: '4K Ultra HD streaming uses roughly 7 GB/hour. The highest data consumption tier.' },
+  },
+  {
+    key: 'netflixhd', color: '#f4a261', icon: '🎥',
+    mb: 2700,
+    el: { label: 'Netflix HD', desc: 'Streaming HD (1080p) απαιτεί περίπου 3 GB/ώρα. Καλή ισορροπία ποιότητας και δεδομένων.' },
+    en: { label: 'Netflix HD', desc: 'HD (1080p) streaming uses around 3 GB/hour. A good balance of quality and data.' },
+  },
+  {
+    key: 'zoom', color: '#e9c46a', icon: '📹',
+    mb: 1675,
+    el: { label: 'Zoom', desc: 'Βιντεοκλήση Zoom σε HD: ~1.5–2 GB/ώρα. Εξαρτάται από τον αριθμό των συμμετεχόντων.' },
+    en: { label: 'Zoom', desc: 'HD Zoom video call: ~1.5–2 GB/hour. Varies with number of participants.' },
+  },
+  {
+    key: 'youtube', color: '#2a9d8f', icon: '▶️',
+    mb: 1175,
+    el: { label: 'YouTube', desc: 'YouTube σε 1080p: ~1.5 GB/ώρα. Μειώνεται σημαντικά σε 480p (~300 MB/ώρα).' },
+    en: { label: 'YouTube', desc: 'YouTube at 1080p: ~1.5 GB/hour. Drops significantly at 480p (~300 MB/hour).' },
+  },
+  {
+    key: 'music', color: '#457b9d', icon: '🎵',
+    mb: 300,
+    el: { label: 'Μουσική', desc: 'Streaming μουσικής σε υψηλή ποιότητα (320kbps): ~115 MB/ώρα. Πολύ χαμηλή κατανάλωση.' },
+    en: { label: 'Music', desc: 'High-quality music streaming (320kbps): ~115 MB/hour. Very low data usage.' },
+  },
+  {
+    key: 'gaming', color: '#6c757d', icon: '🎮',
+    mb: 200,
+    el: { label: 'Gaming', desc: 'Online gaming: 40–150 MB/ώρα. Χρειάζεται χαμηλό latency, όχι υψηλό bandwidth.' },
+    en: { label: 'Gaming', desc: 'Online gaming: 40–150 MB/hour. Needs low latency, not high bandwidth.' },
+  },
+  {
+    key: 'browser', color: '#adb5bd', icon: '🌐',
+    mb: 25,
+    el: { label: 'Browser', desc: 'Γενική περιήγηση: 15–50 MB/ώρα. Εξαρτάται από την παρουσία βίντεο/εικόνων στις σελίδες.' },
+    en: { label: 'Browser', desc: 'General browsing: 15–50 MB/hour. Depends on videos/images on visited pages.' },
+  },
+];
+
+function fmtMb(mb) {
+  if (mb >= 1000) return (mb/1000).toFixed(1).replace(/\.0$/,'') + ' GB';
+  return mb + ' MB';
+}
+
+function buildChart() {
+  const row    = document.getElementById('bars-row');
+  const xlabels= document.getElementById('x-labels');
+  row.innerHTML = '';
+  xlabels.innerHTML = '';
+
+  apps.forEach((app, i) => {
+    const h = Math.max(2, Math.round((app.mb / MAX_MB) * MAX_H));
+
+    // bar column
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.onclick = () => showModal(i);
+
+    const val = document.createElement('div');
+    val.className = 'bar-val';
+    val.textContent = fmtMb(app.mb);
+
+    const spacer = document.createElement('div');
+    spacer.className = 'bar-spacer';
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.cssText = `height:${h}px; background:${app.color};`;
+
+    col.append(val, spacer, bar);
+    row.appendChild(col);
+
+    // x label
+    const lbl = document.createElement('div');
+    lbl.className = 'x-label';
+    lbl.id = `xl-${app.key}`;
+    lbl.onclick = () => showModal(i);
+    xlabels.appendChild(lbl);
+  });
+
+  updateLabels();
+}
+
+function updateLabels() {
+  apps.forEach(app => {
+    const el = document.getElementById(`xl-${app.key}`);
+    if (el) el.textContent = app[lang].label;
+  });
+}
+
+function showModal(i) {
+  const app = apps[i];
+  const d = app[lang];
+  const pct = Math.round((app.mb / MAX_MB) * 100);
+
+  document.getElementById('m-icon').textContent  = app.icon;
+  document.getElementById('m-title').textContent = d.label;
+  document.getElementById('m-gb').textContent    = fmtMb(app.mb) + '/hr';
+  document.getElementById('m-desc').textContent  = d.desc;
+  document.getElementById('m-bar').style.background = app.color;
+  document.getElementById('m-percent').textContent  = pct + '%';
+  document.getElementById('modal-overlay').classList.add('open');
+
+  requestAnimationFrame(() => {
+    document.getElementById('m-bar').style.width = '0%';
+    requestAnimationFrame(() => {
+      document.getElementById('m-bar').style.width = pct + '%';
+    });
+  });
+}
+
+function closeModal()  { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+const strings = {
+  el: { title:'Κατανάλωση Δεδομένων ανά Εφαρμογή', subtitle:'MB / GB ανά ώρα χρήσης', caption:'👆 Κλικ σε κάθε μπάρα για λεπτομέρειες', langBtn:'🌐 English' },
+  en: { title:'Data Consumption per Application',   subtitle:'MB / GB per hour of use',  caption:'👆 Click any bar for details',          langBtn:'🌐 Ελληνικά' },
+};
+
+function applyLang() {
+  const s = strings[lang];
+  document.getElementById('title').textContent    = s.title;
+  document.getElementById('subtitle').textContent = s.subtitle;
+  document.getElementById('caption').textContent  = s.caption;
+  document.getElementById('lang-btn').textContent = s.langBtn;
+  document.documentElement.lang = lang;
+  updateLabels();
+}
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  applyLang();
+}
+
+buildChart();
+applyLang();
+</script>
+</body>
+</html>
