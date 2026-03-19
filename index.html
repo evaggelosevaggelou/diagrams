@@ -40,7 +40,8 @@
   .btn-copy { background: transparent; color: var(--text); }
   .btn-copy:hover { background: #21262d; border-color: var(--accent2); }
   .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
-  .add-card { background: transparent; border: 2px dashed var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 320px; color: var(--muted); }
+  .loading { text-align: center; padding: 60px; color: var(--muted); font-size: 15px; }
+  .empty { text-align: center; padding: 60px; color: var(--muted); }
   footer { text-align: center; padding: 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
 </style>
 </head>
@@ -52,33 +53,62 @@
 </header>
 <div class="hero">
   <h2>Διαδραστικά Διαγράμματα</h2>
-  <p>Όλα τα διαγράμματα για το lovefortechnology.net</p>
+  <p>Όλα τα διαγράμματα για το lovefortechnology.net — ενημερώνεται αυτόματα!</p>
 </div>
-<div class="grid" id="grid"></div>
+<div class="grid" id="grid">
+  <div class="loading">⏳ Φόρτωση διαγραμμάτων...</div>
+</div>
 <footer>lovefortechnology.net · GitHub Pages</footer>
+
 <script>
-const diagrams = [
-  { title: "Diagram 1 – Interactive", file: "diagram1_interactive.html" },
-];
-const BASE = "https://evaggelosevaggelou.github.io/diagrams/";
+const REPO = 'evaggelosevaggelou/diagrams';
+const BASE = 'https://evaggelosevaggelou.github.io/diagrams/';
+const API  = `https://api.github.com/repos/${REPO}/contents/`;
 const grid = document.getElementById('grid');
-diagrams.forEach(d => {
-  const url = BASE + d.file;
-  const iframe_code = `<iframe src="${url}" width="100%" height="500" frameborder="0" scrolling="no"></iframe>`;
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
-    <iframe class="preview" src="${url}" loading="lazy"></iframe>
-    <div class="card-body">
-      <div class="card-title">${d.title}</div>
-      <div class="card-file">${d.file}</div>
-      <div class="actions">
-        <a class="btn btn-open" href="${url}" target="_blank">🔗 Άνοιγμα</a>
-        <button class="btn btn-copy" onclick="copyIframe(this, \`${iframe_code.replace(/`/g,'\\`')}\`)">📋 Copy iframe</button>
-      </div>
-    </div>`;
-  grid.appendChild(card);
-});
+
+async function load() {
+  try {
+    const res = await fetch(API);
+    const files = await res.json();
+
+    const htmlFiles = files.filter(f =>
+      f.type === 'file' &&
+      f.name.endsWith('.html') &&
+      f.name !== 'index.html'
+    );
+
+    grid.innerHTML = '';
+
+    if (htmlFiles.length === 0) {
+      grid.innerHTML = '<div class="empty">Δεν βρέθηκαν διαγράμματα ακόμα.</div>';
+      return;
+    }
+
+    htmlFiles.forEach(f => {
+      const url = BASE + f.name;
+      const title = f.name.replace('.html', '').replace(/_/g, ' ');
+      const iframe_code = `<iframe src="${url}" width="100%" height="500" frameborder="0" scrolling="no"></iframe>`;
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <iframe class="preview" src="${url}" loading="lazy"></iframe>
+        <div class="card-body">
+          <div class="card-title">${title}</div>
+          <div class="card-file">${f.name}</div>
+          <div class="actions">
+            <a class="btn btn-open" href="${url}" target="_blank">🔗 Άνοιγμα</a>
+            <button class="btn btn-copy" onclick="copyIframe(this, \`${iframe_code.replace(/`/g,'\\`')}\`)">📋 Copy iframe</button>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+  } catch(e) {
+    grid.innerHTML = '<div class="empty">❌ Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
+  }
+}
+
 function copyIframe(btn, code) {
   navigator.clipboard.writeText(code).then(() => {
     btn.textContent = '✅ Αντιγράφηκε!';
@@ -86,6 +116,8 @@ function copyIframe(btn, code) {
     setTimeout(() => { btn.textContent = '📋 Copy iframe'; btn.classList.remove('copied'); }, 2000);
   });
 }
+
+load();
 </script>
 </body>
 </html>
