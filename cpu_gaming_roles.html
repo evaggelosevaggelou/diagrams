@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPU Gaming Roles</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;600;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cpu:    #457b9d;
+    --gpu:    #2a9d8f;
+    --ram:    #e76f51;
+    --fps:    #e9c46a;
+    --ai:     #e9c46a;
+    --stream: #6c757d;
+    --bg:     #ffffff;
+    --card:   #f8f9fa;
+    --border: #e0e4ea;
+    --text:   #1a1a2e;
+    --sub:    #6b7280;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.10);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: 'Sora', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  /* ── lang button ── */
+  #lang-btn {
+    position: fixed;
+    top: 18px; right: 18px;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: .04em;
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    transition: background .2s, transform .1s;
+    z-index: 100;
+  }
+  #lang-btn:hover { background: #333; transform: scale(1.04); }
+
+  /* ── wrapper ── */
+  .wrapper {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ── title ── */
+  .title {
+    font-size: clamp(18px, 4vw, 26px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .title span { color: var(--cpu); }
+  .subtitle {
+    font-size: 13px;
+    color: var(--sub);
+    text-align: center;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+
+  /* ── diagram grid ── */
+  .diagram {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* ── node cards ── */
+  .node {
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s, filter .18s;
+    border: 2px solid transparent;
+    position: relative;
+    text-align: center;
+    user-select: none;
+  }
+  .node:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: var(--shadow);
+    filter: brightness(1.06);
+  }
+  .node.active {
+    border-color: rgba(255,255,255,.6);
+    box-shadow: 0 0 0 3px rgba(0,0,0,.12), var(--shadow);
+    transform: scale(1.04);
+  }
+
+  .node-icon  { font-size: 22px; margin-bottom: 4px; }
+  .node-label { font-size: 13px; font-weight: 700; line-height: 1.2; }
+  .node-sub   { font-size: 10px; margin-top: 3px; opacity: .8; font-weight: 300; }
+
+  /* colour tokens */
+  .n-cpu    { background: var(--cpu);    color: #fff; grid-column: 2; grid-row: 2; }
+  .n-gpu    { background: var(--gpu);    color: #fff; grid-column: 1; grid-row: 2; }
+  .n-ram    { background: var(--ram);    color: #fff; grid-column: 3; grid-row: 2; }
+  .n-fps    { background: var(--fps);    color: #333; grid-column: 1; grid-row: 1; }
+  .n-ai     { background: var(--ai);     color: #333; grid-column: 3; grid-row: 1; }
+  .n-stream { background: var(--stream); color: #fff; grid-column: 2; grid-row: 3; }
+
+  /* connectors via pseudo-elements / SVG overlay */
+  .connector-row {
+    display: contents;
+  }
+
+  /* SVG connector layer */
+  .svg-connectors {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+  }
+  .diagram-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  /* ── detail panel ── */
+  .detail-panel {
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    padding: 18px 20px;
+    display: none;
+    animation: slideIn .22s ease;
+  }
+  .detail-panel.visible { display: block; }
+
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .detail-panel .dp-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .dp-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dp-title { font-size: 16px; font-weight: 700; }
+  .dp-body  { font-size: 13px; color: #444; line-height: 1.65; }
+  .dp-list  { margin-top: 8px; padding-left: 18px; }
+  .dp-list li { margin-bottom: 4px; }
+
+  .hint {
+    font-size: 11px;
+    color: var(--sub);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: .02em;
+    text-align: center;
+  }
+
+  /* responsive */
+  @media (max-width: 420px) {
+    .node-label { font-size: 11px; }
+    .node-sub   { font-size: 9px; }
+    .node { padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<button id="lang-btn" onclick="toggleLang()">🌐 English</button>
+
+<div class="wrapper">
+  <div class="title"><span data-el="title-cpu">CPU</span> <span data-el="title-rest">& Gaming Performance</span></div>
+  <div class="subtitle" data-el="subtitle">Κάνε κλικ σε κάθε στοιχείο για λεπτομέρειες</div>
+
+  <div class="diagram-wrap">
+    <div class="diagram" id="diagram">
+
+      <!-- Row 1 -->
+      <div class="node n-fps" data-id="fps" onclick="showDetail('fps')">
+        <div class="node-icon">🎮</div>
+        <div class="node-label" data-el="fps-label">FPS & Απόδοση</div>
+        <div class="node-sub" data-el="fps-sub">Frames per second</div>
+      </div>
+
+      <div style="grid-column:2; grid-row:1;"></div><!-- spacer -->
+
+      <div class="node n-ai" data-id="ai" onclick="showDetail('ai')">
+        <div class="node-icon">🤖</div>
+        <div class="node-label" data-el="ai-label">AI & Συμπεριφορά</div>
+        <div class="node-sub" data-el="ai-sub">NPC logic & simulation</div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="node n-gpu" data-id="gpu" onclick="showDetail('gpu')">
+        <div class="node-icon">🖥️</div>
+        <div class="node-label" data-el="gpu-label">Κάρτα Γραφικών</div>
+        <div class="node-sub" data-el="gpu-sub">GPU rendering</div>
+      </div>
+
+      <div class="node n-cpu" data-id="cpu" onclick="showDetail('cpu')">
+        <div class="node-icon">⚙️</div>
+        <div class="node-label" data-el="cpu-label">CPU</div>
+        <div class="node-sub" data-el="cpu-sub">Επεξεργαστής</div>
+      </div>
+
+      <div class="node n-ram" data-id="ram" onclick="showDetail('ram')">
+        <div class="node-icon">💾</div>
+        <div class="node-label" data-el="ram-label">Μνήμη RAM</div>
+        <div class="node-sub" data-el="ram-sub">System memory</div>
+      </div>
+
+      <!-- Row 3 -->
+      <div style="grid-column:1; grid-row:3;"></div>
+      <div class="node n-stream" data-id="stream" onclick="showDetail('stream')">
+        <div class="node-icon">📡</div>
+        <div class="node-label" data-el="stream-label">Streaming & Recording</div>
+        <div class="node-sub" data-el="stream-sub">OBS, Shadowplay…</div>
+      </div>
+      <div style="grid-column:3; grid-row:3;"></div>
+
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detail-panel">
+    <div class="dp-header">
+      <div class="dp-dot" id="dp-dot"></div>
+      <div class="dp-title" id="dp-title"></div>
+    </div>
+    <div class="dp-body" id="dp-body"></div>
+  </div>
+
+  <div class="hint" data-el="hint">↑ κλικ σε κόμβο για πληροφορίες</div>
+</div>
+
+<script>
+let lang = 'el';
+
+const content = {
+  el: {
+    'title-cpu': 'CPU',
+    'title-rest': '& Gaming Performance',
+    subtitle: 'Κάνε κλικ σε κάθε στοιχείο για λεπτομέρειες',
+    hint: '↑ κλικ σε κόμβο για πληροφορίες',
+    'fps-label': 'FPS & Απόδοση',
+    'fps-sub': 'Frames per second',
+    'ai-label': 'AI & Συμπεριφορά',
+    'ai-sub': 'NPC logic & simulation',
+    'gpu-label': 'Κάρτα Γραφικών',
+    'gpu-sub': 'GPU rendering',
+    'cpu-label': 'CPU',
+    'cpu-sub': 'Επεξεργαστής',
+    'ram-label': 'Μνήμη RAM',
+    'ram-sub': 'System memory',
+    'stream-label': 'Streaming & Recording',
+    'stream-sub': 'OBS, Shadowplay…',
+  },
+  en: {
+    'title-cpu': 'CPU',
+    'title-rest': '& Gaming Performance',
+    subtitle: 'Click each element for details',
+    hint: '↑ click a node for info',
+    'fps-label': 'FPS & Performance',
+    'fps-sub': 'Frames per second',
+    'ai-label': 'AI & Behavior',
+    'ai-sub': 'NPC logic & simulation',
+    'gpu-label': 'Graphics Card',
+    'gpu-sub': 'GPU rendering',
+    'cpu-label': 'CPU',
+    'cpu-sub': 'Processor',
+    'ram-label': 'RAM Memory',
+    'ram-sub': 'System memory',
+    'stream-label': 'Streaming & Recording',
+    'stream-sub': 'OBS, Shadowplay…',
+  }
+};
+
+const details = {
+  cpu: {
+    color: '#457b9d',
+    el: {
+      title: '⚙️ CPU — Επεξεργαστής',
+      body: `<p>Ο επεξεργαστής είναι ο <strong>«εγκέφαλος»</strong> του gaming PC. Επηρεάζει τα πάντα: φυσική, AI αντιπάλων, νεγκ δικτύου και την τροφοδοσία της κάρτας γραφικών.</p>
+      <ul class="dp-list">
+        <li>Single-core ταχύτητα → άμεση επίδραση στα FPS</li>
+        <li>Πολλοί πυρήνες → streaming + gaming ταυτόχρονα</li>
+        <li>Cache L3 → μειώνει καθυστερήσεις φόρτωσης</li>
+        <li>Bottleneck CPU ↔ GPU: ο μεγάλος εχθρός του gaming</li>
+      </ul>`
+    },
+    en: {
+      title: '⚙️ CPU — Processor',
+      body: `<p>The processor is the <strong>"brain"</strong> of your gaming PC. It affects everything: physics, enemy AI, network latency, and how it feeds the GPU.</p>
+      <ul class="dp-list">
+        <li>Single-core speed → direct FPS impact</li>
+        <li>More cores → simultaneous streaming + gaming</li>
+        <li>L3 cache → reduces load stutters</li>
+        <li>CPU ↔ GPU bottleneck: gaming's biggest enemy</li>
+      </ul>`
+    }
+  },
+  gpu: {
+    color: '#2a9d8f',
+    el: {
+      title: '🖥️ Κάρτα Γραφικών (GPU)',
+      body: `<p>Η GPU αναλαμβάνει την <strong>απόδοση γραφικών</strong>: shaders, textures, lighting και ray tracing. Λαμβάνει εντολές από τον CPU και τις μετατρέπει σε pixels.</p>
+      <ul class="dp-list">
+        <li>VRAM → αποθήκευση textures υψηλής ανάλυσης</li>
+        <li>Shader cores → παράλληλη επεξεργασία εικόνας</li>
+        <li>DLSS / FSR → AI upscaling για υψηλότερα FPS</li>
+        <li>Ζεύξη PCIe x16 με τον CPU</li>
+      </ul>`
+    },
+    en: {
+      title: '🖥️ Graphics Card (GPU)',
+      body: `<p>The GPU handles <strong>graphics rendering</strong>: shaders, textures, lighting, and ray tracing. It takes instructions from the CPU and turns them into pixels.</p>
+      <ul class="dp-list">
+        <li>VRAM → stores high-res textures</li>
+        <li>Shader cores → parallel image processing</li>
+        <li>DLSS / FSR → AI upscaling for higher FPS</li>
+        <li>Connected via PCIe x16 to the CPU</li>
+      </ul>`
+    }
+  },
+  ram: {
+    color: '#e76f51',
+    el: {
+      title: '💾 Μνήμη RAM',
+      body: `<p>Η RAM είναι η <strong>«γρήγορη μνήμη εργασίας»</strong> του συστήματος. Αποθηκεύει προσωρινά δεδομένα παιχνιδιού, asset data και προγράμματα φόντου.</p>
+      <ul class="dp-list">
+        <li>16 GB → ελάχιστο για σύγχρονα παιχνίδια</li>
+        <li>32 GB → ιδανικό για streaming ταυτόχρονα</li>
+        <li>Dual-channel → αυξάνει bandwidth CPU ↔ RAM</li>
+        <li>Υψηλή συχνότητα (DDR5) → λιγότερες καθυστερήσεις</li>
+      </ul>`
+    },
+    en: {
+      title: '💾 RAM Memory',
+      body: `<p>RAM is the system's <strong>"fast working memory"</strong>. It temporarily stores game data, asset data, and background programs.</p>
+      <ul class="dp-list">
+        <li>16 GB → minimum for modern games</li>
+        <li>32 GB → ideal for simultaneous streaming</li>
+        <li>Dual-channel → increases CPU ↔ RAM bandwidth</li>
+        <li>High frequency (DDR5) → fewer latency spikes</li>
+      </ul>`
+    }
+  },
+  fps: {
+    color: '#c9a227',
+    el: {
+      title: '🎮 FPS & Απόδοση',
+      body: `<p>Τα <strong>Frames Per Second</strong> είναι η κύρια μέτρηση gaming performance. Εξαρτώνται άμεσα από τον συνδυασμό CPU + GPU + RAM.</p>
+      <ul class="dp-list">
+        <li>60 FPS → βασικό επίπεδο gaming</li>
+        <li>144+ FPS → ανταγωνιστικό gaming (144Hz monitors)</li>
+        <li>CPU bottleneck → σταθερά χαμηλά FPS σε όλες τις ρυθμίσεις</li>
+        <li>1% lows → μετρά τα χειρότερα frame drops</li>
+      </ul>`
+    },
+    en: {
+      title: '🎮 FPS & Performance',
+      body: `<p><strong>Frames Per Second</strong> is the primary gaming performance metric. It depends directly on the CPU + GPU + RAM combination.</p>
+      <ul class="dp-list">
+        <li>60 FPS → basic gaming level</li>
+        <li>144+ FPS → competitive gaming (144Hz monitors)</li>
+        <li>CPU bottleneck → consistently low FPS at any setting</li>
+        <li>1% lows → measures worst frame drops</li>
+      </ul>`
+    }
+  },
+  ai: {
+    color: '#c9a227',
+    el: {
+      title: '🤖 AI & Συμπεριφορά NPC',
+      body: `<p>Ο CPU τρέχει τη <strong>λογική AI</strong> εχθρών, NPCs και συστημάτων προσομοίωσης. Όσο πιο σύνθετη η AI, τόσο μεγαλύτερο το CPU load.</p>
+      <ul class="dp-list">
+        <li>Pathfinding → υπολογισμός μονοπατιών NPC</li>
+        <li>Decision trees → λήψη αποφάσεων αντιπάλων</li>
+        <li>Physics simulation → ρεαλιστικές αλληλεπιδράσεις</li>
+        <li>Crowd simulation → πολλοί NPCs ταυτόχρονα</li>
+      </ul>`
+    },
+    en: {
+      title: '🤖 AI & NPC Behavior',
+      body: `<p>The CPU runs <strong>AI logic</strong> for enemies, NPCs, and simulation systems. The more complex the AI, the higher the CPU load.</p>
+      <ul class="dp-list">
+        <li>Pathfinding → NPC route calculation</li>
+        <li>Decision trees → enemy decision making</li>
+        <li>Physics simulation → realistic interactions</li>
+        <li>Crowd simulation → many NPCs simultaneously</li>
+      </ul>`
+    }
+  },
+  stream: {
+    color: '#6c757d',
+    el: {
+      title: '📡 Streaming & Recording',
+      body: `<p>Το streaming και η εγγραφή απαιτούν σημαντικούς <strong>πόρους CPU</strong> (ή GPU encoding). Χρειάζεσαι αρκετούς πυρήνες για να παίζεις και να μεταδίδεις ταυτόχρονα.</p>
+      <ul class="dp-list">
+        <li>Software encoding (x264) → φορτώνει τον CPU</li>
+        <li>Hardware encoding (NVENC/AMF) → χρησιμοποιεί GPU</li>
+        <li>OBS, Streamlabs → δημοφιλή εργαλεία streaming</li>
+        <li>6+ πυρήνες CPU → ομαλό gaming + streaming</li>
+      </ul>`
+    },
+    en: {
+      title: '📡 Streaming & Recording',
+      body: `<p>Streaming and recording require significant <strong>CPU resources</strong> (or GPU encoding). You need enough cores to play and broadcast simultaneously.</p>
+      <ul class="dp-list">
+        <li>Software encoding (x264) → loads the CPU</li>
+        <li>Hardware encoding (NVENC/AMF) → uses the GPU</li>
+        <li>OBS, Streamlabs → popular streaming tools</li>
+        <li>6+ CPU cores → smooth gaming + streaming</li>
+      </ul>`
+    }
+  }
+};
+
+let activeId = null;
+
+function showDetail(id) {
+  const panel = document.getElementById('detail-panel');
+  const dot   = document.getElementById('dp-dot');
+  const title = document.getElementById('dp-title');
+  const body  = document.getElementById('dp-body');
+
+  // deactivate all nodes
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+
+  if (activeId === id) {
+    // toggle off
+    panel.classList.remove('visible');
+    activeId = null;
+    return;
+  }
+
+  activeId = id;
+  document.querySelector(`[data-id="${id}"]`).classList.add('active');
+
+  const d = details[id];
+  const t = lang === 'el' ? d.el : d.en;
+
+  dot.style.background = d.color;
+  title.textContent = t.title;
+  body.innerHTML = t.body;
+  panel.classList.add('visible');
+}
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  const btn = document.getElementById('lang-btn');
+  btn.textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+
+  // update static text
+  const c = content[lang];
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.getAttribute('data-el');
+    if (c[key]) el.textContent = c[key];
+  });
+
+  // update open panel if any
+  if (activeId) showDetail(activeId); // re-render in new lang
+  // but showDetail toggles off if same id... fix:
+}
+
+// fix toggle re-render without closing
+const _showDetail = showDetail;
+showDetail = function(id) {
+  const wasActive = activeId;
+  activeId = null; // reset so same-id doesn't close
+  _showDetail(id);
+  // if we just clicked the already-active node, close it
+  if (wasActive === id && activeId === null) {
+    document.getElementById('detail-panel').classList.remove('visible');
+    document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  }
+};
+
+// Override lang toggle to re-render without toggling
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  document.getElementById('lang-btn').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+
+  const c = content[lang];
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.getAttribute('data-el');
+    if (c[key]) el.textContent = c[key];
+  });
+
+  // re-render open detail in new lang
+  if (activeId) {
+    const d = details[activeId];
+    const t = lang === 'el' ? d.el : d.en;
+    document.getElementById('dp-title').textContent = t.title;
+    document.getElementById('dp-body').innerHTML = t.body;
+  }
+}
+</script>
+</body>
+</html>
