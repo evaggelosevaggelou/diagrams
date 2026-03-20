@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPU Gaming Benchmark 1080p</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f7f5;
+    --border: #e8e8e4;
+    --text: #1a1a18;
+    --muted: #888880;
+    --accent: #1a1a18;
+
+    --ryzen9:  #43aa8b;
+    --ultra9:  #4361ee;
+    --ultra7:  #f4a261;
+    --ryzen7:  #e76f51;
+    --ryzen5:  #e63946;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px 24px;
+    position: relative;
+  }
+
+  /* ── header ── */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .title-block { flex: 1; }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-weight: 400;
+  }
+
+  /* ── lang toggle ── */
+  .lang-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .lang-btn:hover { background: var(--surface); border-color: #ccc; }
+
+  /* ── chart area ── */
+  .chart-wrap {
+    display: flex;
+    gap: 0;
+    height: 220px;
+    align-items: flex-end;
+  }
+
+  .y-axis {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    height: 100%;
+    padding-bottom: 2px;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .y-tick {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1;
+  }
+
+  .bars-area {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    position: relative;
+  }
+
+  /* grid lines */
+  .bars-area::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 0 0;
+    background: repeating-linear-gradient(
+      to top,
+      transparent 0px,
+      transparent calc(20% - 1px),
+      var(--border) calc(20% - 1px),
+      var(--border) 20%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+  }
+
+  .bar-fill {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    transition: filter .18s, transform .18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,.18) 0%, transparent 60%);
+    border-radius: inherit;
+  }
+
+  .bar-col:hover .bar-fill {
+    filter: brightness(1.08);
+    transform: scaleY(1.015);
+    transform-origin: bottom;
+  }
+
+  .bar-value {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity .15s;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .bar-col:hover .bar-value { opacity: 1; }
+
+  .bar-label {
+    text-align: center;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .bar-label .cpu-line {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+  }
+  .bar-label .sku-line {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5px;
+    color: var(--muted);
+    display: block;
+  }
+
+  /* ── tooltip ── */
+  .tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    font-size: 11px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+  }
+  .bar-col:hover .tooltip { display: block; }
+
+  /* ── modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 380px;
+    width: 100%;
+    position: relative;
+    animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(.9); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--surface); border: none;
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; font-size: 14px; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--border); }
+
+  .modal-swatch {
+    width: 36px; height: 36px; border-radius: 8px; margin-bottom: 14px;
+  }
+  .modal-cpu { font-size: 20px; font-weight: 800; margin-bottom: 2px; }
+  .modal-sku {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 16px;
+  }
+
+  .modal-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .stat-box {
+    background: var(--surface); border-radius: 10px; padding: 12px;
+  }
+  .stat-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .stat-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; }
+  .stat-val span { font-size: 11px; color: var(--muted); }
+
+  .modal-note {
+    margin-top: 14px; font-size: 10.5px; color: var(--muted); line-height: 1.5;
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+
+  /* ── footer ── */
+  .footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer-note {
+    font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace;
+  }
+  .legend {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; color: var(--muted);
+  }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div class="title-block">
+      <p class="eyebrow" data-el="eyebrow">CPU Benchmark · 1080p Gaming</p>
+      <h1 data-el="title">Gaming Performance</h1>
+      <p class="subtitle" data-el="subtitle">Average FPS · click a bar for details</p>
+    </div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 English</button>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="y-axis" id="yAxis">
+      <div class="y-tick">0</div>
+      <div class="y-tick">25</div>
+      <div class="y-tick">50</div>
+      <div class="y-tick">75</div>
+      <div class="y-tick">100</div>
+    </div>
+    <div class="bars-area" id="barsArea"></div>
+  </div>
+
+  <div class="footer">
+    <p class="footer-note" data-el="footerNote">* Higher = better &nbsp;|&nbsp; Normalized to 100</p>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-swatch" id="mSwatch"></div>
+    <div class="modal-cpu" id="mCpu"></div>
+    <div class="modal-sku" id="mSku"></div>
+    <div class="modal-stats">
+      <div class="stat-box">
+        <div class="stat-label" data-el="statLabel1">Avg FPS (norm.)</div>
+        <div class="stat-val" id="mFps"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label" data-el="statLabel2">vs Best</div>
+        <div class="stat-val" id="mVsBest"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label" data-el="statLabel3">Segment</div>
+        <div class="stat-val" id="mSegment" style="font-size:13px;margin-top:2px;"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label" data-el="statLabel4">Architecture</div>
+        <div class="stat-val" id="mArch" style="font-size:13px;margin-top:2px;"></div>
+      </div>
+    </div>
+    <p class="modal-note" id="mNote"></p>
+  </div>
+</div>
+
+<script>
+const LANG = {
+  el: {
+    eyebrow: 'CPU Benchmark · Gaming 1080p',
+    title: 'Απόδοση Gaming',
+    subtitle: 'Μέσος FPS · κλικ σε μπάρα για λεπτομέρειες',
+    footerNote: '* Υψηλότερο = καλύτερο  |  Κανονικοποιημένο στο 100',
+    statLabel1: 'Μέσος FPS (κανον.)',
+    statLabel2: 'vs Καλύτερο',
+    statLabel3: 'Κατηγορία',
+    statLabel4: 'Αρχιτεκτονική',
+    btnLabel: '🌐 English',
+    tooltipFps: 'FPS',
+    segments: ['Flagship','Flagship','High-End','High-End','Mid-Range'],
+    notes: [
+      'Κορυφαίο AMD επεξεργαστή — εξαιρετική ισορροπία gaming & multi-thread.',
+      'Η Intel κορυφαία επιλογή — ισχυρός στα single-thread gaming workloads.',
+      'Πολύ ικανός high-end επεξεργαστής με καλό λόγο αξίας.',
+      'Εξαιρετική επιλογή για gaming στη mid-high κατηγορία.',
+      'Αξιόλογος mid-range επεξεργαστής για budget gaming builds.'
+    ]
+  },
+  en: {
+    eyebrow: 'CPU Benchmark · 1080p Gaming',
+    title: 'Gaming Performance',
+    subtitle: 'Average FPS · click a bar for details',
+    footerNote: '* Higher = better  |  Normalized to 100',
+    statLabel1: 'Avg FPS (norm.)',
+    statLabel2: 'vs Best',
+    statLabel3: 'Segment',
+    statLabel4: 'Architecture',
+    btnLabel: '🌐 Ελληνικά',
+    tooltipFps: 'FPS',
+    segments: ['Flagship','Flagship','High-End','High-End','Mid-Range'],
+    notes: [
+      'AMD\'s flagship — outstanding balance of gaming and multi-thread workloads.',
+      'Intel\'s top pick — strong single-thread performance for gaming tasks.',
+      'Very capable high-end CPU with excellent price-to-performance ratio.',
+      'Great choice for gaming in the mid-high segment.',
+      'Solid mid-range processor for budget-conscious gaming builds.'
+    ]
+  }
+};
+
+const CPUS = [
+  { color: '#43aa8b', name: 'Ryzen 9', sku: '9950X',  score: 100, arch: 'Zen 5' },
+  { color: '#4361ee', name: 'Ultra 9', sku: '285K',   score: 98,  arch: 'Arrow Lake' },
+  { color: '#f4a261', name: 'Ultra 7', sku: '265K',   score: 91,  arch: 'Arrow Lake' },
+  { color: '#e76f51', name: 'Ryzen 7', sku: '9700X',  score: 85,  arch: 'Zen 5' },
+  { color: '#e63946', name: 'Ryzen 5', sku: '9600X',  score: 76,  arch: 'Zen 5' },
+];
+
+let currentLang = 'el';
+
+function t(key) { return LANG[currentLang][key]; }
+
+function renderBars() {
+  const area = document.getElementById('barsArea');
+  area.innerHTML = '';
+  CPUS.forEach((cpu, i) => {
+    const pct = cpu.score;
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.innerHTML = `
+      <div class="bar-value">${pct}</div>
+      <div class="tooltip">
+        <strong>${cpu.name} ${cpu.sku}</strong><br>
+        ${t('tooltipFps')}: <strong>${pct}</strong>
+      </div>
+      <div class="bar-fill" style="height:${pct * 1.95}px; background:${cpu.color};"></div>
+      <div class="bar-label">
+        <span class="cpu-line">${cpu.name}</span>
+        <span class="sku-line">${cpu.sku}</span>
+      </div>
+    `;
+    col.addEventListener('click', () => openModal(i));
+    area.appendChild(col);
+  });
+}
+
+function renderLegend() {
+  const leg = document.getElementById('legend');
+  leg.innerHTML = CPUS.map((c,i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${c.color}"></div>${c.name} ${c.sku}</div>`
+  ).join('');
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.getAttribute('data-el');
+    if (LANG[currentLang][key]) el.textContent = LANG[currentLang][key];
+  });
+  document.getElementById('langBtn').textContent = t('btnLabel');
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'el' ? 'en' : 'el';
+  applyTranslations();
+  renderBars();
+}
+
+function openModal(i) {
+  const cpu = CPUS[i];
+  const segs = t('segments');
+  const notes = t('notes');
+  document.getElementById('mSwatch').style.background = cpu.color;
+  document.getElementById('mCpu').textContent = `${cpu.name} ${cpu.sku}`;
+  document.getElementById('mSku').textContent = cpu.arch;
+  document.getElementById('mFps').innerHTML = `${cpu.score} <span>/ 100</span>`;
+  const diff = cpu.score === 100 ? '—' : `-${(100 - cpu.score).toFixed(0)}%`;
+  document.getElementById('mVsBest').innerHTML = diff === '—' ? '🏆' : `${diff} <span></span>`;
+  document.getElementById('mSegment').textContent = segs[i];
+  document.getElementById('mArch').textContent = cpu.arch;
+  document.getElementById('mNote').textContent = notes[i];
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// init
+renderBars();
+renderLegend();
+applyTranslations();
+</script>
+</body>
+</html>
