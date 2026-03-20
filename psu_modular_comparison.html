@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSU Modular Types Comparison</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .lang-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .lang-btn {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #e94560; }
+
+  .title {
+    text-align: center;
+    font-size: 1.25em;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 5px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.88em;
+    color: #777;
+    margin-bottom: 22px;
+  }
+
+  /* TYPE CARDS */
+  .types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 520px) {
+    .types-grid { grid-template-columns: 1fr; }
+  }
+
+  .type-card {
+    border-radius: 14px;
+    padding: 18px 14px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    text-align: center;
+    position: relative;
+  }
+  .type-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  .type-card.active {
+    border-color: #6c63ff;
+    box-shadow: 0 6px 20px rgba(108,99,255,0.25);
+  }
+
+  .tc-nonmod  { background: linear-gradient(135deg, #fce4ec, #f8bbd0); }
+  .tc-semi    { background: linear-gradient(135deg, #fff8e1, #ffecb3); }
+  .tc-full    { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+
+  .type-emoji { font-size: 2.4em; display: block; margin-bottom: 8px; }
+  .type-name  { font-weight: 700; font-size: 0.96em; color: #1a1a2e; display: block; margin-bottom: 5px; }
+  .type-sub   { font-size: 0.78em; color: #555; line-height: 1.4; }
+
+  .best-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #6c63ff;
+    color: #fff;
+    font-size: 0.65em;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  /* PSU VISUAL */
+  .psu-visual {
+    margin-bottom: 16px;
+    background: #f7f9ff;
+    border-radius: 14px;
+    padding: 18px 16px;
+    border-left: 5px solid #6c63ff;
+  }
+  .psu-visual h3 {
+    font-size: 1em;
+    color: #1a1a2e;
+    margin-bottom: 14px;
+  }
+
+  /* Cable visualization */
+  .cable-diagram {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .psu-box {
+    background: linear-gradient(135deg, #2c3e50, #1a252f);
+    color: #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8em;
+    font-weight: 700;
+    text-align: center;
+    min-width: 70px;
+    flex-shrink: 0;
+  }
+  .cables-area {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+  }
+  .cable {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8em;
+  }
+  .cable-line {
+    height: 6px;
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+  .cable-permanent  { background: #e74c3c; width: 80px; }
+  .cable-removable  { background: #3498db; width: 60px; border: 2px dashed #1a6fa0; background: repeating-linear-gradient(90deg, #3498db 0, #3498db 8px, transparent 8px, transparent 12px); }
+  .cable-none       { background: #ddd; width: 40px; opacity: 0.4; }
+  .cable-label      { color: #444; font-size: 0.87em; }
+
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 0.76em;
+    color: #666;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .leg-item { display: flex; align-items: center; gap: 5px; }
+  .leg-line { width: 22px; height: 6px; border-radius: 3px; }
+  .leg-perm { background: #e74c3c; }
+  .leg-rem  { background: repeating-linear-gradient(90deg, #3498db 0, #3498db 6px, transparent 6px, transparent 10px); }
+  .leg-none { background: #ddd; }
+
+  /* PRO/CON */
+  .procon {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  @media (max-width: 480px) { .procon { grid-template-columns: 1fr; } }
+
+  .pros, .cons {
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.85em;
+  }
+  .pros { background: #eafaf1; border-left: 3px solid #56c87a; }
+  .cons { background: #fff0f0; border-left: 3px solid #e74c3c; }
+  .pros h4 { color: #2d7d4a; margin-bottom: 7px; font-size: 0.95em; }
+  .cons h4 { color: #c0392b; margin-bottom: 7px; font-size: 0.95em; }
+  .pros li, .cons li { margin: 4px 0; line-height: 1.45; color: #333; list-style: none; }
+
+  .detail-bottom {
+    padding: 10px 14px;
+    background: #fffde7;
+    border-radius: 8px;
+    border-left: 3px solid #f9a825;
+    font-size: 0.86em;
+    color: #555;
+    margin-top: 12px;
+  }
+
+  .placeholder-msg {
+    font-size: 0.95em;
+    color: #888;
+    padding: 4px 0;
+  }
+
+  .note {
+    text-align: center;
+    font-size: 0.78em;
+    color: #aaa;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="lang-btn-wrap">
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">🌐 English</button>
+  </div>
+
+  <div class="title" id="mainTitle">Modular ή Κανονικό Τροφοδοτικό;</div>
+  <div class="subtitle" id="mainSub">Κάντε κλικ σε κάθε τύπο για σύγκριση πλεονεκτημάτων και μειονεκτημάτων</div>
+
+  <div class="types-grid" id="typesGrid"></div>
+
+  <div class="psu-visual" id="psuVisual">
+    <p class="placeholder-msg" id="placeholderMsg">👆 Επιλέξτε έναν τύπο παραπάνω</p>
+  </div>
+
+  <div class="note" id="noteText">💡 Η επιλογή εξαρτάται κυρίως από το budget και τη σημασία που δίνετε στην καλωδιακή οργάνωση.</div>
+</div>
+
+<script>
+  var lang = 'el';
+  var activeType = null;
+
+  var types_el = [
+    { key: 'non', emoji: '🔌', name: 'Non-Modular', sub: 'Όλα τα καλώδια μόνιμα', cls: 'tc-nonmod' },
+    { key: 'semi', emoji: '🔀', name: 'Semi-Modular', sub: 'Βασικά μόνιμα, άλλα αφαιρούνται', cls: 'tc-semi', best: true },
+    { key: 'full', emoji: '✨', name: 'Fully Modular', sub: 'Όλα τα καλώδια αφαιρούνται', cls: 'tc-full' },
+  ];
+  var types_en = [
+    { key: 'non', emoji: '🔌', name: 'Non-Modular', sub: 'All cables permanently attached', cls: 'tc-nonmod' },
+    { key: 'semi', emoji: '🔀', name: 'Semi-Modular', sub: 'Core cables fixed, rest removable', cls: 'tc-semi', best: true },
+    { key: 'full', emoji: '✨', name: 'Fully Modular', sub: 'All cables removable', cls: 'tc-full' },
+  ];
+
+  var cables = {
+    non: [
+      { label_el:'24-pin Μητρική', label_en:'24-pin Motherboard', type:'permanent' },
+      { label_el:'8-pin CPU',       label_en:'8-pin CPU',          type:'permanent' },
+      { label_el:'PCIe (GPU)',       label_en:'PCIe (GPU)',         type:'permanent' },
+      { label_el:'SATA',             label_en:'SATA',               type:'permanent' },
+      { label_el:'Molex',            label_en:'Molex',              type:'permanent' },
+    ],
+    semi: [
+      { label_el:'24-pin Μητρική', label_en:'24-pin Motherboard', type:'permanent' },
+      { label_el:'8-pin CPU',       label_en:'8-pin CPU',          type:'permanent' },
+      { label_el:'PCIe (GPU)',       label_en:'PCIe (GPU)',         type:'removable' },
+      { label_el:'SATA',             label_en:'SATA',               type:'removable' },
+      { label_el:'Molex',            label_en:'Molex',              type:'removable' },
+    ],
+    full: [
+      { label_el:'24-pin Μητρική', label_en:'24-pin Motherboard', type:'removable' },
+      { label_el:'8-pin CPU',       label_en:'8-pin CPU',          type:'removable' },
+      { label_el:'PCIe (GPU)',       label_en:'PCIe (GPU)',         type:'removable' },
+      { label_el:'SATA',             label_en:'SATA',               type:'removable' },
+      { label_el:'Molex',            label_en:'Molex',              type:'removable' },
+    ],
+  };
+
+  var details = {
+    el: {
+      non: {
+        h: '🔌 Non-Modular — Κανονικό',
+        pros: ['✅ Πιο φθηνό από τα άλλα','✅ Δεν χρειάζεται εύρεση καλωδίων','✅ Άμεση σύνδεση χωρίς σκέψη'],
+        cons: ['❌ Πολλά άχρηστα καλώδια μέσα','❌ Δύσκολη καλωδιακή οργάνωση','❌ Χειρότερη ροή αέρα'],
+        rec: '💡 Καλό για: budget builds σε μεσαίο/μεγάλο κουτί όπου η εμφάνιση δεν έχει σημασία.'
+      },
+      semi: {
+        h: '🔀 Semi-Modular — Η ισορροπημένη επιλογή',
+        pros: ['✅ Καλύτερη τιμή από Fully Modular','✅ Τα βασικά καλώδια πάντα εκεί','✅ Λιγότερα άχρηστα καλώδια'],
+        cons: ['❌ Ακόμα μερικά μόνιμα καλώδια','❌ Πιο ακριβό από Non-Modular','—'],
+        rec: '✅ Η επιλογή για τους περισσότερους: καλό compromise τιμής και οργάνωσης.'
+      },
+      full: {
+        h: '✨ Fully Modular — Η premium επιλογή',
+        pros: ['✅ Τέλεια καλωδιακή οργάνωση','✅ Βάζετε μόνο ό,τι χρειάζεστε','✅ Ευκολότερη συντήρηση & αναβαθμίσεις'],
+        cons: ['❌ Πιο ακριβό (~20–40€ παραπάνω)','❌ Προσοχή: μόνο ίδιου brand καλώδια!','❌ Κίνδυνος λάθους καλωδίου αν αλλάξετε brand'],
+        rec: '💡 Ιδανικό για: gaming builds με RGB, υπολογιστές showcase ή compact ITX κουτιά.'
+      },
+    },
+    en: {
+      non: {
+        h: '🔌 Non-Modular',
+        pros: ['✅ Cheapest option','✅ No cable hunting needed','✅ Plug and go'],
+        cons: ['❌ Many unused cables clutter the case','❌ Harder cable management','❌ Worse airflow'],
+        rec: '💡 Good for: budget builds in mid/full tower cases where looks don\'t matter.'
+      },
+      semi: {
+        h: '🔀 Semi-Modular — The Balanced Choice',
+        pros: ['✅ Better price than Fully Modular','✅ Core cables always ready','✅ Fewer unused cables inside'],
+        cons: ['❌ Still some fixed cables','❌ Pricier than Non-Modular','—'],
+        rec: '✅ The choice for most builders: great balance of price and cable management.'
+      },
+      full: {
+        h: '✨ Fully Modular — The Premium Pick',
+        pros: ['✅ Perfect cable management','✅ Only use what you need','✅ Easier maintenance & upgrades'],
+        cons: ['❌ Pricier (~€20–40 more)','❌ Only use same-brand cables!','❌ Risk of wrong cable if you switch brands'],
+        rec: '💡 Ideal for: RGB gaming builds, showcase PC, or compact ITX cases.'
+      },
+    }
+  };
+
+  function renderTypes() {
+    var grid = document.getElementById('typesGrid');
+    grid.innerHTML = '';
+    var arr = lang === 'el' ? types_el : types_en;
+    arr.forEach(function(t) {
+      var div = document.createElement('div');
+      div.className = 'type-card ' + t.cls + (activeType === t.key ? ' active' : '');
+      div.setAttribute('onclick', 'showType("' + t.key + '")');
+      var bestHtml = t.best ? '<span class="best-tag">' + (lang === 'el' ? 'ΣΥΝΙΣΤΑΤΑΙ' : 'RECOMMENDED') + '</span>' : '';
+      div.innerHTML = bestHtml +
+        '<span class="type-emoji">' + t.emoji + '</span>' +
+        '<span class="type-name">' + t.name + '</span>' +
+        '<span class="type-sub">' + t.sub + '</span>';
+      grid.appendChild(div);
+    });
+  }
+
+  function showType(key) {
+    activeType = key;
+    renderTypes();
+
+    var d = details[lang][key];
+    var cabs = cables[key];
+
+    // Build cable diagram
+    var cabHtml = '<div class="cable-diagram"><div class="psu-box">PSU</div><div class="cables-area">';
+    cabs.forEach(function(c) {
+      var lblKey = 'label_' + lang;
+      var lineClass = c.type === 'permanent' ? 'cable-permanent' : 'cable-removable';
+      cabHtml += '<div class="cable"><div class="cable-line ' + lineClass + '"></div><span class="cable-label">' + c[lblKey] + '</span></div>';
+    });
+    cabHtml += '</div></div>';
+    cabHtml += '<div class="legend">';
+    cabHtml += '<div class="leg-item"><div class="leg-line leg-perm"></div><span>' + (lang === 'el' ? 'Μόνιμο' : 'Permanent') + '</span></div>';
+    cabHtml += '<div class="leg-item"><div class="leg-line leg-rem"></div><span>' + (lang === 'el' ? 'Αφαιρούμενο' : 'Removable') + '</span></div>';
+    cabHtml += '</div>';
+
+    // Pro/Con
+    var pcHtml = '<div class="procon">';
+    pcHtml += '<div class="pros"><h4>' + (lang === 'el' ? '✅ Πλεονεκτήματα' : '✅ Pros') + '</h4>';
+    d.pros.forEach(function(p) { pcHtml += '<li>' + p + '</li>'; });
+    pcHtml += '</div><div class="cons"><h4>' + (lang === 'el' ? '❌ Μειονεκτήματα' : '❌ Cons') + '</h4>';
+    d.cons.forEach(function(c) { pcHtml += '<li>' + c + '</li>'; });
+    pcHtml += '</div></div>';
+
+    document.getElementById('psuVisual').innerHTML =
+      '<h3>' + d.h + '</h3>' + cabHtml + pcHtml +
+      '<div class="detail-bottom">' + d.rec + '</div>';
+  }
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    document.getElementById('langToggle').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+
+    if (lang === 'el') {
+      document.getElementById('mainTitle').textContent = 'Modular ή Κανονικό Τροφοδοτικό;';
+      document.getElementById('mainSub').textContent = 'Κάντε κλικ σε κάθε τύπο για σύγκριση πλεονεκτημάτων και μειονεκτημάτων';
+      document.getElementById('noteText').textContent = '💡 Η επιλογή εξαρτάται κυρίως από το budget και τη σημασία που δίνετε στην καλωδιακή οργάνωση.';
+    } else {
+      document.getElementById('mainTitle').textContent = 'Modular or Non-Modular PSU?';
+      document.getElementById('mainSub').textContent = 'Click each type to compare pros and cons';
+      document.getElementById('noteText').textContent = '💡 The choice mainly depends on your budget and how much you care about cable management.';
+    }
+
+    renderTypes();
+    if (activeType) {
+      showType(activeType);
+    } else {
+      document.getElementById('psuVisual').innerHTML =
+        '<p class="placeholder-msg">' + (lang === 'el' ? '👆 Επιλέξτε έναν τύπο παραπάνω' : '👆 Select a type above') + '</p>';
+    }
+  }
+
+  // Init
+  renderTypes();
+</script>
+</body>
+</html>
