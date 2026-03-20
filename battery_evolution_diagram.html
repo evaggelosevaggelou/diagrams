@@ -7,6 +7,11 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html {
+    height: auto;
+    overflow-y: auto;
+  }
+
   body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #ffffff;
@@ -14,8 +19,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    min-height: 100vh;
-    padding: 20px;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    padding: 20px 20px 40px 20px;
   }
 
   .lang-btn {
@@ -434,6 +441,21 @@ function render() {
 }
 
 render();
+
+// Notify parent frame of height changes (for iframe embeds)
+function notifyHeight() {
+  const h = document.body.scrollHeight;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'resize', height: h }, '*');
+  }
+}
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(() => notifyHeight());
+  ro.observe(document.body);
+} else {
+  setInterval(notifyHeight, 300);
+}
+notifyHeight();
 </script>
 </body>
 </html>
