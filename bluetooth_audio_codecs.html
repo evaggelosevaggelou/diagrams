@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bluetooth Audio Codecs Comparison</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px 12px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .title {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #1e3a5f;
+    line-height: 1.3;
+  }
+  .title span { display: block; font-size: 0.78em; font-weight: 400; color: #6b7280; margin-top: 2px; }
+
+  .lang-btn {
+    background: #1e3a5f;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #2d5a8e; }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    background: #fafafa;
+    user-select: none;
+  }
+  .card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
+  .card.active { border-color: #1e3a5f; background: #eff6ff; box-shadow: 0 4px 14px rgba(30,58,95,0.15); }
+
+  .card-name {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin-bottom: 4px;
+  }
+  .card-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .badge-gray  { background: #f3f4f6; color: #4b5563; }
+  .badge-blue  { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-gold  { background: #fef3c7; color: #92400e; }
+  .badge-purple{ background: #ede9fe; color: #5b21b6; }
+  .badge-teal  { background: #ccfbf1; color: #0f766e; }
+
+  .card-hint {
+    font-size: 11.5px;
+    color: #9ca3af;
+  }
+
+  /* Detail panel */
+  .detail {
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+    transition: all 0.25s;
+  }
+  .detail-header {
+    background: linear-gradient(135deg, #1e3a5f, #2d6a9f);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .detail-name {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #fff;
+  }
+  .detail-body { padding: 16px 18px; }
+
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label {
+    min-width: 130px;
+    font-weight: 600;
+    color: #374151;
+    flex-shrink: 0;
+  }
+  .detail-value { color: #4b5563; line-height: 1.5; }
+
+  /* Quality bar */
+  .quality-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .quality-bar {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .quality-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .q1 { width: 30%; background: #9ca3af; }
+  .q2 { width: 52%; background: #60a5fa; }
+  .q3 { width: 65%; background: #34d399; }
+  .q4 { width: 78%; background: #34d399; }
+  .q5 { width: 92%; background: #f59e0b; }
+  .q6 { width: 88%; background: #10b981; }
+
+  .empty-state {
+    text-align: center;
+    padding: 28px 20px;
+    color: #9ca3af;
+    font-size: 14px;
+  }
+  .empty-icon { font-size: 2em; margin-bottom: 8px; }
+
+  .footer-note {
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="title">
+      <span id="titleMain">📡 Τεχνολογίες Bluetooth Ήχου</span>
+      <span id="titleSub">Πάτησε σε κάθε τεχνολογία για λεπτομέρειες</span>
+    </div>
+    <button class="lang-btn" onclick="toggleLang()">🌐 <span id="langLabel">English</span></button>
+  </div>
+
+  <div class="grid" id="cardGrid"></div>
+
+  <div class="detail" id="detailPanel">
+    <div class="empty-state">
+      <div class="empty-icon">🎧</div>
+      <div id="emptyText">Επίλεξε μια τεχνολογία για να δεις ανάλυση</div>
+    </div>
+  </div>
+
+  <p class="footer-note" id="footerNote">* Η ποιότητα εξαρτάται και από τη συσκευή αναπαραγωγής · Ενημέρωση: 2026</p>
+
+</div>
+
+<script>
+const data = {
+  el: {
+    titleMain: "📡 Τεχνολογίες Bluetooth Ήχου",
+    titleSub: "Πάτησε σε κάθε τεχνολογία για λεπτομέρειες",
+    emptyText: "Επίλεξε μια τεχνολογία για να δεις ανάλυση",
+    footerNote: "* Η ποιότητα εξαρτάται και από τη συσκευή · Ενημέρωση: 2026",
+    langLabel: "English",
+    labels: { quality: "Ποιότητα", bitrate: "Ρυθμός δεδομένων", latency: "Καθυστέρηση", devices: "Συσκευές", battery: "Μπαταρία", note: "Σημείωση" },
+    codecs: [
+      {
+        id:"sbc", name:"SBC", badgeClass:"badge-gray", badgeText:"Βασική",
+        hint:"Σε κάθε συσκευή", qualityBar:"q1", qualityPct:"~30%",
+        quality:"Αρκετά καλή για καθημερινή χρήση",
+        bitrate:"328 kbps (max)", latency:"~220 ms",
+        devices:"Κάθε Bluetooth ακουστικό — ο προεπιλεγμένος codec",
+        battery:"✅ Κανονική κατανάλωση",
+        note:"Υπάρχει από την αρχή του Bluetooth. Παντού, αλλά όχι κορυφαίος."
+      },
+      {
+        id:"aac", name:"AAC", badgeClass:"badge-blue", badgeText:"Καλή",
+        hint:"Ιδανικό για iPhone", qualityBar:"q2", qualityPct:"~52%",
+        quality:"Καλή ποιότητα, ιδιαίτερα σε Apple συσκευές",
+        bitrate:"256 kbps (τυπικό)", latency:"~120 ms",
+        devices:"iPhone, iPad, Mac. Σε Android η απόδοση ποικίλει.",
+        battery:"✅ Κανονική κατανάλωση",
+        note:"Χρησιμοποιείται από την Apple για όλες τις iOS/macOS συσκευές."
+      },
+      {
+        id:"aptx", name:"aptX", badgeClass:"badge-green", badgeText:"Καλή",
+        hint:"Android Qualcomm", qualityBar:"q3", qualityPct:"~65%",
+        quality:"Καλή, χαμηλή καθυστέρηση σε aptX LL",
+        bitrate:"352 kbps", latency:"~70 ms (aptX LL: <40 ms)",
+        devices:"Android με Qualcomm επεξεργαστές, Windows",
+        battery:"✅ Κανονική κατανάλωση",
+        note:"aptX Low Latency ιδανικό για gaming και βίντεο."
+      },
+      {
+        id:"aptxhd", name:"aptX HD", badgeClass:"badge-green", badgeText:"Πολύ καλή",
+        hint:"Hi-Res Android", qualityBar:"q4", qualityPct:"~78%",
+        quality:"Hi-Res audio, 24-bit βάθος",
+        bitrate:"576 kbps", latency:"~200 ms",
+        devices:"Android (Qualcomm), ορισμένα Windows PCs",
+        battery:"⚠️ Ελαφρά αυξημένη κατανάλωση",
+        note:"Κατάλληλο για audiophile ακουστικά που υποστηρίζουν Hi-Res."
+      },
+      {
+        id:"ldac", name:"LDAC", badgeClass:"badge-gold", badgeText:"Premium",
+        hint:"Sony / Android", qualityBar:"q5", qualityPct:"~92%",
+        quality:"990 kbps, 24-bit/96kHz — η υψηλότερη ποιότητα",
+        bitrate:"330 / 660 / 990 kbps (3 επίπεδα)", latency:"~200–250 ms",
+        devices:"Sony ακουστικά, Android 8+, ορισμένα Hi-Fi συστήματα",
+        battery:"⚠️ Αυξημένη κατανάλωση — μπορεί να αστοχήσει σε θόρυβο",
+        note:"Ανεπτυγμένο από τη Sony. Σε ασταθή σήματα μειώνει αυτόματα bitrate."
+      },
+      {
+        id:"lc3", name:"LC3", badgeClass:"badge-teal", badgeText:"Νέα τεχνολογία",
+        hint:"Bluetooth LE Audio", qualityBar:"q6", qualityPct:"~88%",
+        quality:"Εξαιρετική ποιότητα με χαμηλότερο bitrate από το SBC",
+        bitrate:"32–320 kbps (ευέλικτο)", latency:"~30–50 ms",
+        devices:"Συσκευές 2023+ με Bluetooth 5.2 (Android 13+, νέα ακουστικά)",
+        battery:"✅ Βελτιωμένη αυτονομία vs παλαιότεροι codecs",
+        note:"Το μέλλον του Bluetooth ήχου. Υποστηρίζει πολλαπλές συσκευές ταυτόχρονα."
+      }
+    ]
+  },
+  en: {
+    titleMain: "📡 Bluetooth Audio Codecs",
+    titleSub: "Click on each codec for detailed info",
+    emptyText: "Select a codec to see its analysis",
+    footerNote: "* Quality also depends on playback device · Updated: 2026",
+    langLabel: "Ελληνικά",
+    labels: { quality: "Quality", bitrate: "Bitrate", latency: "Latency", devices: "Devices", battery: "Battery", note: "Note" },
+    codecs: [
+      {
+        id:"sbc", name:"SBC", badgeClass:"badge-gray", badgeText:"Basic",
+        hint:"Every device", qualityBar:"q1", qualityPct:"~30%",
+        quality:"Decent for everyday use",
+        bitrate:"328 kbps (max)", latency:"~220 ms",
+        devices:"Every Bluetooth headphone — the default codec",
+        battery:"✅ Normal consumption",
+        note:"Has existed since early Bluetooth. Universal but not top-tier."
+      },
+      {
+        id:"aac", name:"AAC", badgeClass:"badge-blue", badgeText:"Good",
+        hint:"Ideal for iPhone", qualityBar:"q2", qualityPct:"~52%",
+        quality:"Good quality, especially on Apple devices",
+        bitrate:"256 kbps (typical)", latency:"~120 ms",
+        devices:"iPhone, iPad, Mac. Android performance varies.",
+        battery:"✅ Normal consumption",
+        note:"Used by Apple for all iOS/macOS devices."
+      },
+      {
+        id:"aptx", name:"aptX", badgeClass:"badge-green", badgeText:"Good",
+        hint:"Android Qualcomm", qualityBar:"q3", qualityPct:"~65%",
+        quality:"Good, low-latency with aptX LL variant",
+        bitrate:"352 kbps", latency:"~70 ms (aptX LL: <40 ms)",
+        devices:"Android with Qualcomm chips, Windows",
+        battery:"✅ Normal consumption",
+        note:"aptX Low Latency is ideal for gaming and video."
+      },
+      {
+        id:"aptxhd", name:"aptX HD", badgeClass:"badge-green", badgeText:"Very Good",
+        hint:"Hi-Res Android", qualityBar:"q4", qualityPct:"~78%",
+        quality:"Hi-Res audio with 24-bit depth",
+        bitrate:"576 kbps", latency:"~200 ms",
+        devices:"Android (Qualcomm), some Windows PCs",
+        battery:"⚠️ Slightly increased consumption",
+        note:"Suitable for audiophile headphones with Hi-Res support."
+      },
+      {
+        id:"ldac", name:"LDAC", badgeClass:"badge-gold", badgeText:"Premium",
+        hint:"Sony / Android", qualityBar:"q5", qualityPct:"~92%",
+        quality:"990 kbps, 24-bit/96kHz — highest available quality",
+        bitrate:"330 / 660 / 990 kbps (3 modes)", latency:"~200–250 ms",
+        devices:"Sony headphones, Android 8+, some Hi-Fi systems",
+        battery:"⚠️ Increased consumption · may drop bitrate in noisy RF areas",
+        note:"Developed by Sony. Auto-reduces bitrate if signal is unstable."
+      },
+      {
+        id:"lc3", name:"LC3", badgeClass:"badge-teal", badgeText:"New Tech",
+        hint:"Bluetooth LE Audio", qualityBar:"q6", qualityPct:"~88%",
+        quality:"Excellent quality at lower bitrate than SBC",
+        bitrate:"32–320 kbps (flexible)", latency:"~30–50 ms",
+        devices:"2023+ devices with Bluetooth 5.2 (Android 13+, new headphones)",
+        battery:"✅ Improved battery life vs older codecs",
+        note:"The future of Bluetooth audio. Supports multi-device streaming."
+      }
+    ]
+  }
+};
+
+let lang = "el";
+let activeId = null;
+
+function getLang() { return data[lang]; }
+
+function toggleLang() {
+  lang = lang === "el" ? "en" : "el";
+  const d = getLang();
+  document.getElementById("titleMain").textContent = d.titleMain;
+  document.getElementById("titleSub").textContent = d.titleSub;
+  document.getElementById("emptyText").textContent = d.emptyText;
+  document.getElementById("footerNote").textContent = d.footerNote;
+  document.getElementById("langLabel").textContent = d.langLabel;
+  renderCards();
+  if (activeId) renderDetail(activeId);
+  else renderEmpty();
+}
+
+function renderCards() {
+  const d = getLang();
+  const grid = document.getElementById("cardGrid");
+  grid.innerHTML = d.codecs.map(c => `
+    <div class="card ${activeId === c.id ? 'active' : ''}" onclick="selectCodec('${c.id}')">
+      <div class="card-name">${c.name}</div>
+      <div><span class="card-badge ${c.badgeClass}">${c.badgeText}</span></div>
+      <div class="card-hint">${c.hint}</div>
+    </div>
+  `).join("");
+}
+
+function renderEmpty() {
+  const d = getLang();
+  document.getElementById("detailPanel").innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">🎧</div>
+      <div>${d.emptyText}</div>
+    </div>`;
+}
+
+function renderDetail(id) {
+  const d = getLang();
+  const c = d.codecs.find(x => x.id === id);
+  if (!c) return;
+  const l = d.labels;
+  document.getElementById("detailPanel").innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-name">${c.name} <span class="card-badge ${c.badgeClass}" style="font-size:12px;">${c.badgeText}</span></div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-row">
+        <span class="detail-label">📊 ${l.quality}</span>
+        <span class="detail-value">
+          <div class="quality-bar-wrap">
+            <div class="quality-bar"><div class="quality-fill ${c.qualityBar}"></div></div>
+            <span style="font-size:12px;color:#6b7280;">${c.qualityPct}</span>
+          </div>
+          <span style="display:block;margin-top:4px;">${c.quality}</span>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">⚡ ${l.bitrate}</span>
+        <span class="detail-value">${c.bitrate}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">⏱️ ${l.latency}</span>
+        <span class="detail-value">${c.latency}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">📱 ${l.devices}</span>
+        <span class="detail-value">${c.devices}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">🔋 ${l.battery}</span>
+        <span class="detail-value">${c.battery}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">📌 ${l.note}</span>
+        <span class="detail-value">${c.note}</span>
+      </div>
+    </div>`;
+}
+
+function selectCodec(id) {
+  activeId = id;
+  renderCards();
+  renderDetail(id);
+}
+
+// Init
+renderCards();
+renderEmpty();
+</script>
+</body>
+</html>
