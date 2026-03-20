@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EQ Settings per Music Genre</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px 12px;
+  }
+
+  .wrapper { width: 100%; max-width: 700px; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .title { font-size: 1.1em; font-weight: 700; color: #1e3a5f; line-height: 1.3; }
+  .title span { display: block; font-size: 0.78em; font-weight: 400; color: #6b7280; margin-top: 2px; }
+
+  .lang-btn {
+    background: #1e3a5f; color: #fff; border: none; border-radius: 20px;
+    padding: 6px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #2d5a8e; }
+
+  /* Genre pills */
+  .genre-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
+  }
+  .pill {
+    border: 2px solid #e5e7eb; border-radius: 24px; padding: 7px 16px;
+    font-size: 14px; cursor: pointer; transition: all 0.2s; background: #f9fafb;
+    user-select: none; display: flex; align-items: center; gap: 6px;
+  }
+  .pill:hover { border-color: #3b82f6; background: #eff6ff; }
+  .pill.active { border-color: #1e3a5f; background: #1e3a5f; color: #fff; }
+
+  /* EQ Visualizer */
+  .eq-panel {
+    border: 2px solid #e5e7eb; border-radius: 14px;
+    overflow: hidden; background: #fff;
+  }
+  .eq-header {
+    background: linear-gradient(135deg, #1e3a5f, #2d6a9f);
+    padding: 13px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .eq-header-name { font-size: 1.1em; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .eq-header-sub { font-size: 12px; color: #bfdbfe; }
+
+  .eq-body { padding: 18px; }
+
+  /* EQ bars */
+  .eq-bars {
+    display: flex; align-items: flex-end; justify-content: space-around;
+    height: 140px; background: #f8fafc; border-radius: 10px;
+    padding: 10px 14px 0 14px; margin-bottom: 10px; gap: 6px;
+  }
+  .eq-bar-col {
+    display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%;
+    justify-content: flex-end;
+  }
+  .eq-bar-track {
+    width: 100%; background: #e5e7eb; border-radius: 4px 4px 0 0;
+    position: relative; height: 100%; display: flex; align-items: flex-end;
+  }
+  .eq-bar-fill {
+    width: 100%; border-radius: 4px 4px 0 0;
+    transition: height 0.45s cubic-bezier(.4,0,.2,1), background 0.3s;
+    position: absolute; bottom: 0;
+  }
+  .eq-bar-label { font-size: 10px; color: #6b7280; margin-top: 6px; white-space: nowrap; text-align: center; }
+  .eq-bar-value { font-size: 10.5px; font-weight: 700; color: #374151; margin-bottom: 3px; }
+
+  /* Center line */
+  .eq-bars-wrap { position: relative; }
+  .eq-center-line {
+    position: absolute; left: 14px; right: 14px;
+    height: 2px; background: #d1d5db; top: 50%; pointer-events: none;
+    border-radius: 2px;
+  }
+
+  .eq-labels {
+    display: flex; justify-content: space-around;
+    padding: 0 14px;
+  }
+  .eq-freq-label { flex: 1; text-align: center; font-size: 11px; color: #6b7280; }
+
+  /* Info rows */
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;
+  }
+  @media (max-width: 480px) { .info-grid { grid-template-columns: 1fr; } }
+
+  .info-card {
+    background: #f8fafc; border-radius: 10px; padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+  }
+  .info-card-label { font-size: 11.5px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+  .info-card-value { font-size: 14px; color: #374151; line-height: 1.5; }
+
+  .apps-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .app-tag { background: #dbeafe; color: #1e40af; font-size: 12px; padding: 2px 9px; border-radius: 20px; font-weight: 500; }
+
+  .empty-state { text-align: center; padding: 32px 20px; color: #9ca3af; font-size: 14.5px; }
+  .empty-icon { font-size: 2.2em; margin-bottom: 8px; }
+
+  .footer-note { font-size: 12px; color: #9ca3af; text-align: center; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="title">
+      <span id="titleMain">⚙️ Ισοσταθμιστής ανά Είδος Μουσικής</span>
+      <span id="titleSub">Επίλεξε είδος για να δεις τις ρυθμίσεις EQ</span>
+    </div>
+    <button class="lang-btn" onclick="toggleLang()">🌐 <span id="langLabel">English</span></button>
+  </div>
+
+  <div class="genre-pills" id="pillsContainer"></div>
+
+  <div class="eq-panel" id="eqPanel">
+    <div class="empty-state">
+      <div class="empty-icon">🎵</div>
+      <div id="emptyText">Επίλεξε ένα είδος μουσικής παραπάνω</div>
+    </div>
+  </div>
+
+  <p class="footer-note" id="footerNote">* Οι ρυθμίσεις είναι ενδεικτικές — προσάρμοσέ τες στα γούστα σου · 2026</p>
+</div>
+
+<script>
+// EQ values: array of 7 bands [32Hz, 64Hz, 125Hz, 250Hz, 1kHz, 4kHz, 16kHz]
+// Range -6 to +6 dB, 0 = neutral
+const data = {
+  el: {
+    titleMain: "⚙️ Ισοσταθμιστής ανά Είδος Μουσικής",
+    titleSub: "Επίλεξε είδος για να δεις τις ρυθμίσεις EQ",
+    emptyText: "Επίλεξε ένα είδος μουσικής παραπάνω",
+    footerNote: "* Οι ρυθμίσεις είναι ενδεικτικές — προσάρμοσέ τες · 2026",
+    langLabel: "English",
+    freqLabels: ["32Hz","64Hz","125Hz","250Hz","1kHz","4kHz","16kHz"],
+    bands: ["Sub", "Μπάσα", "Χαμηλά-Μεσ.", "Μεσαία", "Φωνή", "Παρουσία", "Αέρας"],
+    infoLabels: { ideal: "Ιδανικό για", avoid: "Απόφυγε", apps: "Εφαρμογές", tip: "Συμβουλή" },
+    genres: [
+      {
+        id:"rock", icon:"🎸", name:"Ροκ / Μέταλ",
+        eq:[3, 3, 1, -1, 0, 2, 3],
+        ideal:"Κιθάρες, τύμπανα, distorted riff",
+        avoid:"Υπερβολικά μπάσα που θολώνουν τις κιθάρες",
+        apps:["Wavelet","Poweramp","EQualizer APO"],
+        tip:"Ενίσχυσε 4kHz για πιο «κοφτερό» ήχο κιθάρας."
+      },
+      {
+        id:"hiphop", icon:"🎤", name:"Χιπ-Χοπ / Trap",
+        eq:[5, 4, 2, 0, -1, 1, 2],
+        ideal:"Sub-bass, 808 beats, ρυθμικά στοιχεία",
+        avoid:"Υπερβολικά ψηλά που φαίνονται «σκληρά»",
+        apps:["Boom","Poweramp","Bass Booster"],
+        tip:"Αν έχεις ακουστικά χωρίς καλά μπάσα, +5dB στο 32Hz κάνει θαύματα."
+      },
+      {
+        id:"electronic", icon:"🎛️", name:"Ηλεκτρονική / EDM",
+        eq:[4, 3, 1, -1, 0, 3, 3],
+        ideal:"Synthesizers, drops, percussive elements",
+        avoid:"Θολωμένα μπάσα που «τρώνε» τα high hats",
+        apps:["Wavelet","Boom 3D","Equalizer FX"],
+        tip:"Δοκίμασε «V-shape» — ενίσχυση σε χαμηλά και ψηλά, χαμηλότερα μεσαία."
+      },
+      {
+        id:"classical", icon:"🎻", name:"Κλασική / Jazz",
+        eq:[1, 1, 0, 0, 0, 1, 2],
+        ideal:"Φυσικός, ισορροπημένος ήχος ορχήστρας",
+        avoid:"Έντονα μπάσα ή ψηλά που αλλοιώνουν τον χαρακτήρα",
+        apps:["Wavelet","EQualizer APO","foobar2000"],
+        tip:"Σχεδόν επίπεδο EQ — η κλασική μουσική ηχογραφείται για ουδέτερη αναπαραγωγή."
+      },
+      {
+        id:"pop", icon:"🎵", name:"Ποπ",
+        eq:[2, 2, 1, 0, 1, 2, 1],
+        ideal:"Φωνές, catchiness, bright ήχος",
+        avoid:"Υπερβολικά μπάσα που κρύβουν τη φωνή",
+        apps:["Spotify EQ","Wavelet","Boom"],
+        tip:"Ελαφριά ενίσχυση στο 1kHz αναδεικνύει τη φωνή του τραγουδιστή."
+      },
+      {
+        id:"podcast", icon:"🗣️", name:"Podcast / Ομιλία",
+        eq:[-2, -1, 1, 3, 4, 2, -1],
+        ideal:"Καθαρή φωνή, κατανοητός διάλογος",
+        avoid:"Μπάσα που δίνουν boom στη φωνή και κουράζουν",
+        apps:["Wavelet","VoiceBoost","Equalizer FX"],
+        tip:"Κόψε τα πολύ χαμηλά για να εξαλείψεις τον βόμβο δωματίου."
+      },
+      {
+        id:"gaming", icon:"🎮", name:"Gaming",
+        eq:[2, 2, 1, 0, 2, 3, 2],
+        ideal:"Footsteps, positional audio, explosions",
+        avoid:"Υπερβολικά μπάσα που κρύβουν ηχητικές ενδείξεις",
+        apps:["Equalizer APO","Voicemeeter","SteelSeries GG"],
+        tip:"Ενίσχυσε 1–4kHz για καλύτερο spatial awareness (ακούς πού είναι ο εχθρός)."
+      }
+    ]
+  },
+  en: {
+    titleMain: "⚙️ Equalizer by Music Genre",
+    titleSub: "Select a genre to see EQ settings",
+    emptyText: "Select a music genre above",
+    footerNote: "* Settings are indicative — adjust to your taste · 2026",
+    langLabel: "Ελληνικά",
+    freqLabels: ["32Hz","64Hz","125Hz","250Hz","1kHz","4kHz","16kHz"],
+    bands: ["Sub", "Bass", "Low-Mid", "Mid", "Vocals", "Presence", "Air"],
+    infoLabels: { ideal: "Ideal for", avoid: "Avoid", apps: "Apps", tip: "Tip" },
+    genres: [
+      {
+        id:"rock", icon:"🎸", name:"Rock / Metal",
+        eq:[3, 3, 1, -1, 0, 2, 3],
+        ideal:"Guitars, drums, distorted riffs",
+        avoid:"Excessive bass that muddies the guitars",
+        apps:["Wavelet","Poweramp","EQualizer APO"],
+        tip:"Boost 4kHz for a sharper guitar attack."
+      },
+      {
+        id:"hiphop", icon:"🎤", name:"Hip-Hop / Trap",
+        eq:[5, 4, 2, 0, -1, 1, 2],
+        ideal:"Sub-bass, 808 beats, rhythmic elements",
+        avoid:"Harsh highs that feel fatiguing",
+        apps:["Boom","Poweramp","Bass Booster"],
+        tip:"If your headphones lack bass, +5dB at 32Hz makes a huge difference."
+      },
+      {
+        id:"electronic", icon:"🎛️", name:"Electronic / EDM",
+        eq:[4, 3, 1, -1, 0, 3, 3],
+        ideal:"Synthesizers, drops, percussive elements",
+        avoid:"Muddy bass that drowns out hi-hats",
+        apps:["Wavelet","Boom 3D","Equalizer FX"],
+        tip:"Try a V-shape EQ — boost lows and highs, reduce mids slightly."
+      },
+      {
+        id:"classical", icon:"🎻", name:"Classical / Jazz",
+        eq:[1, 1, 0, 0, 0, 1, 2],
+        ideal:"Natural, balanced orchestral sound",
+        avoid:"Heavy bass or highs that alter tonal character",
+        apps:["Wavelet","EQualizer APO","foobar2000"],
+        tip:"Keep EQ nearly flat — classical recordings are mastered for neutral playback."
+      },
+      {
+        id:"pop", icon:"🎵", name:"Pop",
+        eq:[2, 2, 1, 0, 1, 2, 1],
+        ideal:"Vocals, catchy melodies, bright sound",
+        avoid:"Excessive bass hiding the lead vocal",
+        apps:["Spotify EQ","Wavelet","Boom"],
+        tip:"A slight boost at 1kHz brings out the singer's voice."
+      },
+      {
+        id:"podcast", icon:"🗣️", name:"Podcast / Speech",
+        eq:[-2, -1, 1, 3, 4, 2, -1],
+        ideal:"Clear, intelligible dialogue",
+        avoid:"Boomy bass that makes voices tiring",
+        apps:["Wavelet","VoiceBoost","Equalizer FX"],
+        tip:"Cut very low frequencies to eliminate room rumble."
+      },
+      {
+        id:"gaming", icon:"🎮", name:"Gaming",
+        eq:[2, 2, 1, 0, 2, 3, 2],
+        ideal:"Footsteps, positional audio, explosions",
+        avoid:"Heavy bass hiding audio cues",
+        apps:["Equalizer APO","Voicemeeter","SteelSeries GG"],
+        tip:"Boost 1–4kHz for better positional awareness (hear where enemies are)."
+      }
+    ]
+  }
+};
+
+let lang = "el";
+let activeId = null;
+
+function getLang() { return data[lang]; }
+
+function getBarColor(val) {
+  if (val >= 4) return "#f59e0b";
+  if (val >= 2) return "#3b82f6";
+  if (val >= 0) return "#34d399";
+  return "#f87171";
+}
+
+// Convert dB -6..+6 to 0..100% height
+function dbToHeight(val) {
+  return Math.round(((val + 6) / 12) * 100);
+}
+
+function renderPills() {
+  const d = getLang();
+  document.getElementById("pillsContainer").innerHTML = d.genres.map(g => `
+    <div class="pill ${activeId === g.id ? 'active' : ''}" onclick="selectGenre('${g.id}')">
+      ${g.icon} ${g.name}
+    </div>
+  `).join("");
+}
+
+function renderEmpty() {
+  const d = getLang();
+  document.getElementById("eqPanel").innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">🎵</div>
+      <div>${d.emptyText}</div>
+    </div>`;
+}
+
+function renderDetail(id) {
+  const d = getLang();
+  const g = d.genres.find(x => x.id === id);
+  if (!g) return;
+  const l = d.infoLabels;
+
+  const barsHTML = g.eq.map((val, i) => {
+    const h = dbToHeight(val);
+    const color = getBarColor(val);
+    const sign = val > 0 ? "+" : "";
+    return `
+      <div class="eq-bar-col">
+        <div class="eq-bar-value" style="color:${color}">${sign}${val}</div>
+        <div class="eq-bar-track">
+          <div class="eq-bar-fill" style="height:${h}%;background:${color};"></div>
+        </div>
+        <div class="eq-bar-label">${d.bands[i]}</div>
+      </div>`;
+  }).join("");
+
+  const freqHTML = d.freqLabels.map(f => `<div class="eq-freq-label">${f}</div>`).join("");
+
+  const appsHTML = g.apps.map(a => `<span class="app-tag">${a}</span>`).join("");
+
+  document.getElementById("eqPanel").innerHTML = `
+    <div class="eq-header">
+      <div>
+        <div class="eq-header-name">${g.icon} ${g.name}</div>
+        <div class="eq-header-sub">EQ Profile</div>
+      </div>
+    </div>
+    <div class="eq-body">
+      <div class="eq-bars-wrap" style="position:relative;">
+        <div class="eq-bars">${barsHTML}</div>
+        <div class="eq-center-line" style="top:calc(50% + 10px);"></div>
+      </div>
+      <div class="eq-labels">${freqHTML}</div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-label">✅ ${l.ideal}</div>
+          <div class="info-card-value">${g.ideal}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">⚠️ ${l.avoid}</div>
+          <div class="info-card-value">${g.avoid}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">📱 ${l.apps}</div>
+          <div class="info-card-value"><div class="apps-list">${appsHTML}</div></div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">💡 ${l.tip}</div>
+          <div class="info-card-value">${g.tip}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function selectGenre(id) {
+  activeId = id;
+  renderPills();
+  renderDetail(id);
+}
+
+function toggleLang() {
+  lang = lang === "el" ? "en" : "el";
+  const d = getLang();
+  document.getElementById("titleMain").textContent = d.titleMain;
+  document.getElementById("titleSub").textContent = d.titleSub;
+  document.getElementById("emptyText").textContent = d.emptyText;
+  document.getElementById("footerNote").textContent = d.footerNote;
+  document.getElementById("langLabel").textContent = d.langLabel;
+  renderPills();
+  if (activeId) renderDetail(activeId);
+  else renderEmpty();
+}
+
+// Init
+renderPills();
+renderEmpty();
+</script>
+</body>
+</html>
