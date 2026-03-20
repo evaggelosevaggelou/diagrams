@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaming Features Importance</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;600;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #ffffff;
+    --card:   #f8f9fa;
+    --border: #e0e4ea;
+    --text:   #1a1a2e;
+    --sub:    #6b7280;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.10);
+    --c1: #e63946;
+    --c2: #e76f51;
+    --c3: #f4a261;
+    --c4: #2a9d8f;
+    --c5: #457b9d;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: 'Sora', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  #lang-btn {
+    position: fixed;
+    top: 18px; right: 18px;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: .04em;
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    transition: background .2s, transform .1s;
+    z-index: 100;
+  }
+  #lang-btn:hover { background: #333; transform: scale(1.04); }
+
+  .wrapper {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: clamp(16px, 4vw, 22px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--sub);
+    text-align: center;
+    font-weight: 300;
+  }
+
+  /* Chart */
+  .chart {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 4px 6px;
+    transition: background .15s;
+  }
+  .bar-row:hover { background: #f0f4f8; }
+  .bar-row.active { background: #eef2f7; }
+
+  .bar-label {
+    width: 130px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .bar-label .bl-main {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .bar-label .bl-sub {
+    font-size: 10px;
+    color: var(--sub);
+    font-weight: 300;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: #eee;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    padding: 16px 18px;
+    display: none;
+    animation: slideIn .22s ease;
+  }
+  .detail-panel.visible { display: block; }
+
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(6px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .dp-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .dp-dot    { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .dp-title  { font-size: 15px; font-weight: 700; }
+  .dp-body   { font-size: 13px; color: #444; line-height: 1.65; }
+  .dp-list   { margin-top: 8px; padding-left: 18px; }
+  .dp-list li { margin-bottom: 4px; }
+
+  .hint {
+    font-size: 11px;
+    color: var(--sub);
+    font-family: 'Space Mono', monospace;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<button id="lang-btn" onclick="toggleLang()">🌐 English</button>
+
+<div class="wrapper">
+  <div class="title" data-el="title">Σημαντικότητα χαρακτηριστικών gaming</div>
+  <div class="subtitle" data-el="subtitle">Κάνε κλικ σε κάθε μπάρα για λεπτομέρειες</div>
+
+  <div class="chart" id="chart"></div>
+
+  <div class="detail-panel" id="detail-panel">
+    <div class="dp-header">
+      <div class="dp-dot" id="dp-dot"></div>
+      <div class="dp-title" id="dp-title"></div>
+    </div>
+    <div class="dp-body" id="dp-body"></div>
+  </div>
+
+  <div class="hint" data-el="hint">↑ κλικ σε μπάρα για πληροφορίες</div>
+</div>
+
+<script>
+let lang = 'el';
+let activeId = null;
+
+const bars = [
+  {
+    id: 'ghz',
+    pct: 100,
+    color: '#e63946',
+    el: { main: 'Ταχύτητα GHz', sub: 'Κρίσιμο' },
+    en: { main: 'GHz Speed',    sub: 'Critical' },
+    detail: {
+      el: {
+        title: '⚡ Ταχύτητα GHz',
+        body: `<p>Η <strong>συχνότητα του επεξεργαστή</strong> (GHz) είναι ο κρισιμότερος παράγοντας για gaming. Καθορίζει πόσες εντολές εκτελούνται ανά δευτερόλεπτο.</p>
+        <ul class="dp-list">
+          <li>Υψηλό GHz → υψηλότερα FPS σε CPU-bound παιχνίδια</li>
+          <li>Single-core performance: το πιο σημαντικό metric</li>
+          <li>Boost clock vs base clock: το boost χρησιμοποιείται κατά το gaming</li>
+          <li>5+ GHz boost: σημερινό top tier (Ryzen 9000, Core Ultra)</li>
+        </ul>`
+      },
+      en: {
+        title: '⚡ GHz Speed',
+        body: `<p><strong>Processor frequency</strong> (GHz) is the most critical gaming factor. It determines how many instructions are executed per second.</p>
+        <ul class="dp-list">
+          <li>High GHz → higher FPS in CPU-bound games</li>
+          <li>Single-core performance: the most important metric</li>
+          <li>Boost clock vs base clock: boost is used during gaming</li>
+          <li>5+ GHz boost: today's top tier (Ryzen 9000, Core Ultra)</li>
+        </ul>`
+      }
+    }
+  },
+  {
+    id: 'cores',
+    pct: 80,
+    color: '#e76f51',
+    el: { main: 'Αριθμός πυρήνων', sub: 'Πολύ σημαντικό' },
+    en: { main: 'Core count',       sub: 'Very important' },
+    detail: {
+      el: {
+        title: '🔧 Αριθμός Πυρήνων',
+        body: `<p>Οι <strong>πυρήνες</strong> επιτρέπουν παράλληλη εκτέλεση εργασιών. Για καθαρό gaming αρκούν 6–8 πυρήνες, αλλά για streaming χρειάζονται περισσότεροι.</p>
+        <ul class="dp-list">
+          <li>6 cores → ελάχιστο για σύγχρονα παιχνίδια</li>
+          <li>8–12 cores → ιδανικό gaming + multitasking</li>
+          <li>16+ cores → streaming, video editing, rendering</li>
+          <li>P-cores + E-cores (Intel): P για gaming, E για φόντο</li>
+        </ul>`
+      },
+      en: {
+        title: '🔧 Core Count',
+        body: `<p><strong>Cores</strong> enable parallel task execution. Pure gaming needs 6–8 cores, but streaming requires more.</p>
+        <ul class="dp-list">
+          <li>6 cores → minimum for modern games</li>
+          <li>8–12 cores → ideal gaming + multitasking</li>
+          <li>16+ cores → streaming, video editing, rendering</li>
+          <li>P-cores + E-cores (Intel): P for gaming, E for background</li>
+        </ul>`
+      }
+    }
+  },
+  {
+    id: 'cache',
+    pct: 63,
+    color: '#f4a261',
+    el: { main: 'Συνολική μετρική', sub: 'Σημαντικό' },
+    en: { main: 'Combined metric',  sub: 'Important' },
+    detail: {
+      el: {
+        title: '📊 Συνολική Μετρική',
+        body: `<p>Η <strong>συνολική μετρική απόδοσης</strong> λαμβάνει υπόψη GHz + cores + cache + IPC μαζί — δίνει την πλήρη εικόνα του CPU για gaming.</p>
+        <ul class="dp-list">
+          <li>IPC (Instructions Per Clock): πόσο αποδοτικός είναι κάθε κύκλος</li>
+          <li>Cinebench, Passmark: δημοφιλή benchmarks</li>
+          <li>Gaming benchmarks: 1080p/1440p CPU-limited tests</li>
+          <li>Σύγκριση γενεών: νέα αρχιτεκτονική = υψηλότερο IPC</li>
+        </ul>`
+      },
+      en: {
+        title: '📊 Combined Metric',
+        body: `<p>The <strong>combined performance metric</strong> considers GHz + cores + cache + IPC together — giving the full CPU gaming picture.</p>
+        <ul class="dp-list">
+          <li>IPC (Instructions Per Clock): how efficient each cycle is</li>
+          <li>Cinebench, Passmark: popular benchmarks</li>
+          <li>Gaming benchmarks: 1080p/1440p CPU-limited tests</li>
+          <li>Generation comparison: new architecture = higher IPC</li>
+        </ul>`
+      }
+    }
+  },
+  {
+    id: 'ddr5',
+    pct: 53,
+    color: '#2a9d8f',
+    el: { main: 'Τύπος μνήμης DDR5', sub: 'Μέτριο' },
+    en: { main: 'DDR5 Memory type',  sub: 'Moderate' },
+    detail: {
+      el: {
+        title: '💾 Τύπος Μνήμης DDR5',
+        body: `<p>Η <strong>DDR5 RAM</strong> προσφέρει διπλάσιο bandwidth από DDR4. Το gain στο gaming είναι μέτριο αλλά σημαντικό σε CPU-intensive παιχνίδια.</p>
+        <ul class="dp-list">
+          <li>DDR5 vs DDR4: +5–15% FPS σε CPU-limited σενάρια</li>
+          <li>Υψηλές ταχύτητες: DDR5-6000+ για gaming CPUs</li>
+          <li>Latency: DDR5 έχει υψηλότερο CL αλλά καλύτερο throughput</li>
+          <li>Συμβατότητα: Intel 12th gen+ και AMD Ryzen 7000+</li>
+        </ul>`
+      },
+      en: {
+        title: '💾 DDR5 Memory Type',
+        body: `<p><strong>DDR5 RAM</strong> offers double the bandwidth of DDR4. Gaming gains are moderate but meaningful in CPU-intensive titles.</p>
+        <ul class="dp-list">
+          <li>DDR5 vs DDR4: +5–15% FPS in CPU-limited scenarios</li>
+          <li>High speeds: DDR5-6000+ for gaming CPUs</li>
+          <li>Latency: DDR5 has higher CL but better throughput</li>
+          <li>Compatibility: Intel 12th gen+ and AMD Ryzen 7000+</li>
+        </ul>`
+      }
+    }
+  },
+  {
+    id: 'tdp',
+    pct: 40,
+    color: '#457b9d',
+    el: { main: 'Θερμική απόδοση', sub: 'Βοηθητικό' },
+    en: { main: 'Thermal output',   sub: 'Supporting' },
+    detail: {
+      el: {
+        title: '🌡️ Θερμική Απόδοση (TDP)',
+        body: `<p>Το <strong>TDP (Thermal Design Power)</strong> καθορίζει πόση ψύξη χρειάζεται ο CPU. Υψηλό TDP = υψηλές επιδόσεις αλλά και υψηλή κατανάλωση.</p>
+        <ul class="dp-list">
+          <li>65W TDP: οικονομικά, χαμηλή ψύξη αρκεί</li>
+          <li>125W+: gaming/enthusiast CPUs, απαιτεί καλό cooler</li>
+          <li>Thermal throttling: υπερθέρμανση = μείωση GHz</li>
+          <li>AIO liquid cooling: για 150W+ TDP CPUs</li>
+        </ul>`
+      },
+      en: {
+        title: '🌡️ Thermal Output (TDP)',
+        body: `<p><strong>TDP (Thermal Design Power)</strong> determines how much cooling the CPU needs. High TDP = high performance but also high power draw.</p>
+        <ul class="dp-list">
+          <li>65W TDP: efficient, basic cooling sufficient</li>
+          <li>125W+: gaming/enthusiast CPUs, needs good cooler</li>
+          <li>Thermal throttling: overheating = GHz reduction</li>
+          <li>AIO liquid cooling: for 150W+ TDP CPUs</li>
+        </ul>`
+      }
+    }
+  }
+];
+
+const staticText = {
+  el: {
+    title: 'Σημαντικότητα χαρακτηριστικών gaming',
+    subtitle: 'Κάνε κλικ σε κάθε μπάρα για λεπτομέρειες',
+    hint: '↑ κλικ σε μπάρα για πληροφορίες'
+  },
+  en: {
+    title: 'Gaming feature importance',
+    subtitle: 'Click each bar for details',
+    hint: '↑ click a bar for info'
+  }
+};
+
+function buildChart() {
+  const chart = document.getElementById('chart');
+  chart.innerHTML = '';
+  bars.forEach(b => {
+    const lbl = lang === 'el' ? b.el : b.en;
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.dataset.id = b.id;
+    row.onclick = () => showDetail(b.id);
+    row.innerHTML = `
+      <div class="bar-label">
+        <div class="bl-main">${lbl.main}</div>
+        <div class="bl-sub">${lbl.sub}</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" data-fill="${b.id}" style="width:0%;background:${b.color};">
+          ${b.pct}%
+        </div>
+      </div>`;
+    chart.appendChild(row);
+  });
+  // animate bars in
+  requestAnimationFrame(() => {
+    bars.forEach(b => {
+      const el = document.querySelector(`[data-fill="${b.id}"]`);
+      if (el) el.style.width = b.pct + '%';
+    });
+  });
+}
+
+function showDetail(id) {
+  const panel = document.getElementById('detail-panel');
+  const dot   = document.getElementById('dp-dot');
+  const title = document.getElementById('dp-title');
+  const body  = document.getElementById('dp-body');
+
+  document.querySelectorAll('.bar-row').forEach(r => r.classList.remove('active'));
+
+  if (activeId === id) {
+    panel.classList.remove('visible');
+    activeId = null;
+    return;
+  }
+
+  activeId = id;
+  document.querySelector(`.bar-row[data-id="${id}"]`).classList.add('active');
+
+  const b = bars.find(x => x.id === id);
+  const d = lang === 'el' ? b.detail.el : b.detail.en;
+  dot.style.background = b.color;
+  title.textContent = d.title;
+  body.innerHTML = d.body;
+  panel.classList.add('visible');
+}
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  document.getElementById('lang-btn').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+
+  const t = staticText[lang];
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.getAttribute('data-el');
+    if (t[key]) el.textContent = t[key];
+  });
+
+  const prev = activeId;
+  activeId = null;
+  buildChart();
+  if (prev) {
+    // re-open panel in new lang
+    activeId = null;
+    showDetail(prev);
+  }
+}
+
+buildChart();
+</script>
+</body>
+</html>
