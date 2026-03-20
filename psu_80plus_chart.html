@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>80 Plus Certification Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .lang-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .lang-btn {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #e94560; }
+
+  .title {
+    text-align: center;
+    font-size: 1.25em;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 5px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.88em;
+    color: #777;
+    margin-bottom: 24px;
+  }
+
+  /* BAR CHART */
+  .chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 6px 10px;
+    transition: background 0.15s;
+  }
+  .bar-row:hover { background: #f5f6ff; }
+  .bar-row.active { background: #f0f2ff; outline: 2px solid #6c63ff; }
+
+  .badge {
+    min-width: 80px;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.82em;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .b-white    { background: #7c7c8c; }
+  .b-bronze   { background: #b87333; }
+  .b-silver   { background: #8e9baa; }
+  .b-gold     { background: #c9a227; }
+  .b-platinum { background: #4a7fc1; }
+  .b-titanium { background: #2d8a5e; }
+
+  .bar-wrap {
+    flex: 1;
+    background: #eee;
+    border-radius: 20px;
+    height: 22px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.7s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #fff;
+    min-width: 30px;
+  }
+  .f-white    { background: linear-gradient(90deg, #9e9e9e, #7c7c8c); }
+  .f-bronze   { background: linear-gradient(90deg, #e0a96d, #b87333); }
+  .f-silver   { background: linear-gradient(90deg, #b0bec5, #8e9baa); }
+  .f-gold     { background: linear-gradient(90deg, #fdd835, #c9a227); }
+  .f-platinum { background: linear-gradient(90deg, #64b5f6, #4a7fc1); }
+  .f-titanium { background: linear-gradient(90deg, #69d5a0, #2d8a5e); }
+
+  .bar-label {
+    min-width: 42px;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #333;
+    flex-shrink: 0;
+  }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    background: #f7f9ff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    border-left: 5px solid #6c63ff;
+    min-height: 80px;
+    transition: all 0.2s;
+  }
+  .detail-panel h3 { font-size: 1em; color: #1a1a2e; margin-bottom: 8px; }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  @media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  .dg-item {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.86em;
+    color: #333;
+    border-left: 3px solid #6c63ff;
+  }
+  .dg-item strong { color: #3d3d8f; }
+
+  .tip {
+    margin-top: 10px;
+    padding: 9px 13px;
+    background: #eafaf1;
+    border-radius: 8px;
+    font-size: 0.86em;
+    color: #2d7d4a;
+    border-left: 3px solid #56c87a;
+  }
+
+  .note {
+    text-align: center;
+    font-size: 0.78em;
+    color: #aaa;
+    margin-top: 14px;
+  }
+  .highlight-tag {
+    display: inline-block;
+    background: #fffde7;
+    color: #f57f17;
+    border: 1px solid #ffe082;
+    border-radius: 6px;
+    font-size: 0.78em;
+    padding: 2px 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="lang-btn-wrap">
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">🌐 English</button>
+  </div>
+
+  <div class="title" id="mainTitle">Σύγκριση Πιστοποιήσεων 80 Plus</div>
+  <div class="subtitle" id="mainSub">Αποδοτικότητα στο 50% φορτίο — Κάντε κλικ για λεπτομέρειες</div>
+
+  <div class="chart" id="chartArea"></div>
+
+  <div class="detail-panel" id="detailPanel">
+    <h3 id="detailTitle">👆 Επιλέξτε μια πιστοποίηση για να δείτε λεπτομέρειες</h3>
+  </div>
+
+  <div class="note" id="noteText">* Ποσοστά για 50% φορτίο (115V AC). Τα ποσοστά αποδοτικότητας είναι ελαφρώς χαμηλότερα στο 20% και στο 100% φορτίο.</div>
+</div>
+
+<script>
+  var lang = 'el';
+
+  var certs = [
+    { key: 'white',    pct: 80, badge_el: '80 Plus',  badge_en: '80 Plus',   cls: 'b-white',    fill: 'f-white'    },
+    { key: 'bronze',   pct: 85, badge_el: 'Bronze',   badge_en: 'Bronze',    cls: 'b-bronze',   fill: 'f-bronze'   },
+    { key: 'silver',   pct: 88, badge_el: 'Silver',   badge_en: 'Silver',    cls: 'b-silver',   fill: 'f-silver'   },
+    { key: 'gold',     pct: 92, badge_el: 'Gold ⭐',  badge_en: 'Gold ⭐',  cls: 'b-gold',     fill: 'f-gold',    best: true },
+    { key: 'platinum', pct: 94, badge_el: 'Platinum', badge_en: 'Platinum',  cls: 'b-platinum', fill: 'f-platinum' },
+    { key: 'titanium', pct: 96, badge_el: 'Titanium', badge_en: 'Titanium',  cls: 'b-titanium', fill: 'f-titanium' },
+  ];
+
+  var details = {
+    el: {
+      white:    { h: '80 Plus (Βασικό)', items: [['Απόδοση','~80% στο 50% φορτίο'],['Τιμή','Χαμηλότερη'],['Θερμότητα','Αρκετή'],['Για ποιον','Βασικά budget PC']], tip: '⚠️ Αποφύγετέ το αν μπορείτε. Σήμερα ακόμα και Bronze είναι πολύ πιο προσιτό.' },
+      bronze:   { h: '80 Plus Bronze', items: [['Απόδοση','~85% στο 50% φορτίο'],['Τιμή','Budget — ~50–80€'],['Θερμότητα','Μέτρια'],['Για ποιον','Office PC & budget gaming']], tip: '💡 Αποδεκτό ελάχιστο για οικιακή χρήση. Ψάξτε Gold αν έχετε λίγο παραπάνω budget.' },
+      silver:   { h: '80 Plus Silver', items: [['Απόδοση','~88% στο 50% φορτίο'],['Τιμή','Παρόμοια με Gold'],['Διαθεσιμότητα','Σπάνιο στην αγορά'],['Για ποιον','—']], tip: '⚠️ Σπάνια διαθέσιμο. Προτιμήστε Gold που έχει ίδια ή καλύτερη απόδοση και είναι πιο διαδεδομένο.' },
+      gold:     { h: '80 Plus Gold — Η βέλτιστη επιλογή', items: [['Απόδοση','~92% στο 50% φορτίο'],['Τιμή','Μέτρια — ~70–130€'],['Θερμότητα','Χαμηλή'],['Για ποιον','Σχεδόν όλους τους χρήστες']], tip: '✅ Η καλύτερη σχέση τιμής-απόδοσης. Αυτό πρέπει να επιλέξει ο μέσος χρήστης.' },
+      platinum: { h: '80 Plus Platinum', items: [['Απόδοση','~94% στο 50% φορτίο'],['Τιμή','Υψηλή — ~130–220€'],['Θερμότητα','Πολύ χαμηλή'],['Για ποιον','24h/7 λειτουργία, workstation']], tip: '💡 Αξίζει αν ο υπολογιστής τρέχει πολλές ώρες ημερησίως. Η εξοικονόμηση ρεύματος αποσβένει την επιπλέον επένδυση.' },
+      titanium: { h: '80 Plus Titanium', items: [['Απόδοση','~96% στο 50% φορτίο'],['Τιμή','Premium — ~200–350€+'],['Θερμότητα','Ελάχιστη'],['Για ποιον','Server / Data center / Extreme build']], tip: '💡 Για τους απαιτητικούς επαγγελματίες. Η εξοικονόμηση σε βάθος χρόνου είναι σημαντική σε 24/7 λειτουργία.' },
+    },
+    en: {
+      white:    { h: '80 Plus (Basic)', items: [['Efficiency','~80% at 50% load'],['Price','Lowest'],['Heat','Notable'],['Best for','Entry-level budget PC']], tip: '⚠️ Avoid if possible. Even Bronze is far more common and affordable today.' },
+      bronze:   { h: '80 Plus Bronze', items: [['Efficiency','~85% at 50% load'],['Price','Budget — ~€50–80'],['Heat','Moderate'],['Best for','Office PC & budget gaming']], tip: '💡 Acceptable minimum for home use. Go Gold if your budget allows.' },
+      silver:   { h: '80 Plus Silver', items: [['Efficiency','~88% at 50% load'],['Price','Similar to Gold'],['Availability','Rare in retail'],['Best for','—']], tip: '⚠️ Rarely available. Prefer Gold which offers same or better efficiency and is widely available.' },
+      gold:     { h: '80 Plus Gold — Best Value', items: [['Efficiency','~92% at 50% load'],['Price','Mid — ~€70–130'],['Heat','Low'],['Best for','Most users']], tip: '✅ Best price-to-performance ratio. This is what most users should choose.' },
+      platinum: { h: '80 Plus Platinum', items: [['Efficiency','~94% at 50% load'],['Price','High — ~€130–220'],['Heat','Very low'],['Best for','24h/7 operation, workstations']], tip: '💡 Worth it if your PC runs many hours per day. Energy savings offset the extra cost.' },
+      titanium: { h: '80 Plus Titanium', items: [['Efficiency','~96% at 50% load'],['Price','Premium — €200–350+'],['Heat','Minimal'],['Best for','Server / Data center / Extreme builds']], tip: '💡 For demanding professionals. Significant energy savings at 24/7 operation.' },
+    }
+  };
+
+  var activeKey = null;
+
+  function renderBars() {
+    var chartArea = document.getElementById('chartArea');
+    chartArea.innerHTML = '';
+    certs.forEach(function(c) {
+      var row = document.createElement('div');
+      row.className = 'bar-row' + (activeKey === c.key ? ' active' : '');
+      row.setAttribute('onclick', 'showDetail("' + c.key + '")');
+
+      var badgeText = c['badge_' + lang];
+      var bestTag = c.best ? '<span class="highlight-tag">' + (lang === 'el' ? 'ΣΥΝΙΣΤΑΤΑΙ' : 'RECOMMENDED') + '</span>' : '';
+
+      var pctWidth = ((c.pct - 75) / 25 * 100).toFixed(1); // scale 75–100 → 0–100%
+
+      row.innerHTML =
+        '<span class="badge ' + c.cls + '">' + badgeText + '</span>' +
+        '<div class="bar-wrap"><div class="bar-fill ' + c.fill + '" style="width:0%" data-w="' + pctWidth + '%">' + c.pct + '%</div></div>' +
+        '<span class="bar-label">' + c.pct + '%' + bestTag + '</span>';
+
+      chartArea.appendChild(row);
+    });
+
+    // Animate bars
+    setTimeout(function() {
+      document.querySelectorAll('.bar-fill').forEach(function(b) {
+        b.style.width = b.getAttribute('data-w');
+      });
+    }, 60);
+  }
+
+  function showDetail(key) {
+    activeKey = key;
+    renderBars();
+
+    var d = details[lang][key];
+    var html = '<h3>' + d.h + '</h3><div class="detail-grid">';
+    d.items.forEach(function(item) {
+      html += '<div class="dg-item"><strong>' + item[0] + ':</strong> ' + item[1] + '</div>';
+    });
+    html += '</div><div class="tip">' + d.tip + '</div>';
+    document.getElementById('detailPanel').innerHTML = html;
+  }
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    document.getElementById('langToggle').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+
+    if (lang === 'el') {
+      document.getElementById('mainTitle').textContent = 'Σύγκριση Πιστοποιήσεων 80 Plus';
+      document.getElementById('mainSub').textContent = 'Αποδοτικότητα στο 50% φορτίο — Κάντε κλικ για λεπτομέρειες';
+      document.getElementById('noteText').textContent = '* Ποσοστά για 50% φορτίο (115V AC). Τα ποσοστά αποδοτικότητας είναι ελαφρώς χαμηλότερα στο 20% και στο 100% φορτίο.';
+    } else {
+      document.getElementById('mainTitle').textContent = '80 Plus Certification Comparison';
+      document.getElementById('mainSub').textContent = 'Efficiency at 50% load — Click for details';
+      document.getElementById('noteText').textContent = '* Percentages at 50% load (115V AC). Efficiency is slightly lower at 20% and 100% load.';
+    }
+
+    renderBars();
+    if (activeKey) {
+      showDetail(activeKey);
+    } else {
+      document.getElementById('detailPanel').innerHTML =
+        '<h3>' + (lang === 'el' ? '👆 Επιλέξτε μια πιστοποίηση για να δείτε λεπτομέρειες' : '👆 Select a certification to see details') + '</h3>';
+    }
+  }
+
+  // Init
+  renderBars();
+</script>
+</body>
+</html>
