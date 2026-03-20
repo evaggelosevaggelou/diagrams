@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSU Wattage Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+    background: #fff;
+  }
+
+  .lang-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+
+  .lang-btn {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .lang-btn:hover { background: #e94560; }
+
+  .title {
+    text-align: center;
+    font-size: 1.25em;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 22px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 500px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    border-radius: 14px;
+    padding: 18px 16px 16px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  .card.active {
+    border-color: currentColor;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+
+  .card-1 { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #2e7d32; }
+  .card-2 { background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #1565c0; }
+  .card-3 { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #e65100; }
+  .card-4 { background: linear-gradient(135deg, #fce4ec, #f8bbd0); color: #880e4f; }
+
+  .card-emoji { font-size: 2em; margin-bottom: 6px; display: block; }
+  .card-label { font-weight: 700; font-size: 1em; display: block; margin-bottom: 4px; }
+  .card-watt { font-size: 1.35em; font-weight: 800; display: block; margin-bottom: 6px; }
+  .card-desc { font-size: 0.82em; opacity: 0.85; line-height: 1.5; }
+  .card-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.75em;
+    background: rgba(255,255,255,0.55);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-weight: 600;
+  }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    background: #f7f9ff;
+    border-radius: 14px;
+    padding: 20px 22px;
+    border-left: 5px solid #6c63ff;
+    min-height: 90px;
+    transition: all 0.2s;
+  }
+  .detail-panel h3 { font-size: 1.05em; color: #1a1a2e; margin-bottom: 10px; }
+  .detail-panel ul { padding-left: 18px; }
+  .detail-panel li { font-size: 0.92em; color: #333; margin: 5px 0; line-height: 1.5; }
+  .detail-panel .tip {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #eafaf1;
+    border-radius: 8px;
+    font-size: 0.88em;
+    color: #2d7d4a;
+    border-left: 3px solid #56c87a;
+  }
+
+  .note {
+    text-align: center;
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="lang-btn-wrap">
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">🌐 English</button>
+  </div>
+
+  <div class="title" id="mainTitle">Πόσα Watt χρειάζομαι;</div>
+  <div class="subtitle" id="mainSub">Κάντε κλικ σε κάθε κατηγορία για περισσότερες λεπτομέρειες</div>
+
+  <div class="cards">
+    <div class="card card-1" onclick="showDetail(0)" id="card0">
+      <span class="card-emoji">🖥️</span>
+      <span class="card-label" data-el="Υπολογιστής Γραφείου" data-en="Office PC">Υπολογιστής Γραφείου</span>
+      <span class="card-watt">350–450W</span>
+      <span class="card-desc" data-el="Για καθημερινή χρήση, διαδίκτυο, έγγραφα" data-en="For daily use, internet, documents">Για καθημερινή χρήση, διαδίκτυο, έγγραφα</span>
+      <span class="card-tag" data-el="Budget Χρήστης" data-en="Budget User">Budget Χρήστης</span>
+    </div>
+
+    <div class="card card-2" onclick="showDetail(1)" id="card1">
+      <span class="card-emoji">🎮</span>
+      <span class="card-label" data-el="Gaming Μέσης Κατηγορίας" data-en="Mid-Range Gaming">Gaming Μέσης Κατηγορίας</span>
+      <span class="card-watt">550–650W</span>
+      <span class="card-desc" data-el="RTX 4060 / RX 7600, σύγχρονα παιχνίδια" data-en="RTX 4060 / RX 7600, modern games">RTX 4060 / RX 7600, σύγχρονα παιχνίδια</span>
+      <span class="card-tag" data-el="Gamer" data-en="Gamer">Gamer</span>
+    </div>
+
+    <div class="card card-3" onclick="showDetail(2)" id="card2">
+      <span class="card-emoji">⚡</span>
+      <span class="card-label" data-el="High-End Gaming" data-en="High-End Gaming">High-End Gaming</span>
+      <span class="card-watt">750–850W</span>
+      <span class="card-desc" data-el="RTX 4080 / RX 7900 XT, 4K gaming" data-en="RTX 4080 / RX 7900 XT, 4K gaming">RTX 4080 / RX 7900 XT, 4K gaming</span>
+      <span class="card-tag" data-el="Enthusiast" data-en="Enthusiast">Enthusiast</span>
+    </div>
+
+    <div class="card card-4" onclick="showDetail(3)" id="card3">
+      <span class="card-emoji">🏆</span>
+      <span class="card-label" data-el="Επαγγελματικό / Overclocking" data-en="Professional / Overclocking">Επαγγελματικό / Overclocking</span>
+      <span class="card-watt">850–1000W+</span>
+      <span class="card-desc" data-el="RTX 4090 / RTX 5090, επαγγελματικές εφαρμογές" data-en="RTX 4090 / RTX 5090, professional apps">RTX 4090 / RTX 5090, επαγγελματικές εφαρμογές</span>
+      <span class="card-tag" data-el="Pro / Creator" data-en="Pro / Creator">Pro / Creator</span>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <h3 id="detailTitle">👆 Επιλέξτε κατηγορία παραπάνω για λεπτομέρειες</h3>
+  </div>
+
+  <div class="note" id="noteText">⚡ Πάντα προσθέστε 20–30% επιπλέον από τα υπολογισμένα Watt σαν «μαξιλάρι» ασφαλείας.</div>
+
+</div>
+
+<script>
+  var lang = 'el';
+
+  var details = {
+    el: [
+      {
+        title: '🖥️ Υπολογιστής Γραφείου — 350–450W',
+        items: [
+          'Εξαρτήματα: επεξεργαστής χαμηλής κατανάλωσης (π.χ. Intel i3/i5, Ryzen 5)',
+          'Κάρτα γραφικών: ενσωματωμένη ή budget discrete (π.χ. RX 6500)',
+          'Αποθήκευση: 1–2 SSD / HDD',
+          'Χρήση: διαδίκτυο, YouTube, Office, ελαφρά επεξεργασία',
+        ],
+        tip: '💡 Καλή επιλογή: Corsair CV550 Bronze ή Cooler Master MWE 550 Gold'
+      },
+      {
+        title: '🎮 Gaming Μέσης Κατηγορίας — 550–650W',
+        items: [
+          'GPU: Nvidia RTX 4060 Ti (~165W) ή AMD RX 7600 (~165W)',
+          'CPU: Intel i5-14600K ή AMD Ryzen 5 7600X',
+          'Ιδανικό για 1080p–1440p gaming',
+          'Αρκεί και για μελλοντική αναβάθμιση GPU χαμηλής ισχύος',
+        ],
+        tip: '💡 Καλή επιλογή: Seasonic Focus GX-650 ή Corsair RM650x Gold'
+      },
+      {
+        title: '⚡ High-End Gaming — 750–850W',
+        items: [
+          'GPU: Nvidia RTX 4080 Super (~320W) ή AMD RX 7900 XT (~315W)',
+          'CPU: Intel i7/i9 ή AMD Ryzen 7/9 9000 series',
+          'Κατάλληλο για 4K gaming ή 1440p 165Hz+',
+          'Αν έχετε ATX 3.0/3.1 PSU: ένα καλώδιο 16 ακίδων για GPU',
+        ],
+        tip: '💡 Καλή επιλογή: be quiet! Dark Power 13 850W ή Seasonic Vertex GX-850'
+      },
+      {
+        title: '🏆 Επαγγελματικό / Overclocking — 850–1000W+',
+        items: [
+          'GPU: Nvidia RTX 4090 (~450W) ή RTX 5090 (~575W)',
+          'CPU: AMD Threadripper ή Intel Core i9 Extreme Edition',
+          'Για 3D rendering, video production, AI workloads',
+          'Σκεφτείτε ATX 3.1 PSU με 12V-2x6 connector',
+        ],
+        tip: '💡 Καλή επιλογή: Corsair HX1000 Platinum ή Seasonic PRIME TX-1000'
+      }
+    ],
+    en: [
+      {
+        title: '🖥️ Office PC — 350–450W',
+        items: [
+          'Components: low-power CPU (e.g. Intel i3/i5, Ryzen 5)',
+          'GPU: integrated or budget discrete (e.g. RX 6500)',
+          'Storage: 1–2 SSD / HDD',
+          'Usage: internet, YouTube, Office, light editing',
+        ],
+        tip: '💡 Good pick: Corsair CV550 Bronze or Cooler Master MWE 550 Gold'
+      },
+      {
+        title: '🎮 Mid-Range Gaming — 550–650W',
+        items: [
+          'GPU: Nvidia RTX 4060 Ti (~165W) or AMD RX 7600 (~165W)',
+          'CPU: Intel i5-14600K or AMD Ryzen 5 7600X',
+          'Great for 1080p–1440p gaming',
+          'Leaves room for a future mid-range GPU upgrade',
+        ],
+        tip: '💡 Good pick: Seasonic Focus GX-650 or Corsair RM650x Gold'
+      },
+      {
+        title: '⚡ High-End Gaming — 750–850W',
+        items: [
+          'GPU: Nvidia RTX 4080 Super (~320W) or AMD RX 7900 XT (~315W)',
+          'CPU: Intel i7/i9 or AMD Ryzen 7/9 9000 series',
+          'Suitable for 4K gaming or 1440p 165Hz+',
+          'With ATX 3.0/3.1 PSU: single 16-pin cable for GPU',
+        ],
+        tip: '💡 Good pick: be quiet! Dark Power 13 850W or Seasonic Vertex GX-850'
+      },
+      {
+        title: '🏆 Professional / Overclocking — 850–1000W+',
+        items: [
+          'GPU: Nvidia RTX 4090 (~450W) or RTX 5090 (~575W)',
+          'CPU: AMD Threadripper or Intel Core i9 Extreme',
+          'For 3D rendering, video production, AI workloads',
+          'Consider ATX 3.1 PSU with 12V-2x6 connector',
+        ],
+        tip: '💡 Good pick: Corsair HX1000 Platinum or Seasonic PRIME TX-1000'
+      }
+    ]
+  };
+
+  var activeCard = null;
+
+  function showDetail(idx) {
+    if (activeCard !== null) {
+      document.getElementById('card' + activeCard).classList.remove('active');
+    }
+    activeCard = idx;
+    document.getElementById('card' + idx).classList.add('active');
+
+    var d = details[lang][idx];
+    var html = '<h3>' + d.title + '</h3><ul>';
+    d.items.forEach(function(item) { html += '<li>' + item + '</li>'; });
+    html += '</ul><div class="tip">' + d.tip + '</div>';
+    document.getElementById('detailPanel').innerHTML = html;
+  }
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    document.getElementById('langToggle').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+
+    // Update card texts
+    document.querySelectorAll('[data-el]').forEach(function(el) {
+      el.textContent = el.getAttribute('data-' + lang);
+    });
+
+    if (lang === 'el') {
+      document.getElementById('mainTitle').textContent = 'Πόσα Watt χρειάζομαι;';
+      document.getElementById('mainSub').textContent = 'Κάντε κλικ σε κάθε κατηγορία για περισσότερες λεπτομέρειες';
+      document.getElementById('noteText').textContent = '⚡ Πάντα προσθέστε 20–30% επιπλέον από τα υπολογισμένα Watt σαν «μαξιλάρι» ασφαλείας.';
+    } else {
+      document.getElementById('mainTitle').textContent = 'How many Watts do I need?';
+      document.getElementById('mainSub').textContent = 'Click each category for more details';
+      document.getElementById('noteText').textContent = '⚡ Always add 20–30% extra headroom above your calculated Watts for safety.';
+    }
+
+    // Update detail panel if one is open
+    if (activeCard !== null) { showDetail(activeCard); }
+    else {
+      document.getElementById('detailPanel').innerHTML =
+        '<h3 id="detailTitle">' +
+        (lang === 'el' ? '👆 Επιλέξτε κατηγορία παραπάνω για λεπτομέρειες' : '👆 Select a category above for details') +
+        '</h3>';
+    }
+  }
+</script>
+</body>
+</html>
