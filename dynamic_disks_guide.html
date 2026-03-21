@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Δυναμικοί Δίσκοι / Dynamic Disks – Interactive Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #1e2532;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 32px 16px 48px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .site-tag {
+      font-size: 0.75rem;
+      color: #1a73e8;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .lang-btn {
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 8px 20px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .lang-btn:hover { background: #1557b0; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      width: 100%;
+      max-width: 780px;
+      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      border-radius: 18px;
+      padding: 36px 32px 32px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(26,115,232,0.22);
+    }
+    .hero-icon { font-size: 2.8rem; margin-bottom: 10px; }
+    .hero h1 { font-size: 1.65rem; font-weight: 800; margin-bottom: 10px; line-height: 1.25; }
+    .hero p { font-size: 0.98rem; opacity: 0.88; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+    /* ── WRAPPER ── */
+    .wrapper { width: 100%; max-width: 780px; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1a73e8;
+      margin: 28px 0 10px;
+    }
+
+    /* ── CARD GRID (volumes) ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .card {
+      background: #f8f9fc;
+      border: 2px solid #e3e8ef;
+      border-radius: 14px;
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      user-select: none;
+    }
+    .card:hover { border-color: #1a73e8; box-shadow: 0 4px 16px rgba(26,115,232,0.13); transform: translateY(-2px); }
+    .card.active { border-color: #1a73e8; background: #e8f0fe; box-shadow: 0 4px 18px rgba(26,115,232,0.18); }
+    .card-icon { font-size: 1.7rem; margin-bottom: 8px; }
+    .card-title { font-weight: 700; font-size: 0.97rem; color: #1e2532; margin-bottom: 4px; }
+    .card-subtitle { font-size: 0.8rem; color: #5f6b7a; }
+
+    /* ── DETAIL PANEL ── */
+    .detail-panel {
+      background: #fff;
+      border: 2px solid #1a73e8;
+      border-radius: 14px;
+      padding: 22px 20px;
+      margin-top: 12px;
+      animation: fadeIn 0.22s ease;
+    }
+    .detail-panel h3 { color: #1a73e8; font-size: 1.05rem; margin-bottom: 8px; }
+    .detail-panel p { font-size: 0.93rem; line-height: 1.65; color: #3c4a5c; margin-bottom: 8px; }
+    .detail-panel .badge {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin: 2px 3px 2px 0;
+    }
+    .badge.green { background: #d4edda; color: #155724; }
+    .badge.red { background: #f8d7da; color: #721c24; }
+    .badge.yellow { background: #fff3cd; color: #856404; }
+
+    @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+    /* ── COMPARISON TOGGLE ── */
+    .compare-section { margin-top: 8px; }
+    .compare-header {
+      display: flex;
+      gap: 0;
+      background: #f0f4f8;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 14px;
+    }
+    .compare-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #5f6b7a;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+    }
+    .compare-tab.active { background: #1a73e8; color: #fff; box-shadow: 0 2px 8px rgba(26,115,232,0.2); }
+
+    .compare-panel { display: none; }
+    .compare-panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+    .compare-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid #eef0f3;
+      font-size: 0.9rem;
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row .label { flex: 0 0 160px; color: #5f6b7a; font-size: 0.85rem; }
+    .compare-row .value { flex: 1; font-weight: 600; color: #1e2532; }
+    .compare-row .icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── QUIZ ── */
+    .quiz-box {
+      background: #f8f9fc;
+      border: 2px solid #e3e8ef;
+      border-radius: 14px;
+      padding: 22px 20px;
+    }
+    .quiz-question { font-weight: 700; font-size: 1rem; margin-bottom: 14px; line-height: 1.45; }
+    .quiz-options { display: flex; flex-direction: column; gap: 9px; }
+    .quiz-option {
+      background: #fff;
+      border: 2px solid #e3e8ef;
+      border-radius: 10px;
+      padding: 11px 14px;
+      cursor: pointer;
+      font-size: 0.93rem;
+      transition: all 0.18s;
+      text-align: left;
+      color: #1e2532;
+    }
+    .quiz-option:hover:not(:disabled) { border-color: #1a73e8; background: #e8f0fe; }
+    .quiz-option.correct { border-color: #28a745; background: #d4edda; color: #155724; }
+    .quiz-option.wrong { border-color: #dc3545; background: #f8d7da; color: #721c24; }
+    .quiz-option:disabled { cursor: default; }
+    .quiz-result { margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: none; }
+    .quiz-result.show { display: block; animation: fadeIn 0.2s ease; }
+    .quiz-result.ok { background: #d4edda; color: #155724; }
+    .quiz-result.nope { background: #f8d7da; color: #721c24; }
+    .quiz-next {
+      margin-top: 12px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 22px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+    .quiz-next.show { display: inline-block; }
+    .quiz-score { font-size: 0.8rem; color: #5f6b7a; margin-top: 6px; }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 40px;
+      font-size: 0.78rem;
+      color: #aab0ba;
+      text-align: center;
+    }
+    .footer a { color: #1a73e8; text-decoration: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .hero { padding: 28px 18px 24px; }
+      .hero h1 { font-size: 1.3rem; }
+      .compare-row .label { flex: 0 0 110px; }
+      .cards-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <span class="site-tag">lovefortechnology.net</span>
+  <button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 English</button>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">💾</div>
+  <h1 id="heroTitle">Δυναμικοί Δίσκοι στα Windows</h1>
+  <p id="heroSub">Κάνε κλικ στους τύπους τόμων, σύγκρινε επιλογές και δοκίμασε το quiz — όλα σε ένα διαδραστικό εργαλείο.</p>
+</div>
+
+<div class="wrapper">
+
+  <!-- SECTION 1: VOLUMES -->
+  <div class="section-label" id="label1">📦 Τύποι Τόμων — κάνε κλικ για λεπτομέρειες</div>
+  <div class="cards-grid" id="volumeGrid"></div>
+  <div id="volumeDetail" style="display:none;"></div>
+
+  <!-- SECTION 2: COMPARE -->
+  <div class="section-label" id="label2">⚖️ Σύγκριση Επιλογών</div>
+  <div class="compare-section">
+    <div class="compare-header">
+      <button class="compare-tab active" id="tab1" onclick="showTab('basic')">Βασικός vs Δυναμικός</button>
+      <button class="compare-tab" id="tab2" onclick="showTab('storage')">Δυναμικός vs Storage Spaces</button>
+    </div>
+    <div class="compare-panel active" id="panel-basic"></div>
+    <div class="compare-panel" id="panel-storage"></div>
+  </div>
+
+  <!-- SECTION 3: QUIZ -->
+  <div class="section-label" id="label3">🧠 Δοκίμασε τις γνώσεις σου</div>
+  <div class="quiz-box">
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+    <div class="quiz-result" id="quizResult"></div>
+    <button class="quiz-next" id="quizNext" onclick="nextQ()"></button>
+    <div class="quiz-score" id="quizScore"></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <a href="https://lovefortechnology.net" target="_blank">lovefortechnology.net</a> · Interactive Guide
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════
+const data = {
+  el: {
+    heroTitle: "Δυναμικοί Δίσκοι στα Windows",
+    heroSub: "Κάνε κλικ στους τύπους τόμων, σύγκρινε επιλογές και δοκίμασε το quiz — όλα σε ένα διαδραστικό εργαλείο.",
+    label1: "📦 Τύποι Τόμων — κάνε κλικ για λεπτομέρειες",
+    label2: "⚖️ Σύγκριση Επιλογών",
+    label3: "🧠 Δοκίμασε τις γνώσεις σου",
+    tab1: "Βασικός vs Δυναμικός",
+    tab2: "Δυναμικός vs Storage Spaces",
+    langBtn: "🌐 English",
+    quizNextBtn: "Επόμενη ερώτηση →",
+    quizDoneBtn: "Αρχή από την αρχή 🔄",
+    scoreText: (c, t) => `Σκορ: ${c} / ${t}`,
+    correctText: "✅ Σωστά!",
+    wrongText: (a) => `❌ Λάθος. Η σωστή απάντηση: ${a}`,
+
+    volumes: [
+      {
+        icon: "📁", title: "Απλός Τόμος", subtitle: "Simple Volume",
+        desc: "Κλασικός χώρος αποθήκευσης σε έναν μόνο δίσκο — ακριβώς σαν ένα partition.",
+        speed: "Κανονική", safety: "Καμία αντιγραφή", use: "Καθημερινή χρήση",
+        tags: [{ label: "1 δίσκος", cls: "" }, { label: "✅ Ασφαλής μετατροπή", cls: "green" }]
+      },
+      {
+        icon: "🔗", title: "Εκτεταμένος Τόμος", subtitle: "Spanned Volume",
+        desc: "Ενώνει ελεύθερο χώρο από πολλούς δίσκους σε έναν ενιαίο τόμο. Χωρίς ασφάλεια — αν σπάσει ένας δίσκος, χάνεις τα πάντα.",
+        speed: "Κανονική", safety: "❌ Καμία", use: "Ενοποίηση παλιών δίσκων",
+        tags: [{ label: "2+ δίσκοι", cls: "" }, { label: "⚠️ Χωρίς ασφάλεια", cls: "red" }]
+      },
+      {
+        icon: "⚡", title: "Κατανεμημένος / RAID 0", subtitle: "Striped Volume",
+        desc: "Τα δεδομένα γράφονται παράλληλα σε πολλούς δίσκους — μέγιστη ταχύτητα, μηδενική ασφάλεια.",
+        speed: "✅ Πολύ υψηλή", safety: "❌ Καμία", use: "Gaming, video editing",
+        tags: [{ label: "2+ δίσκοι", cls: "" }, { label: "🚀 Γρήγορο", cls: "green" }, { label: "⚠️ Ριψοκίνδυνο", cls: "red" }]
+      },
+      {
+        icon: "🛡️", title: "Κατοπτρισμένος / RAID 1", subtitle: "Mirrored Volume",
+        desc: "Ό,τι γράφεις αντιγράφεται αυτόματα σε δεύτερο δίσκο. Αν σπάσει ο ένας, ο άλλος έχει όλα τα δεδομένα.",
+        speed: "Κανονική ανάγνωση", safety: "✅ Αυτόματο αντίγραφο", use: "Κρίσιμα δεδομένα",
+        tags: [{ label: "2 δίσκοι", cls: "" }, { label: "🛡️ Ασφαλές", cls: "green" }, { label: "50% αξιόπιστος χώρος", cls: "yellow" }]
+      },
+      {
+        icon: "⚖️", title: "RAID-5", subtitle: "RAID-5 Volume",
+        desc: "Ισορροπία ταχύτητας και ασφάλειας. Αντέχει βλάβη σε 1 δίσκο. Απαιτεί ελάχ. 3 δίσκους. ⚠️ Μόνο στο Windows Server — όχι στα Windows 10/11.",
+        speed: "Καλή", safety: "✅ Αντέχει 1 βλάβη", use: "Windows Server / Επαγγελματικά",
+        tags: [{ label: "3+ δίσκοι", cls: "" }, { label: "⚠️ Μόνο Server", cls: "yellow" }]
+      }
+    ],
+
+    basicVsDynamic: [
+      { label: "Partitions / Volumes", basic: "Max 4 (primary)", dynamic: "Απεριόριστα", icon: "🗂️" },
+      { label: "Ενοποίηση δίσκων", basic: "❌", dynamic: "✅", icon: "🔗" },
+      { label: "Αυτόματα αντίγραφα", basic: "❌", dynamic: "✅ (mirroring)", icon: "🛡️" },
+      { label: "Αύξηση ταχύτητας", basic: "❌", dynamic: "✅ (striping)", icon: "⚡" },
+      { label: "Συμβατότητα Mac/Linux", basic: "✅", dynamic: "❌", icon: "💻" },
+      { label: "Εκκίνηση Windows", basic: "✅", dynamic: "⚠️ Με περιορισμούς", icon: "🚀" },
+      { label: "Ανάκτηση βλαβών", basic: "Ευκολότερη", dynamic: "Δυσκολότερη", icon: "🔧" },
+      { label: "Κατάλληλο για αρχάριους", basic: "✅", dynamic: "⚠️", icon: "👤" }
+    ],
+
+    dynamicVsStorage: [
+      { label: "Διαθεσιμότητα", basic: "Windows 2000+", dynamic: "Windows 8+", icon: "📅" },
+      { label: "Ευκολία χρήσης", basic: "Μέτρια", dynamic: "✅ Πολύ εύκολη", icon: "😊" },
+      { label: "RAID λειτουργίες", basic: "✅ Ναι", dynamic: "✅ Ναι (περισσότερες)", icon: "⚙️" },
+      { label: "Υποστήριξη Microsoft", basic: "⚠️ Παρωχημένο", dynamic: "✅ Ενεργή", icon: "🏢" },
+      { label: "Λειτουργεί με USB", basic: "❌", dynamic: "✅ Ναι", icon: "🔌" },
+      { label: "Συνιστάται για νέους", basic: "❌", dynamic: "✅ Ναι", icon: "🌱" }
+    ],
+
+    quiz: [
+      {
+        q: "Πόσα κύρια partitions μπορείς να έχεις σε έναν βασικό δίσκο (MBR);",
+        opts: ["2", "4", "8", "Απεριόριστα"],
+        ans: 1,
+        exp: "Ένας βασικός MBR δίσκος υποστηρίζει έως 4 κύρια (primary) partitions."
+      },
+      {
+        q: "Ποιος τύπος τόμου προσφέρει αυτόματο αντίγραφο ασφαλείας σε 2 δίσκους;",
+        opts: ["Spanned Volume", "Striped Volume (RAID 0)", "Mirrored Volume (RAID 1)", "Simple Volume"],
+        ans: 2,
+        exp: "Το Mirrored Volume (RAID 1) αντιγράφει αυτόματα τα δεδομένα σε δεύτερο δίσκο."
+      },
+      {
+        q: "Οι δυναμικοί δίσκοι αναγνωρίζονται από Mac ή Linux;",
+        opts: ["Ναι, πάντα", "Μόνο σε Mac", "Όχι, είναι αποκλειστικά για Windows", "Μόνο αν εγκατασταθεί ειδικό driver"],
+        ans: 2,
+        exp: "Οι δυναμικοί δίσκοι χρησιμοποιούν τη Microsoft LDM τεχνολογία — δεν αναγνωρίζονται από Mac ή Linux."
+      },
+      {
+        q: "Ποιος τύπος τόμου δίνει τη μέγιστη ταχύτητα, αλλά χωρίς καμία ασφάλεια δεδομένων;",
+        opts: ["Simple Volume", "RAID 1", "Spanned Volume", "RAID 0 (Striped)"],
+        ans: 3,
+        exp: "Το Striped Volume (RAID 0) κατανέμει δεδομένα σε πολλούς δίσκους για μέγιστη ταχύτητα, χωρίς ασφάλεια."
+      },
+      {
+        q: "Τι γίνεται με τα δεδομένα κατά τη μετατροπή από βασικό ΣΕ δυναμικό δίσκο;",
+        opts: ["Διαγράφονται αμέσως", "Διατηρούνται — δεν χάνεις τίποτα", "Μετακινούνται αυτόματα σε Cloud", "Χρειάζεται format"],
+        ans: 1,
+        exp: "Η μετατροπή από βασικό σε δυναμικό δίσκο ΔΕΝ διαγράφει δεδομένα. Η αντίστροφη διαδικασία όμως απαιτεί διαγραφή."
+      },
+      {
+        q: "Το RAID-5 στους δυναμικούς δίσκους των Windows είναι διαθέσιμο σε:",
+        opts: ["Windows 10 Home", "Windows 10 Pro", "Windows 11", "Μόνο Windows Server"],
+        ans: 3,
+        exp: "Το RAID-5 volume είναι διαθέσιμο αποκλειστικά στο Windows Server — δεν υποστηρίζεται στα Windows 10/11."
+      }
+    ]
+  },
+
+  en: {
+    heroTitle: "Dynamic Disks in Windows",
+    heroSub: "Click on volume types, compare options and test your knowledge — all in one interactive tool.",
+    label1: "📦 Volume Types — click for details",
+    label2: "⚖️ Compare Options",
+    label3: "🧠 Test Your Knowledge",
+    tab1: "Basic vs Dynamic",
+    tab2: "Dynamic vs Storage Spaces",
+    langBtn: "🌐 Ελληνικά",
+    quizNextBtn: "Next question →",
+    quizDoneBtn: "Restart 🔄",
+    scoreText: (c, t) => `Score: ${c} / ${t}`,
+    correctText: "✅ Correct!",
+    wrongText: (a) => `❌ Wrong. Correct answer: ${a}`,
+
+    volumes: [
+      {
+        icon: "📁", title: "Simple Volume", subtitle: "Απλός Τόμος",
+        desc: "Classic storage on a single disk — just like a regular partition.",
+        speed: "Normal", safety: "No mirroring", use: "Everyday use",
+        tags: [{ label: "1 disk", cls: "" }, { label: "✅ Safe conversion", cls: "green" }]
+      },
+      {
+        icon: "🔗", title: "Spanned Volume", subtitle: "Εκτεταμένος Τόμος",
+        desc: "Combines free space from multiple disks into one volume. No redundancy — if one disk fails, all data is lost.",
+        speed: "Normal", safety: "❌ None", use: "Combining old disks",
+        tags: [{ label: "2+ disks", cls: "" }, { label: "⚠️ No safety", cls: "red" }]
+      },
+      {
+        icon: "⚡", title: "Striped / RAID 0", subtitle: "Κατανεμημένος Τόμος",
+        desc: "Data is written to multiple disks simultaneously — maximum speed, zero redundancy.",
+        speed: "✅ Very fast", safety: "❌ None", use: "Gaming, video editing",
+        tags: [{ label: "2+ disks", cls: "" }, { label: "🚀 Fast", cls: "green" }, { label: "⚠️ Risky", cls: "red" }]
+      },
+      {
+        icon: "🛡️", title: "Mirrored / RAID 1", subtitle: "Κατοπτρισμένος Τόμος",
+        desc: "Everything you write is automatically copied to a second disk. If one fails, the other has all your data.",
+        speed: "Normal read", safety: "✅ Automatic copy", use: "Critical data",
+        tags: [{ label: "2 disks", cls: "" }, { label: "🛡️ Safe", cls: "green" }, { label: "50% usable space", cls: "yellow" }]
+      },
+      {
+        icon: "⚖️", title: "RAID-5", subtitle: "RAID-5 Volume",
+        desc: "Balance of speed and safety. Survives 1 disk failure. Requires 3+ disks. ⚠️ Windows Server only — not available on Windows 10/11.",
+        speed: "Good", safety: "✅ Survives 1 failure", use: "Windows Server / Enterprise",
+        tags: [{ label: "3+ disks", cls: "" }, { label: "⚠️ Server only", cls: "yellow" }]
+      }
+    ],
+
+    basicVsDynamic: [
+      { label: "Partitions / Volumes", basic: "Max 4 (primary)", dynamic: "Unlimited", icon: "🗂️" },
+      { label: "Combine disks", basic: "❌", dynamic: "✅", icon: "🔗" },
+      { label: "Automatic backup", basic: "❌", dynamic: "✅ (mirroring)", icon: "🛡️" },
+      { label: "Speed boost", basic: "❌", dynamic: "✅ (striping)", icon: "⚡" },
+      { label: "Mac/Linux compatible", basic: "✅", dynamic: "❌", icon: "💻" },
+      { label: "Windows boot", basic: "✅", dynamic: "⚠️ Limited", icon: "🚀" },
+      { label: "Data recovery", basic: "Easier", dynamic: "Harder", icon: "🔧" },
+      { label: "Good for beginners", basic: "✅", dynamic: "⚠️", icon: "👤" }
+    ],
+
+    dynamicVsStorage: [
+      { label: "Availability", basic: "Windows 2000+", dynamic: "Windows 8+", icon: "📅" },
+      { label: "Ease of use", basic: "Moderate", dynamic: "✅ Very easy", icon: "😊" },
+      { label: "RAID features", basic: "✅ Yes", dynamic: "✅ Yes (more)", icon: "⚙️" },
+      { label: "Microsoft support", basic: "⚠️ Legacy", dynamic: "✅ Active", icon: "🏢" },
+      { label: "Works with USB drives", basic: "❌", dynamic: "✅ Yes", icon: "🔌" },
+      { label: "Recommended for new users", basic: "❌", dynamic: "✅ Yes", icon: "🌱" }
+    ],
+
+    quiz: [
+      {
+        q: "How many primary partitions can a basic MBR disk have?",
+        opts: ["2", "4", "8", "Unlimited"],
+        ans: 1,
+        exp: "A basic MBR disk supports up to 4 primary partitions."
+      },
+      {
+        q: "Which volume type automatically mirrors data to a second disk?",
+        opts: ["Spanned Volume", "Striped Volume (RAID 0)", "Mirrored Volume (RAID 1)", "Simple Volume"],
+        ans: 2,
+        exp: "Mirrored Volume (RAID 1) automatically copies data to a second disk."
+      },
+      {
+        q: "Are dynamic disks recognized by Mac or Linux?",
+        opts: ["Yes, always", "Only on Mac", "No — Windows only", "Only with a special driver"],
+        ans: 2,
+        exp: "Dynamic disks use Microsoft's LDM technology — they are not recognized by Mac or Linux."
+      },
+      {
+        q: "Which volume type gives maximum speed but zero data safety?",
+        opts: ["Simple Volume", "RAID 1", "Spanned Volume", "RAID 0 (Striped)"],
+        ans: 3,
+        exp: "Striped Volume (RAID 0) spreads data across disks for maximum speed — with no redundancy."
+      },
+      {
+        q: "What happens to your data when converting a basic disk TO a dynamic disk?",
+        opts: ["Data is deleted immediately", "Data is preserved — nothing is lost", "Files move to Cloud automatically", "A format is required"],
+        ans: 1,
+        exp: "Converting from basic TO dynamic does NOT delete data. The reverse process requires deleting all volumes."
+      },
+      {
+        q: "RAID-5 volumes on Windows dynamic disks are available on:",
+        opts: ["Windows 10 Home", "Windows 10 Pro", "Windows 11", "Windows Server only"],
+        ans: 3,
+        exp: "RAID-5 volume is available exclusively on Windows Server — not supported on Windows 10/11."
+      }
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let lang = 'el';
+let activeCard = null;
+let activeTab = 'basic';
+let qIdx = 0, correct = 0, answered = false;
+
+// ═══════════════════════════════════════════════════════════
+//  LANG TOGGLE
+// ═══════════════════════════════════════════════════════════
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  document.documentElement.lang = lang;
+  activeCard = null;
+  qIdx = 0; correct = 0; answered = false;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function render() {
+  const d = data[lang];
+
+  // Hero
+  document.getElementById('heroTitle').textContent = d.heroTitle;
+  document.getElementById('heroSub').textContent = d.heroSub;
+
+  // Labels
+  document.getElementById('label1').textContent = d.label1;
+  document.getElementById('label2').textContent = d.label2;
+  document.getElementById('label3').textContent = d.label3;
+
+  // Lang btn
+  document.getElementById('langBtn').textContent = d.langBtn;
+
+  // Tabs
+  document.getElementById('tab1').textContent = d.tab1;
+  document.getElementById('tab2').textContent = d.tab2;
+
+  renderVolumes();
+  renderCompare();
+  renderQuiz();
+}
+
+// ── VOLUMES ──
+function renderVolumes() {
+  const d = data[lang];
+  const grid = document.getElementById('volumeGrid');
+  grid.innerHTML = '';
+  d.volumes.forEach((v, i) => {
+    const el = document.createElement('div');
+    el.className = 'card' + (activeCard === i ? ' active' : '');
+    el.innerHTML = `<div class="card-icon">${v.icon}</div>
+      <div class="card-title">${v.title}</div>
+      <div class="card-subtitle">${v.subtitle}</div>`;
+    el.onclick = () => { activeCard = activeCard === i ? null : i; renderVolumes(); };
+    grid.appendChild(el);
+  });
+
+  const detail = document.getElementById('volumeDetail');
+  if (activeCard !== null) {
+    const v = d.volumes[activeCard];
+    const tagsHtml = v.tags.map(t => `<span class="badge ${t.cls}">${t.label}</span>`).join('');
+    const spd = lang === 'el' ? 'Ταχύτητα' : 'Speed';
+    const saf = lang === 'el' ? 'Ασφάλεια' : 'Safety';
+    const us = lang === 'el' ? 'Χρήση' : 'Use case';
+    detail.style.display = 'block';
+    detail.innerHTML = `<div class="detail-panel">
+      <h3>${v.icon} ${v.title}</h3>
+      <p>${v.desc}</p>
+      <p><strong>${spd}:</strong> ${v.speed} &nbsp;|&nbsp; <strong>${saf}:</strong> ${v.safety} &nbsp;|&nbsp; <strong>${us}:</strong> ${v.use}</p>
+      <div>${tagsHtml}</div>
+    </div>`;
+  } else {
+    detail.style.display = 'none';
+  }
+}
+
+// ── COMPARE ──
+function showTab(which) {
+  activeTab = which;
+  ['basic','storage'].forEach(t => {
+    document.getElementById('panel-' + t).classList.toggle('active', t === which);
+  });
+  document.getElementById('tab1').classList.toggle('active', which === 'basic');
+  document.getElementById('tab2').classList.toggle('active', which === 'storage');
+}
+
+function renderCompare() {
+  const d = data[lang];
+  const h1 = lang === 'el' ? ['Χαρακτηριστικό','Βασικός','Δυναμικός'] : ['Feature','Basic','Dynamic'];
+  const h2 = lang === 'el' ? ['Χαρακτηριστικό','Δυναμικοί Δίσκοι','Storage Spaces'] : ['Feature','Dynamic Disks','Storage Spaces'];
+
+  function buildRows(rows, headers) {
+    return `<div style="margin-bottom:4px;display:flex;gap:10px;padding:8px 0;border-bottom:2px solid #e3e8ef;">
+      <div style="flex:0 0 160px;font-size:0.82rem;font-weight:700;color:#1a73e8;">${headers[0]}</div>
+      <div style="flex:1;font-size:0.82rem;font-weight:700;color:#1a73e8;">${headers[1]}</div>
+      <div style="flex:1;font-size:0.82rem;font-weight:700;color:#1a73e8;">${headers[2]}</div>
+    </div>` +
+    rows.map(r => `<div class="compare-row">
+      <div class="icon">${r.icon}</div>
+      <div class="label">${r.label}</div>
+      <div class="value" style="flex:1">${r.basic}</div>
+      <div class="value" style="flex:1">${r.dynamic}</div>
+    </div>`).join('');
+  }
+
+  document.getElementById('panel-basic').innerHTML = buildRows(d.basicVsDynamic, h1);
+  document.getElementById('panel-storage').innerHTML = buildRows(d.dynamicVsStorage, h2);
+}
+
+// ── QUIZ ──
+function renderQuiz() {
+  const d = data[lang];
+  const total = d.quiz.length;
+  const q = d.quiz[qIdx];
+
+  document.getElementById('quizQ').textContent = `${qIdx + 1}/${total}. ${q.q}`;
+  document.getElementById('quizScore').textContent = d.scoreText(correct, total);
+
+  const optsEl = document.getElementById('quizOpts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt;
+    btn.onclick = () => answer(i);
+    optsEl.appendChild(btn);
+  });
+
+  const res = document.getElementById('quizResult');
+  res.className = 'quiz-result';
+  res.textContent = '';
+
+  const nxt = document.getElementById('quizNext');
+  nxt.className = 'quiz-next';
+  nxt.textContent = qIdx + 1 < total ? d.quizNextBtn : d.quizDoneBtn;
+  answered = false;
+}
+
+function answer(i) {
+  if (answered) return;
+  answered = true;
+  const d = data[lang];
+  const q = d.quiz[qIdx];
+  const btns = document.querySelectorAll('.quiz-option');
+  btns.forEach(b => b.disabled = true);
+
+  if (i === q.ans) {
+    correct++;
+    btns[i].classList.add('correct');
+    const res = document.getElementById('quizResult');
+    res.textContent = d.correctText + ' ' + q.exp;
+    res.className = 'quiz-result show ok';
+  } else {
+    btns[i].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    const res = document.getElementById('quizResult');
+    res.textContent = d.wrongText(q.opts[q.ans]) + ' ' + q.exp;
+    res.className = 'quiz-result show nope';
+  }
+  document.getElementById('quizScore').textContent = d.scoreText(correct, d.quiz.length);
+  document.getElementById('quizNext').classList.add('show');
+}
+
+function nextQ() {
+  const total = data[lang].quiz.length;
+  if (qIdx + 1 < total) {
+    qIdx++;
+  } else {
+    qIdx = 0; correct = 0;
+  }
+  renderQuiz();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+render();
+showTab('basic');
+</script>
+</body>
+</html>
