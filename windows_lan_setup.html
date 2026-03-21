@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows LAN Setup – Οδηγός Τοπικού Δικτύου</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --blue-mid: #bfdbfe;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --radius: 12px;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: #fff;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 48px;
+    }
+
+    /* ─── WRAPPER ─── */
+    .wrapper {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .header-text h1 {
+      font-size: clamp(1.35rem, 4vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+    }
+    .header-text p {
+      margin-top: 6px;
+      font-size: .93rem;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.55;
+    }
+
+    /* Language toggle */
+    .lang-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background .2s, transform .1s;
+    }
+    .lang-btn:hover { background: #1d4ed8; }
+    .lang-btn:active { transform: scale(.97); }
+
+    /* ─── STEP LIST ─── */
+    .steps { display: flex; flex-direction: column; gap: 10px; }
+
+    /* individual step */
+    .step {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .step:hover { box-shadow: 0 4px 18px rgba(0,0,0,.07); }
+    .step.open { box-shadow: 0 4px 18px rgba(37,99,235,.1); border-color: var(--blue-mid); }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      cursor: pointer;
+      user-select: none;
+      background: #fff;
+      transition: background .15s;
+    }
+    .step-header:hover { background: var(--blue-light); }
+
+    .step-num {
+      min-width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 700;
+      font-size: .9rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step.open .step-num { background: var(--green); }
+
+    .step-title-wrap { flex: 1; }
+    .step-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .step-subtitle {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .step-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .chevron {
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: transform .25s;
+      font-size: .8rem;
+    }
+    .step.open .chevron { transform: rotate(180deg); color: var(--blue); }
+
+    /* Body (collapsed by default) */
+    .step-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease;
+    }
+    .step.open .step-body { max-height: 800px; }
+
+    .step-content {
+      padding: 0 18px 20px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .step-content ul {
+      margin: 14px 0 0 0;
+      padding-left: 20px;
+      line-height: 1.75;
+    }
+    .step-content ul li { margin-bottom: 5px; font-size: .94rem; }
+    .step-content p { font-size: .94rem; line-height: 1.7; margin-top: 12px; color: var(--muted); }
+
+    /* Tip box inside steps */
+    .tip {
+      background: var(--blue-light);
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-top: 14px;
+      font-size: .88rem;
+      color: #1e40af;
+      line-height: 1.6;
+    }
+    .warn {
+      background: var(--amber-light);
+      border-left: 4px solid var(--amber);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-top: 14px;
+      font-size: .88rem;
+      color: #92400e;
+      line-height: 1.6;
+    }
+
+    /* ─── QUICK REFERENCE TABLE ─── */
+    .quick-ref {
+      margin-top: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .quick-ref-header {
+      background: var(--text);
+      color: #fff;
+      padding: 12px 18px;
+      font-weight: 600;
+      font-size: .95rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td, th {
+      padding: 10px 16px;
+      font-size: .88rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child {
+      font-family: 'DM Mono', monospace;
+      color: var(--blue);
+      white-space: nowrap;
+      background: var(--blue-light);
+      font-size: .82rem;
+    }
+    th { background: #f8fafc; font-weight: 600; color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: .8rem;
+      color: #94a3b8;
+    }
+    .footer a { color: var(--blue); text-decoration: none; }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-wrap {
+      margin-bottom: 24px;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: .8rem; color: var(--muted); margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), #60a5fa);
+      border-radius: 999px;
+      width: 0%;
+      transition: width .4s ease;
+    }
+
+    /* responsive */
+    @media (max-width: 500px) {
+      .step-subtitle { display: none; }
+      td, th { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-text">
+      <h1 data-el="title">🖧 Τοπικό Δίκτυο σε Windows 10/11</h1>
+      <p data-el="subtitle">Οδηγός βήμα-βήμα για κοινή χρήση αρχείων και εκτυπωτή — κάντε κλικ σε κάθε βήμα για λεπτομέρειες.</p>
+    </div>
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">🌐 English</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span data-el="progressLabel">Πρόοδος</span>
+      <span id="progressText">0 / 6</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps" id="stepList">
+
+    <div class="step" id="s1">
+      <div class="step-header" onclick="toggleStep('s1')">
+        <div class="step-num">1</div>
+        <div class="step-title-wrap">
+          <div class="step-title" data-el="s1title">Συνδέστε τους Υπολογιστές</div>
+          <div class="step-subtitle" data-el="s1sub">Ethernet ή Wi-Fi — επιλέξτε τη μέθοδό σας</div>
+        </div>
+        <span class="step-icon">🔌</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="step-content">
+          <ul data-el="s1list">
+            <li>Συνδέστε κάθε υπολογιστή στον <strong>δρομολογητή</strong> με καλώδιο Ethernet (πιο γρήγορο και σταθερό).</li>
+            <li>Αν χρησιμοποιείτε Wi-Fi, βεβαιωθείτε ότι <strong>όλοι</strong> οι υπολογιστές είναι στο <strong>ίδιο δίκτυο</strong>.</li>
+            <li>Αποφύγετε «δίκτυα επισκεπτών» — δεν επιτρέπουν επικοινωνία μεταξύ συσκευών.</li>
+            <li>Αν έχετε πολλές συσκευές και λίγες θύρες, αγοράστε ένα μεταγωγέα δικτύου (switch) ~15–20€.</li>
+          </ul>
+          <div class="tip" data-el="s1tip">💡 Ethernet = μέχρι 1 Gbps. Wi-Fi 5 = ~300–600 Mbps. Για μεταφορά μεγάλων αρχείων, προτιμήστε καλώδιο.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="s2">
+      <div class="step-header" onclick="toggleStep('s2')">
+        <div class="step-num">2</div>
+        <div class="step-title-wrap">
+          <div class="step-title" data-el="s2title">Ρυθμίσεις Δικτύου Windows</div>
+          <div class="step-subtitle" data-el="s2sub">Ενεργοποίηση Ανακάλυψης Δικτύου</div>
+        </div>
+        <span class="step-icon">⚙️</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="step-content">
+          <ul data-el="s2list">
+            <li>Πατήστε <strong>Windows + I</strong> → «Δίκτυο και Internet».</li>
+            <li>Κάντε κλικ «Κέντρο Δικτύου» → «Αλλαγή ρυθμίσεων κοινής χρήσης».</li>
+            <li>Στο «Ιδιωτικό» προφίλ: ενεργοποιήστε <strong>«Ανακάλυψη δικτύου»</strong>.</li>
+            <li>Ενεργοποιήστε επίσης <strong>«Κοινή χρήση αρχείων και εκτυπωτών»</strong>.</li>
+            <li>Πατήστε <strong>«Αποθήκευση αλλαγών»</strong>. Επαναλάβετε σε κάθε υπολογιστή.</li>
+          </ul>
+          <div class="tip" data-el="s2tip">💡 Εναλλακτικά: Windows + R → πληκτρολογήστε <code>control</code> → «Κέντρο Δικτύου και Κοινής Χρήσης».</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="s3">
+      <div class="step-header" onclick="toggleStep('s3')">
+        <div class="step-num">3</div>
+        <div class="step-title-wrap">
+          <div class="step-title" data-el="s3title">Δημιουργία Κοινόχρηστων Φακέλων</div>
+          <div class="step-subtitle" data-el="s3sub">Επιλέξτε τι θα μοιραστείτε και με ποια δικαιώματα</div>
+        </div>
+        <span class="step-icon">📁</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="step-content">
+          <ul data-el="s3list">
+            <li>Δεξί κλικ στον φάκελο → <strong>«Ιδιότητες»</strong> → καρτέλα «Κοινή χρήση».</li>
+            <li>Κλικ «Κοινή χρήση» → προσθέστε <strong>«Όλοι»</strong> στη λίστα.</li>
+            <li><strong>Ανάγνωση:</strong> βλέπουν και αντιγράφουν — δεν αλλάζουν τίποτα.</li>
+            <li><strong>Ανάγνωση/Εγγραφή:</strong> πλήρης πρόσβαση — μπορούν και να διαγράφουν.</li>
+            <li>Κλικ «Κοινή χρήση» → «Τέλος».</li>
+          </ul>
+          <div class="warn" data-el="s3warn">⚠️ Ξεκινήστε πάντα με «Μόνο Ανάγνωση». Μην μοιράζεστε ολόκληρο δίσκο ή φακέλους συστήματος.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="s4">
+      <div class="step-header" onclick="toggleStep('s4')">
+        <div class="step-num">4</div>
+        <div class="step-title-wrap">
+          <div class="step-title" data-el="s4title">Πρόσβαση από Άλλον Υπολογιστή</div>
+          <div class="step-subtitle" data-el="s4sub">Δύο τρόποι για να βρείτε τους κοινόχρηστους φακέλους</div>
+        </div>
+        <span class="step-icon">🔍</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="step-content">
+          <ul data-el="s4list">
+            <li><strong>Μέθοδος Α:</strong> Windows + E → κλικ στο «Δίκτυο» → εμφανίζονται οι άλλοι υπολογιστές.</li>
+            <li><strong>Μέθοδος Β:</strong> Windows + R → πληκτρολογήστε <code>\\ΟΝΟΜΑ-PC</code> ή <code>\\192.168.1.10</code> → Enter.</li>
+            <li>Για να βρείτε το όνομα PC: δεξί κλικ «Ο Υπολογιστής μου» → «Ιδιότητες» → «Όνομα συσκευής».</li>
+            <li>Δεξί κλικ σε φάκελο δικτύου → «Αντιστοίχιση μονάδας δίσκου» για μόνιμη πρόσβαση ως Z: κ.λπ.</li>
+          </ul>
+          <div class="tip" data-el="s4tip">💡 Δεν εμφανίζονται άλλοι υπολογιστές; Ελέγξτε ότι όλοι έχουν «Ιδιωτικό» προφίλ δικτύου και όχι «Δημόσιο».</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="s5">
+      <div class="step-header" onclick="toggleStep('s5')">
+        <div class="step-num">5</div>
+        <div class="step-title-wrap">
+          <div class="step-title" data-el="s5title">Κοινή Χρήση Εκτυπωτή</div>
+          <div class="step-subtitle" data-el="s5sub">Εκτυπώστε από οποιονδήποτε υπολογιστή</div>
+        </div>
+        <span class="step-icon">🖨️</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="step-content">
+          <ul data-el="s5list">
+            <li><strong>Στον υπολογιστή με εκτυπωτή:</strong> Ρυθμίσεις → «Bluetooth και συσκευές» → «Εκτυπωτές» → κλικ εκτυπωτή → «Ιδιότητες» → καρτέλα «Κοινή χρήση» → ✅.</li>
+            <li>Δώστε απλό όνομα χωρίς κενά (π.χ. <code>EktypothesSaloni</code>).</li>
+            <li><strong>Στους άλλους υπολογιστές:</strong> Ρυθμίσεις → Εκτυπωτές → «Προσθήκη» → «Δεν βρίσκεται στη λίστα» → «Με βάση το όνομα».</li>
+            <li>Πληκτρολογήστε: <code>\\ΟΝΟΜΑ-PC\ΟΝΟΜΑ-EKTYP</code> → Enter → εγκατάσταση drivers αυτόματα.</li>
+          </ul>
+          <div class="tip" data-el="s5tip">💡 Ο υπολογιστής με τον εκτυπωτή πρέπει να είναι ανοιχτός για να εκτυπώνουν οι υπόλοιποι.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="s6">
+      <div class="step-header" onclick="toggleStep('s6')">
+        <div class="step-num">6</div>
+        <div class="step-title-wrap">
+          <div class="step-title" data-el="s6title">Αντιμετώπιση Προβλημάτων</div>
+          <div class="step-subtitle" data-el="s6sub">Λύσεις για τα πιο συνηθισμένα ζητήματα</div>
+        </div>
+        <span class="step-icon">🛠️</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="step-content">
+          <ul data-el="s6list">
+            <li>❌ <strong>Δεν βλέπω άλλους PC:</strong> Ελέγξτε ότι η Ανακάλυψη Δικτύου είναι ενεργή και το προφίλ είναι «Ιδιωτικό» σε όλους.</li>
+            <li>🔒 <strong>Ζητά κωδικό:</strong> Εισάγετε το όνομα χρήστη + κωδικό του <em>απομακρυσμένου</em> PC. Χωρίς κωδικό λογαριασμό δεν επιτρέπεται σύνδεση.</li>
+            <li>🐌 <strong>Αργή μεταφορά:</strong> Χρησιμοποιήστε Ethernet, κλείστε streaming εφαρμογές.</li>
+            <li>🚫 <strong>«Δεν έχετε δικαίωμα»:</strong> Ελέγξτε δικαιώματα φακέλου (βήμα 3) και ότι το antivirus δεν μπλοκάρει.</li>
+            <li>🖨️ <strong>Δεν βρίσκει εκτυπωτή:</strong> Βεβαιωθείτε ότι ο κεντρικός PC είναι ανοιχτός και η κοινή χρήση εκτυπωτή ενεργή.</li>
+          </ul>
+          <div class="warn" data-el="s6warn">⚠️ Μην απενεργοποιείτε εντελώς το τείχος προστασίας — προσθέστε μόνο εξαιρέσεις για κοινή χρήση αρχείων.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /steps -->
+
+  <!-- QUICK REF TABLE -->
+  <div class="quick-ref">
+    <div class="quick-ref-header" data-el="qrTitle">⌨️ Γρήγορες Εντολές</div>
+    <table>
+      <thead>
+        <tr>
+          <th data-el="qrCol1">Εντολή / Συντόμευση</th>
+          <th data-el="qrCol2">Λειτουργία</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Windows + I</td><td data-el="qr1">Άνοιγμα Ρυθμίσεων</td></tr>
+        <tr><td>Windows + E</td><td data-el="qr2">Άνοιγμα Εξερευνητή Αρχείων</td></tr>
+        <tr><td>Windows + R</td><td data-el="qr3">Εκτέλεση εντολής</td></tr>
+        <tr><td>\\PC-NAME</td><td data-el="qr4">Σύνδεση σε υπολογιστή δικτύου</td></tr>
+        <tr><td>ipconfig</td><td data-el="qr5">Εμφάνιση διεύθυνσης IP (cmd)</td></tr>
+        <tr><td>ping 192.168.1.x</td><td data-el="qr6">Έλεγχος σύνδεσης με PC</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <p data-el="footerText">Οδηγός για Windows 10 &amp; 11 · Ενημερώθηκε 2026 · <a href="https://lovefortechnology.net" target="_blank">lovefortechnology.net</a></p>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+  // ── STEP TOGGLE ──────────────────────────────────────────────
+  function toggleStep(id) {
+    const el = document.getElementById(id);
+    const wasOpen = el.classList.contains('open');
+    el.classList.toggle('open', !wasOpen);
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const total = document.querySelectorAll('.step').length;
+    const open  = document.querySelectorAll('.step.open').length;
+    document.getElementById('progressText').textContent = open + ' / ' + total;
+    document.getElementById('progressFill').style.width = (open / total * 100) + '%';
+  }
+
+  // ── TRANSLATIONS ─────────────────────────────────────────────
+  const T = {
+    el: {
+      title:        '🖧 Τοπικό Δίκτυο σε Windows 10/11',
+      subtitle:     'Οδηγός βήμα-βήμα για κοινή χρήση αρχείων και εκτυπωτή — κάντε κλικ σε κάθε βήμα για λεπτομέρειες.',
+      progressLabel:'Πρόοδος',
+      s1title:'Συνδέστε τους Υπολογιστές',       s1sub:'Ethernet ή Wi-Fi — επιλέξτε τη μέθοδό σας',
+      s1list:['Συνδέστε κάθε υπολογιστή στον <strong>δρομολογητή</strong> με καλώδιο Ethernet (πιο γρήγορο και σταθερό).','Αν χρησιμοποιείτε Wi-Fi, βεβαιωθείτε ότι <strong>όλοι</strong> οι υπολογιστές είναι στο <strong>ίδιο δίκτυο</strong>.','Αποφύγετε «δίκτυα επισκεπτών» — δεν επιτρέπουν επικοινωνία μεταξύ συσκευών.','Αν έχετε πολλές συσκευές και λίγες θύρες, αγοράστε ένα μεταγωγέα δικτύου (switch) ~15–20€.'],
+      s1tip:'💡 Ethernet = μέχρι 1 Gbps. Wi-Fi 5 = ~300–600 Mbps. Για μεταφορά μεγάλων αρχείων, προτιμήστε καλώδιο.',
+      s2title:'Ρυθμίσεις Δικτύου Windows',       s2sub:'Ενεργοποίηση Ανακάλυψης Δικτύου',
+      s2list:['Πατήστε <strong>Windows + I</strong> → «Δίκτυο και Internet».','Κάντε κλικ «Κέντρο Δικτύου» → «Αλλαγή ρυθμίσεων κοινής χρήσης».','Στο «Ιδιωτικό» προφίλ: ενεργοποιήστε <strong>«Ανακάλυψη δικτύου»</strong>.','Ενεργοποιήστε επίσης <strong>«Κοινή χρήση αρχείων και εκτυπωτών»</strong>.','Πατήστε <strong>«Αποθήκευση αλλαγών»</strong>. Επαναλάβετε σε κάθε υπολογιστή.'],
+      s2tip:'💡 Εναλλακτικά: Windows + R → πληκτρολογήστε <code>control</code> → «Κέντρο Δικτύου και Κοινής Χρήσης».',
+      s3title:'Δημιουργία Κοινόχρηστων Φακέλων', s3sub:'Επιλέξτε τι θα μοιραστείτε και με ποια δικαιώματα',
+      s3list:['Δεξί κλικ στον φάκελο → <strong>«Ιδιότητες»</strong> → καρτέλα «Κοινή χρήση».','Κλικ «Κοινή χρήση» → προσθέστε <strong>«Όλοι»</strong> στη λίστα.','<strong>Ανάγνωση:</strong> βλέπουν και αντιγράφουν — δεν αλλάζουν τίποτα.','<strong>Ανάγνωση/Εγγραφή:</strong> πλήρης πρόσβαση — μπορούν και να διαγράφουν.','Κλικ «Κοινή χρήση» → «Τέλος».'],
+      s3warn:'⚠️ Ξεκινήστε πάντα με «Μόνο Ανάγνωση». Μην μοιράζεστε ολόκληρο δίσκο ή φακέλους συστήματος.',
+      s4title:'Πρόσβαση από Άλλον Υπολογιστή',  s4sub:'Δύο τρόποι για να βρείτε τους κοινόχρηστους φακέλους',
+      s4list:['<strong>Μέθοδος Α:</strong> Windows + E → κλικ στο «Δίκτυο» → εμφανίζονται οι άλλοι υπολογιστές.','<strong>Μέθοδος Β:</strong> Windows + R → πληκτρολογήστε <code>\\\\ΟΝΟΜΑ-PC</code> ή <code>\\\\192.168.1.10</code> → Enter.','Για να βρείτε το όνομα PC: δεξί κλικ «Ο Υπολογιστής μου» → «Ιδιότητες» → «Όνομα συσκευής».','Δεξί κλικ σε φάκελο δικτύου → «Αντιστοίχιση μονάδας δίσκου» για μόνιμη πρόσβαση ως Z: κ.λπ.'],
+      s4tip:'💡 Δεν εμφανίζονται άλλοι υπολογιστές; Ελέγξτε ότι όλοι έχουν «Ιδιωτικό» προφίλ δικτύου και όχι «Δημόσιο».',
+      s5title:'Κοινή Χρήση Εκτυπωτή',           s5sub:'Εκτυπώστε από οποιονδήποτε υπολογιστή',
+      s5list:['<strong>Στον υπολογιστή με εκτυπωτή:</strong> Ρυθμίσεις → «Bluetooth και συσκευές» → «Εκτυπωτές» → κλικ εκτυπωτή → «Ιδιότητες» → καρτέλα «Κοινή χρήση» → ✅.','Δώστε απλό όνομα χωρίς κενά (π.χ. <code>EktypothesSaloni</code>).','<strong>Στους άλλους υπολογιστές:</strong> Ρυθμίσεις → Εκτυπωτές → «Προσθήκη» → «Δεν βρίσκεται στη λίστα» → «Με βάση το όνομα».','Πληκτρολογήστε: <code>\\\\ΟΝΟΜΑ-PC\\ΟΝΟΜΑ-EKTYP</code> → Enter → εγκατάσταση drivers αυτόματα.'],
+      s5tip:'💡 Ο υπολογιστής με τον εκτυπωτή πρέπει να είναι ανοιχτός για να εκτυπώνουν οι υπόλοιποι.',
+      s6title:'Αντιμετώπιση Προβλημάτων',        s6sub:'Λύσεις για τα πιο συνηθισμένα ζητήματα',
+      s6list:['❌ <strong>Δεν βλέπω άλλους PC:</strong> Ελέγξτε ότι η Ανακάλυψη Δικτύου είναι ενεργή και το προφίλ είναι «Ιδιωτικό» σε όλους.','🔒 <strong>Ζητά κωδικό:</strong> Εισάγετε το όνομα χρήστη + κωδικό του <em>απομακρυσμένου</em> PC. Χωρίς κωδικό λογαριασμό δεν επιτρέπεται σύνδεση.','🐌 <strong>Αργή μεταφορά:</strong> Χρησιμοποιήστε Ethernet, κλείστε streaming εφαρμογές.','🚫 <strong>«Δεν έχετε δικαίωμα»:</strong> Ελέγξτε δικαιώματα φακέλου (βήμα 3) και ότι το antivirus δεν μπλοκάρει.','🖨️ <strong>Δεν βρίσκει εκτυπωτή:</strong> Βεβαιωθείτε ότι ο κεντρικός PC είναι ανοιχτός και η κοινή χρήση εκτυπωτή ενεργή.'],
+      s6warn:'⚠️ Μην απενεργοποιείτε εντελώς το τείχος προστασίας — προσθέστε μόνο εξαιρέσεις για κοινή χρήση αρχείων.',
+      qrTitle:'⌨️ Γρήγορες Εντολές', qrCol1:'Εντολή / Συντόμευση', qrCol2:'Λειτουργία',
+      qr1:'Άνοιγμα Ρυθμίσεων', qr2:'Άνοιγμα Εξερευνητή Αρχείων', qr3:'Εκτέλεση εντολής',
+      qr4:'Σύνδεση σε υπολογιστή δικτύου', qr5:'Εμφάνιση διεύθυνσης IP (cmd)', qr6:'Έλεγχος σύνδεσης με PC',
+      footerText:'Οδηγός για Windows 10 &amp; 11 · Ενημερώθηκε 2026 · <a href="https://lovefortechnology.net" target="_blank">lovefortechnology.net</a>',
+      langBtn:'🌐 English'
+    },
+    en: {
+      title:        '🖧 Local Network on Windows 10/11',
+      subtitle:     'Step-by-step guide for file and printer sharing — click each step for details.',
+      progressLabel:'Progress',
+      s1title:'Connect the Computers',             s1sub:'Ethernet or Wi-Fi — choose your method',
+      s1list:['Connect each computer to the <strong>router</strong> with an Ethernet cable (faster and more stable).','If using Wi-Fi, make sure <strong>all</strong> computers are on the <strong>same network</strong>.','Avoid "guest networks" — they block communication between devices.','If you have many devices and few ports, buy a network switch for ~15–20€.'],
+      s1tip:'💡 Ethernet = up to 1 Gbps. Wi-Fi 5 = ~300–600 Mbps. Prefer cable for large file transfers.',
+      s2title:'Windows Network Settings',          s2sub:'Enable Network Discovery',
+      s2list:['Press <strong>Windows + I</strong> → "Network & Internet".','Click "Network and Sharing Center" → "Change advanced sharing settings".','Under "Private": enable <strong>"Network Discovery"</strong>.','Also enable <strong>"File and printer sharing"</strong>.','Click <strong>"Save changes"</strong>. Repeat on each computer.'],
+      s2tip:'💡 Alternative: Windows + R → type <code>control</code> → "Network and Sharing Center".',
+      s3title:'Create Shared Folders',             s3sub:'Choose what to share and with which permissions',
+      s3list:['Right-click the folder → <strong>"Properties"</strong> → "Sharing" tab.','Click "Share" → add <strong>"Everyone"</strong> to the list.','<strong>Read:</strong> others can view and copy — they cannot modify anything.','<strong>Read/Write:</strong> full access — they can also delete files.','Click "Share" → "Done".'],
+      s3warn:'⚠️ Always start with "Read only". Do not share entire drives or system folders.',
+      s4title:'Access from Another Computer',     s4sub:'Two ways to find shared folders',
+      s4list:['<strong>Method A:</strong> Windows + E → click "Network" on the left → other PCs appear.','<strong>Method B:</strong> Windows + R → type <code>\\\\PC-NAME</code> or <code>\\\\192.168.1.10</code> → Enter.','To find a PC name: right-click "This PC" → "Properties" → "Device name".','Right-click a network folder → "Map network drive" for permanent access as Z: etc.'],
+      s4tip:'💡 Others not showing up? Make sure all PCs have "Private" network profile, not "Public".',
+      s5title:'Printer Sharing',                  s5sub:'Print from any computer',
+      s5list:['<strong>On the PC with the printer:</strong> Settings → "Bluetooth & devices" → "Printers" → click printer → "Printer properties" → "Sharing" tab → ✅.','Give it a simple name with no spaces (e.g. <code>OfficeHP</code>).','<strong>On other computers:</strong> Settings → Printers → "Add a printer" → "Not listed" → "By name".','Type: <code>\\\\PC-NAME\\PRINTER-NAME</code> → Enter → drivers install automatically.'],
+      s5tip:'💡 The PC hosting the printer must be on for others to print.',
+      s6title:'Troubleshooting',                  s6sub:'Solutions for the most common issues',
+      s6list:['❌ <strong>Can\'t see other PCs:</strong> Check that Network Discovery is on and profile is "Private" on all.','🔒 <strong>Password required:</strong> Enter the username + password of the <em>remote</em> PC. Accounts without a password cannot connect.','🐌 <strong>Slow transfer:</strong> Use Ethernet, close streaming apps.','🚫 <strong>"Access denied":</strong> Check folder permissions (step 3) and that antivirus isn\'t blocking.','🖨️ <strong>Printer not found:</strong> Make sure the host PC is on and printer sharing is enabled.'],
+      s6warn:'⚠️ Do not fully disable the firewall — add only necessary exceptions for file sharing.',
+      qrTitle:'⌨️ Quick Reference', qrCol1:'Command / Shortcut', qrCol2:'Action',
+      qr1:'Open Settings', qr2:'Open File Explorer', qr3:'Run dialog',
+      qr4:'Connect to network PC', qr5:'Show IP address (cmd)', qr6:'Ping / check PC connection',
+      footerText:'Guide for Windows 10 &amp; 11 · Updated 2026 · <a href="https://lovefortechnology.net" target="_blank">lovefortechnology.net</a>',
+      langBtn:'🌐 Ελληνικά'
+    }
+  };
+
+  let lang = 'el';
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    applyLang();
+  }
+
+  function applyLang() {
+    const t = T[lang];
+    document.documentElement.lang = lang;
+    document.getElementById('langToggle').textContent = t.langBtn;
+
+    // simple text fields
+    const simple = ['title','subtitle','progressLabel','s1title','s1sub','s1tip',
+      's2title','s2sub','s2tip','s3title','s3sub','s3warn',
+      's4title','s4sub','s4tip','s5title','s5sub','s5tip',
+      's6title','s6sub','s6warn',
+      'qrTitle','qrCol1','qrCol2','qr1','qr2','qr3','qr4','qr5','qr6','footerText'];
+
+    simple.forEach(key => {
+      const el = document.querySelector('[data-el="'+key+'"]');
+      if (el) el.innerHTML = t[key];
+    });
+
+    // lists
+    ['s1','s2','s3','s4','s5','s6'].forEach(s => {
+      const ul = document.querySelector('[data-el="'+s+'list"]');
+      if (!ul) return;
+      ul.innerHTML = '';
+      t[s+'list'].forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = item;
+        ul.appendChild(li);
+      });
+    });
+  }
+
+  // init progress
+  updateProgress();
+</script>
+</body>
+</html>
