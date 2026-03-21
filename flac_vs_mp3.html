@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLAC vs MP3 – Interactive Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --flac: #2563eb;
+    --flac-light: #eff6ff;
+    --flac-mid: #bfdbfe;
+    --mp3: #dc2626;
+    --mp3-light: #fff5f5;
+    --mp3-mid: #fecaca;
+    --neutral: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --card-hover: 0 6px 24px rgba(0,0,0,0.13);
+  }
+
+  html, body {
+    height: 100%;
+    background: #fff;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--neutral);
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  /* ── Lang Toggle ── */
+  .lang-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--neutral);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.15s;
+    z-index: 100;
+  }
+  .lang-btn:hover { background: #334155; transform: scale(1.04); }
+
+  /* ── Wrapper ── */
+  .wrapper {
+    width: 100%;
+    max-width: 860px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--neutral);
+  }
+  .header h1 span.vs {
+    display: inline-block;
+    background: var(--neutral);
+    color: #fff;
+    font-size: 0.65em;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin: 0 8px;
+    vertical-align: middle;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-top: 6px;
+  }
+
+  /* ── Main cards row ── */
+  .cards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .format-card {
+    border-radius: 14px;
+    padding: 22px 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .format-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: 14px 14px 0 0;
+  }
+  .format-card:hover {
+    box-shadow: var(--card-hover);
+    transform: translateY(-3px);
+  }
+
+  .flac-card { background: var(--flac-light); border-color: var(--flac-mid); }
+  .flac-card::before { background: var(--flac); }
+  .mp3-card  { background: var(--mp3-light);  border-color: var(--mp3-mid);  }
+  .mp3-card::before  { background: var(--mp3);  }
+
+  .format-card.active {
+    border-color: currentColor;
+    box-shadow: var(--card-hover);
+  }
+  .flac-card.active { border-color: var(--flac); }
+  .mp3-card.active  { border-color: var(--mp3);  }
+
+  .card-icon { font-size: 2rem; margin-bottom: 8px; }
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+  .flac-card .card-title { color: var(--flac); }
+  .mp3-card  .card-title { color: var(--mp3);  }
+  .card-subtitle { font-size: 0.78rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .card-stats {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    color: var(--neutral);
+    font-family: 'DM Mono', monospace;
+  }
+  .flac-card .stat-pill { border-color: var(--flac-mid); color: var(--flac); background: #fff; }
+  .mp3-card  .stat-pill { border-color: var(--mp3-mid);  color: var(--mp3);  background: #fff; }
+
+  .card-hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 12px;
+    opacity: 0.8;
+  }
+
+  /* ── Detail panel ── */
+  .detail-panel {
+    border-radius: 14px;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), padding 0.3s, opacity 0.3s, box-shadow 0.3s;
+    opacity: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+  }
+  .detail-panel.open {
+    max-height: 600px;
+    padding: 20px;
+    opacity: 1;
+    margin-bottom: 16px;
+    box-shadow: var(--card-shadow);
+  }
+  .detail-panel.flac-detail { background: var(--flac-light); border: 2px solid var(--flac-mid); }
+  .detail-panel.mp3-detail  { background: var(--mp3-light);  border: 2px solid var(--mp3-mid);  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .detail-col h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--muted);
+  }
+  .detail-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .detail-col ul li {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+  }
+  .detail-col ul li .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .flac-detail .dot { background: var(--flac); }
+  .mp3-detail  .dot { background: var(--mp3);  }
+
+  /* ── Comparison table ── */
+  .compare-section { margin-bottom: 16px; }
+  .compare-section h3 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .compare-rows { display: flex; flex-direction: column; gap: 8px; }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1.5px solid var(--border);
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .compare-row:hover { background: #f1f5f9; border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .compare-row.expanded { background: #fff; border-color: #94a3b8; }
+
+  .compare-flac { text-align: right; }
+  .compare-mp3  { text-align: left; }
+
+  .compare-label {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 90px;
+    background: var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .compare-val {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+  .compare-flac .compare-val { background: var(--flac-light); color: var(--flac); }
+  .compare-mp3  .compare-val { background: var(--mp3-light);  color: var(--mp3);  }
+
+  .row-detail {
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+    display: none;
+  }
+  .compare-row.expanded .row-detail { display: block; }
+
+  /* ── Footer tip ── */
+  .footer-tip {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 8px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+  }
+  .footer-tip strong { color: var(--neutral); }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    .cards-row { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .compare-label { min-width: 70px; font-size: 0.62rem; }
+    .compare-val { font-size: 0.78rem; padding: 2px 7px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="lang-btn" onclick="toggleLang()" id="langBtn">🌐 English</button>
+
+<div class="wrapper">
+
+  <div class="header">
+    <h1 id="h-title">
+      <span style="color:var(--flac)">FLAC</span>
+      <span class="vs">VS</span>
+      <span style="color:var(--mp3)">MP3</span>
+    </h1>
+    <p id="h-sub">Κάνε κλικ σε κάθε κάρτα ή γραμμή για λεπτομέρειες</p>
+  </div>
+
+  <!-- Top cards -->
+  <div class="cards-row">
+    <div class="format-card flac-card" onclick="toggleCard('flac')" id="card-flac">
+      <div class="card-icon">🎼</div>
+      <div class="card-title">FLAC</div>
+      <div class="card-subtitle" id="flac-sub">Free Lossless Audio Codec</div>
+      <div class="card-stats">
+        <span class="stat-pill" id="fp1">~25–35 MB / 5 λεπτά</span>
+        <span class="stat-pill" id="fp2">100% ποιότητα</span>
+        <span class="stat-pill" id="fp3">έως 32-bit/192kHz</span>
+      </div>
+      <div class="card-hint" id="flac-hint">▼ Κλικ για ανάλυση</div>
+    </div>
+
+    <div class="format-card mp3-card" onclick="toggleCard('mp3')" id="card-mp3">
+      <div class="card-icon">🎵</div>
+      <div class="card-title">MP3</div>
+      <div class="card-subtitle" id="mp3-sub">MPEG-1 Audio Layer III</div>
+      <div class="card-stats">
+        <span class="stat-pill" id="mp1">~5–12 MB / 5 λεπτά</span>
+        <span class="stat-pill" id="mp2">έως 320 kbps</span>
+        <span class="stat-pill" id="mp3p">παγκόσμια συμβατότητα</span>
+      </div>
+      <div class="card-hint" id="mp3-hint">▼ Κλικ για ανάλυση</div>
+    </div>
+  </div>
+
+  <!-- FLAC detail -->
+  <div class="detail-panel flac-detail" id="panel-flac">
+    <div class="detail-grid">
+      <div class="detail-col">
+        <h4 id="pros-lbl">✅ Πλεονεκτήματα</h4>
+        <ul id="flac-pros"></ul>
+      </div>
+      <div class="detail-col">
+        <h4 id="cons-lbl">❌ Μειονεκτήματα</h4>
+        <ul id="flac-cons"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MP3 detail -->
+  <div class="detail-panel mp3-detail" id="panel-mp3">
+    <div class="detail-grid">
+      <div class="detail-col">
+        <h4 id="pros-lbl2">✅ Πλεονεκτήματα</h4>
+        <ul id="mp3-pros"></ul>
+      </div>
+      <div class="detail-col">
+        <h4 id="cons-lbl2">❌ Μειονεκτήματα</h4>
+        <ul id="mp3-cons"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison rows -->
+  <div class="compare-section">
+    <h3 id="cmp-title">Σύγκριση Χαρακτηριστικών — κλικ για λεπτομέρειες</h3>
+    <div class="compare-rows" id="cmp-rows"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-tip" id="footer-tip"></div>
+
+</div><!-- /wrapper -->
+
+<script>
+const lang = { current: 'el' };
+
+const data = {
+  el: {
+    sub: 'Κάνε κλικ σε κάθε κάρτα ή γραμμή για λεπτομέρειες',
+    langBtn: '🌐 English',
+    flacSub: 'Free Lossless Audio Codec',
+    mp3Sub: 'MPEG-1 Audio Layer III',
+    fp1: '~25–35 MB / 5 λεπτά', fp2: '100% ποιότητα', fp3: 'έως 32-bit/192kHz',
+    mp1: '~5–12 MB / 5 λεπτά', mp2: 'έως 320 kbps', mp3p: 'παγκόσμια συμβατότητα',
+    hint: '▼ Κλικ για ανάλυση',
+    pros: '✅ Πλεονεκτήματα', cons: '❌ Μειονεκτήματα',
+    flacPros: ['Τέλεια ποιότητα ήχου – χωρίς καμία απώλεια', 'Ιδανικό για αρχειοθέτηση CD', 'Hi-Res Audio (32-bit / 192kHz)', 'Ανοιχτού κώδικα & εντελώς δωρεάν', 'Μετατρέπεται σε άλλες μορφές χωρίς υποβάθμιση'],
+    flacCons: ['Μεγάλο μέγεθος αρχείου', 'Λιγότερες streaming πλατφόρμες', 'Χρειάζεται περισσότερο χώρο αποθήκευσης'],
+    mp3Pros: ['Παίζει σε κάθε συσκευή στον κόσμο', 'Μικρό μέγεθος – ιδανικό για κινητό', 'Γρήγορο φόρτωμα ακόμα και αργό internet', 'Στα 320 kbps η διαφορά δύσκολα ακούγεται'],
+    mp3Cons: ['Μόνιμη απώλεια ηχητικών λεπτομερειών', 'Κάθε επανασυμπίεση μειώνει την ποιότητα', 'Σε ακριβό εξοπλισμό η διαφορά γίνεται εμφανής'],
+    cmpTitle: 'Σύγκριση Χαρακτηριστικών — κλικ για λεπτομέρειες',
+    rows: [
+      { label: 'Ποιότητα ήχου', flac: 'Πλήρης 100%', mp3: 'Έως ~98%', detail: 'Το FLAC διατηρεί κάθε bit του πρωτότυπου ήχου. Το MP3 αφαιρεί ήχους που το αυτί δυσκολεύεται να ακούσει, κυρίως υψηλές και χαμηλές συχνότητες.' },
+      { label: 'Μέγεθος (5 λεπτά)', flac: '25–35 MB', mp3: '5–12 MB', detail: 'Ένα MP3 στα 128 kbps ζυγίζει ~5 MB, στα 320 kbps ~12 MB. Ένα FLAC για το ίδιο κομμάτι ζυγίζει συνήθως 25–35 MB.' },
+      { label: 'Συμβατότητα', flac: 'Πολύ καλή', mp3: 'Παντού', detail: 'Το MP3 παίζει σε κάθε συσκευή από το 1995. Το FLAC υποστηρίζεται στα Android, iPhone (iOS 11+), Windows, αλλά όχι σε παλαιότερες συσκευές.' },
+      { label: 'Streaming 2026', flac: 'Tidal / Qobuz', mp3: 'Spotify / YouTube', detail: 'Το Tidal HiFi, Qobuz, Amazon Music HD και Deezer HiFi προσφέρουν FLAC streaming. Το Spotify και το YouTube χρησιμοποιούν συμπιεσμένο ήχο.' },
+      { label: 'Μπαταρία', flac: 'Λίγο υψηλότερη', mp3: 'Χαμηλή', detail: 'Η αποσυμπίεση FLAC απαιτεί λίγο περισσότερη CPU από το MP3. Στην πράξη η διαφορά είναι μικρή σε σύγχρονες συσκευές.' },
+      { label: 'Επανασυμπίεση', flac: 'Χωρίς απώλεια', mp3: 'Χάνει ποιότητα', detail: 'Αν μετατρέψεις FLAC→MP3, παίρνεις ένα καλό MP3. Αν μετατρέψεις MP3→MP3 ξανά, η ποιότητα χειροτερεύει κάθε φορά.' },
+    ],
+    footer: '💡 <strong>Συμβουλή:</strong> Αποθήκευσε σε FLAC για αρχείο, μετέτρεψε σε MP3 για κινητό & sharing.'
+  },
+  en: {
+    sub: 'Click any card or row for details',
+    langBtn: '🌐 Ελληνικά',
+    flacSub: 'Free Lossless Audio Codec',
+    mp3Sub: 'MPEG-1 Audio Layer III',
+    fp1: '~25–35 MB / 5 min', fp2: '100% quality', fp3: 'up to 32-bit/192kHz',
+    mp1: '~5–12 MB / 5 min', mp2: 'up to 320 kbps', mp3p: 'universal compatibility',
+    hint: '▼ Click to expand',
+    pros: '✅ Pros', cons: '❌ Cons',
+    flacPros: ['Perfect audio quality – zero loss', 'Ideal for CD archiving', 'Hi-Res Audio (32-bit / 192kHz)', 'Open source & completely free', 'Convert to any format without quality loss'],
+    flacCons: ['Large file size', 'Fewer streaming platforms support it', 'Requires more storage space'],
+    mp3Pros: ['Plays on every device worldwide', 'Small size – perfect for mobile', 'Fast loading even on slow internet', 'At 320 kbps the difference is barely audible'],
+    mp3Cons: ['Permanent loss of audio details', 'Each re-compression reduces quality further', 'Difference becomes noticeable on good equipment'],
+    cmpTitle: 'Feature Comparison — click rows for details',
+    rows: [
+      { label: 'Audio Quality', flac: 'Full 100%', mp3: 'Up to ~98%', detail: 'FLAC preserves every bit of the original audio. MP3 removes sounds that are hard for the human ear to detect, mainly very high and very low frequencies.' },
+      { label: 'Size (5 minutes)', flac: '25–35 MB', mp3: '5–12 MB', detail: 'An MP3 at 128 kbps weighs ~5 MB, at 320 kbps ~12 MB. A FLAC for the same track typically weighs 25–35 MB.' },
+      { label: 'Compatibility', flac: 'Very good', mp3: 'Everywhere', detail: 'MP3 plays on every device since 1995. FLAC is supported on Android, iPhone (iOS 11+), Windows, but not on older legacy devices.' },
+      { label: 'Streaming 2026', flac: 'Tidal / Qobuz', mp3: 'Spotify / YouTube', detail: 'Tidal HiFi, Qobuz, Amazon Music HD and Deezer HiFi offer FLAC streaming. Spotify and YouTube use compressed audio formats.' },
+      { label: 'Battery Usage', flac: 'Slightly higher', mp3: 'Low', detail: 'FLAC decompression requires slightly more CPU than MP3. In practice the difference is minimal on modern devices.' },
+      { label: 'Re-compression', flac: 'No quality loss', mp3: 'Loses quality', detail: 'Converting FLAC→MP3 gives you a good MP3. Converting MP3→MP3 again degrades quality further each time.' },
+    ],
+    footer: '💡 <strong>Tip:</strong> Store as FLAC for archiving, convert to MP3 for mobile & sharing.'
+  }
+};
+
+function render() {
+  const d = data[lang.current];
+  document.getElementById('langBtn').textContent = d.langBtn;
+  document.getElementById('h-sub').textContent = d.sub;
+  document.getElementById('flac-sub').textContent = d.flacSub;
+  document.getElementById('mp3-sub').textContent = d.mp3Sub;
+  document.getElementById('fp1').textContent = d.fp1;
+  document.getElementById('fp2').textContent = d.fp2;
+  document.getElementById('fp3').textContent = d.fp3;
+  document.getElementById('mp1').textContent = d.mp1;
+  document.getElementById('mp2').textContent = d.mp2;
+  document.getElementById('mp3p').textContent = d.mp3p;
+  document.getElementById('flac-hint').textContent = d.hint;
+  document.getElementById('mp3-hint').textContent = d.hint;
+  document.getElementById('pros-lbl').textContent = d.pros;
+  document.getElementById('cons-lbl').textContent = d.cons;
+  document.getElementById('pros-lbl2').textContent = d.pros;
+  document.getElementById('cons-lbl2').textContent = d.cons;
+  document.getElementById('cmp-title').textContent = d.cmpTitle;
+  document.getElementById('footer-tip').innerHTML = d.footer;
+
+  // Lists
+  const makeLi = (text, panel) => {
+    const li = document.createElement('li');
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    li.appendChild(dot);
+    li.appendChild(document.createTextNode(text));
+    return li;
+  };
+  const fpEl = document.getElementById('flac-pros'); fpEl.innerHTML = '';
+  d.flacPros.forEach(t => fpEl.appendChild(makeLi(t)));
+  const fcEl = document.getElementById('flac-cons'); fcEl.innerHTML = '';
+  d.flacCons.forEach(t => fcEl.appendChild(makeLi(t)));
+  const mpEl = document.getElementById('mp3-pros'); mpEl.innerHTML = '';
+  d.mp3Pros.forEach(t => mpEl.appendChild(makeLi(t)));
+  const mcEl = document.getElementById('mp3-cons'); mcEl.innerHTML = '';
+  d.mp3Cons.forEach(t => mcEl.appendChild(makeLi(t)));
+
+  // Comparison rows
+  const container = document.getElementById('cmp-rows');
+  const expanded = [...container.querySelectorAll('.compare-row.expanded')].map((el, i) => el.dataset.idx);
+  container.innerHTML = '';
+  d.rows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'compare-row' + (expanded.includes(String(i)) ? ' expanded' : '');
+    div.dataset.idx = i;
+    div.innerHTML = `
+      <div class="compare-flac"><span class="compare-val">${row.flac}</span></div>
+      <div class="compare-label">${row.label}</div>
+      <div class="compare-mp3"><span class="compare-val">${row.mp3}</span></div>
+      <div class="row-detail">${row.detail}</div>
+    `;
+    div.addEventListener('click', () => div.classList.toggle('expanded'));
+    container.appendChild(div);
+  });
+}
+
+function toggleLang() {
+  lang.current = lang.current === 'el' ? 'en' : 'el';
+  render();
+}
+
+let flacOpen = false, mp3Open = false;
+
+function toggleCard(type) {
+  if (type === 'flac') {
+    flacOpen = !flacOpen;
+    document.getElementById('panel-flac').classList.toggle('open', flacOpen);
+    document.getElementById('card-flac').classList.toggle('active', flacOpen);
+    document.getElementById('flac-hint').textContent = flacOpen ? '▲ Κλικ για κλείσιμο' : data[lang.current].hint;
+  } else {
+    mp3Open = !mp3Open;
+    document.getElementById('panel-mp3').classList.toggle('open', mp3Open);
+    document.getElementById('card-mp3').classList.toggle('active', mp3Open);
+    document.getElementById('mp3-hint').textContent = mp3Open ? '▲ Κλικ για κλείσιμο' : data[lang.current].hint;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
