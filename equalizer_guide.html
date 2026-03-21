@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equalizer Guide / Οδηγός Equalizer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    color: #1e2329;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 16px 32px;
+  }
+
+  /* ── LANG BUTTON ── */
+  #lang-btn {
+    position: fixed;
+    top: 14px; right: 16px;
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 3px 10px rgba(21,101,192,0.35);
+    transition: background 0.2s;
+  }
+  #lang-btn:hover { background: #0d47a1; }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    max-width: 720px;
+    width: 100%;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: #1565c0;
+    margin-bottom: 6px;
+  }
+  header p { font-size: 0.97rem; color: #555; }
+
+  /* ── MAIN GRID ── */
+  .main-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+    max-width: 820px;
+    align-items: center;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1565c0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════
+     DIAGRAM 1 — FREQUENCY SPECTRUM
+  ══════════════════════════════════ */
+  .freq-row {
+    display: flex;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.1);
+    width: 100%;
+    cursor: pointer;
+  }
+  .freq-band {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: filter 0.2s;
+    position: relative;
+  }
+  .freq-band:hover { filter: brightness(0.92); }
+  .freq-band.bass   { background: #1565c0; color: #fff; }
+  .freq-band.mid    { background: #43a047; color: #fff; }
+  .freq-band.treble { background: #fb8c00; color: #fff; }
+  .freq-band .hz    { display: block; font-size: 0.73rem; font-weight: 400; opacity: 0.85; margin-top: 3px; }
+
+  .freq-detail {
+    display: none;
+    background: #f0f4ff;
+    border-radius: 0 0 12px 12px;
+    padding: 14px 18px;
+    font-size: 0.91rem;
+    color: #333;
+    line-height: 1.65;
+    width: 100%;
+    border: 1.5px solid #dce8ff;
+    border-top: none;
+    animation: fadeIn 0.2s ease;
+  }
+  .freq-detail.active { display: block; }
+
+  /* ══════════════════════════════════
+     DIAGRAM 2 — EQ TYPES
+  ══════════════════════════════════ */
+  .eq-types-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .eq-type-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 18px 16px;
+    flex: 1 1 180px;
+    max-width: 240px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    text-align: center;
+  }
+  .eq-type-card:hover, .eq-type-card.open {
+    border-color: #1565c0;
+    box-shadow: 0 4px 16px rgba(21,101,192,0.18);
+    transform: translateY(-2px);
+  }
+  .eq-type-card .card-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+  .eq-type-card h3 { font-size: 0.95rem; color: #1565c0; margin-bottom: 4px; }
+  .eq-type-card .card-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .eq-type-card.g1 .card-badge { background: #e8f0fe; color: #1565c0; }
+  .eq-type-card.g2 .card-badge { background: #e8f5e9; color: #2e7d32; }
+  .eq-type-card.g3 .card-badge { background: #fff3e0; color: #e65100; }
+  .eq-type-card .card-detail {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #444;
+    line-height: 1.6;
+    text-align: left;
+    border-top: 1.5px solid #e8ecf0;
+    padding-top: 10px;
+    animation: fadeIn 0.2s ease;
+  }
+  .eq-type-card.open .card-detail { display: block; }
+
+  /* ══════════════════════════════════
+     DIAGRAM 3 — GENRE WHEEL / GRID
+  ══════════════════════════════════ */
+  .genre-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+  .genre-btn {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 12px 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: #333;
+  }
+  .genre-btn:hover, .genre-btn.active {
+    border-color: #43a047;
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .genre-btn span { display: block; font-size: 1.4rem; margin-bottom: 5px; }
+
+  .genre-panel {
+    display: none;
+    background: #f9fffe;
+    border: 1.5px solid #c8e6c9;
+    border-radius: 12px;
+    padding: 18px 20px;
+    width: 100%;
+    animation: fadeIn 0.25s ease;
+  }
+  .genre-panel.active { display: block; }
+  .genre-panel h4 { font-size: 1rem; color: #2e7d32; margin-bottom: 10px; }
+  .genre-panel ul { list-style: none; padding: 0; }
+  .genre-panel ul li { font-size: 0.91rem; color: #444; padding: 4px 0; line-height: 1.55; }
+  .genre-panel ul li::before { content: '▸ '; color: #43a047; font-weight: bold; }
+
+  /* ══════════════════════════════════
+     DIAGRAM 4 — STEP GUIDE (TIMELINE)
+  ══════════════════════════════════ */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: #bbdefb;
+  }
+  .tl-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    position: relative;
+    cursor: pointer;
+    padding: 10px 0;
+  }
+  .tl-num {
+    width: 44px; height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background: #1565c0;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+    box-shadow: 0 3px 10px rgba(21,101,192,0.3);
+    transition: background 0.2s;
+  }
+  .tl-step:hover .tl-num, .tl-step.open .tl-num { background: #0d47a1; }
+  .tl-content {
+    flex: 1;
+    background: #fff;
+    border: 1.5px solid #e3eaf5;
+    border-radius: 10px;
+    padding: 12px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .tl-step:hover .tl-content, .tl-step.open .tl-content {
+    border-color: #90caf9;
+    box-shadow: 0 3px 12px rgba(21,101,192,0.1);
+  }
+  .tl-content h4 { font-size: 0.95rem; color: #1565c0; margin-bottom: 0; }
+  .tl-detail {
+    display: none;
+    font-size: 0.88rem;
+    color: #555;
+    margin-top: 8px;
+    line-height: 1.65;
+    animation: fadeIn 0.2s ease;
+  }
+  .tl-step.open .tl-detail { display: block; }
+
+  /* ══════════════════════════════════
+     DIAGRAM 5 — PROS / CONS
+  ══════════════════════════════════ */
+  .proscons-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+  }
+  .pros-box, .cons-box {
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .pros-box { background: #e8f5e9; border-top: 4px solid #43a047; }
+  .cons-box { background: #fff8e1; border-top: 4px solid #ffb300; }
+  .pros-box h4 { color: #2e7d32; font-size: 0.95rem; margin-bottom: 10px; }
+  .cons-box h4 { color: #e65100; font-size: 0.95rem; margin-bottom: 10px; }
+  .pros-box ul, .cons-box ul { list-style: none; padding: 0; }
+  .pros-box ul li, .cons-box ul li { font-size: 0.88rem; color: #444; padding: 3px 0; line-height: 1.5; }
+  .pros-box ul li::before { content: '✅ '; }
+  .cons-box ul li::before { content: '⚠️ '; }
+
+  /* ── SECTION WRAPPER ── */
+  .section-block { width: 100%; }
+
+  /* ── CLICK HINT ── */
+  .click-hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #aaa;
+    margin-top: 6px;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 540px) {
+    .proscons-wrap { grid-template-columns: 1fr; }
+    .eq-type-card { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<button id="lang-btn" onclick="toggleLang()">🌐 English</button>
+
+<header>
+  <h1 id="h-title">🎚️ Οδηγός Equalizer</h1>
+  <p id="h-sub">Κάνε κλικ σε κάθε στοιχείο για λεπτομέρειες</p>
+</header>
+
+<div class="main-wrap">
+
+  <!-- ─────────────────────────────────────
+       DIAGRAM 1: FREQUENCY SPECTRUM
+  ───────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-title" data-el="d1-title">🔊 Φάσμα Συχνοτήτων — Οι 3 Ζώνες</div>
+    <div class="freq-row" onclick="toggleFreq()">
+      <div class="freq-band bass">
+        <span data-el="bass-lbl">🥁 Μπάσο</span>
+        <span class="hz">20 – 250 Hz</span>
+      </div>
+      <div class="freq-band mid">
+        <span data-el="mid-lbl">🎤 Μεσαία</span>
+        <span class="hz">250 – 4.000 Hz</span>
+      </div>
+      <div class="freq-band treble">
+        <span data-el="treble-lbl">✨ Ψηλά</span>
+        <span class="hz">4.000 – 20.000 Hz</span>
+      </div>
+    </div>
+    <div class="freq-detail" id="freq-detail">
+      <span data-el="freq-detail-text">
+        <b>🥁 Μπάσο (20–250 Hz):</b> Το «βάρος» της μουσικής — ντράμα, μπάσο κιθάρα. Πολύ από αυτό → θολός ήχος.<br>
+        <b>🎤 Μεσαία (250–4k Hz):</b> Φωνές και κύρια όργανα. Καθορίζει πόσο «ζωντανός» ακούγεται ο ήχος.<br>
+        <b>✨ Ψηλά (4k–20k Hz):</b> Λεπτομέρεια και «λάμψη» — σύμβαλα, αέρας. Πολύ από αυτό κουράζει τα αυτιά.
+      </span>
+    </div>
+    <p class="click-hint" data-el="click-hint1">👆 Κάνε κλικ για ανάπτυξη / σύμπτυξη</p>
+  </div>
+
+  <!-- ─────────────────────────────────────
+       DIAGRAM 2: EQ TYPES
+  ───────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-title" data-el="d2-title">🛠️ Τύποι Equalizer</div>
+    <div class="eq-types-row">
+      <div class="eq-type-card g1" onclick="toggleCard(this)">
+        <span class="card-icon">🎛️</span>
+        <span class="card-badge" data-el="badge-beg">Αρχάριοι</span>
+        <h3 data-el="card1-title">Γραφικός</h3>
+        <div class="card-detail" data-el="card1-detail">
+          Σειρά ρυθμιστών (sliders), ο καθένας για μία συχνότητα. Άμεση οπτική εικόνα. Ιδανικός για γρήγορες αλλαγές και αρχάριους χρήστες.
+        </div>
+      </div>
+      <div class="eq-type-card g2" onclick="toggleCard(this)">
+        <span class="card-icon">🎯</span>
+        <span class="card-badge" data-el="badge-adv">Προχωρημένοι</span>
+        <h3 data-el="card2-title">Παραμετρικός</h3>
+        <div class="card-detail" data-el="card2-detail">
+          Πλήρης έλεγχος: επιλέγεις συχνότητα, ένταση αλλαγής και εύρος επίδρασης. Ακριβής αλλά απαιτεί εκμάθηση.
+        </div>
+      </div>
+      <div class="eq-type-card g3" onclick="toggleCard(this)">
+        <span class="card-icon">📱</span>
+        <span class="card-badge" data-el="badge-all">Για όλους</span>
+        <h3 data-el="card3-title">Software / App</h3>
+        <div class="card-detail" data-el="card3-detail">
+          Εφαρμογές (Spotify, Wavelet, Equalizer APO). Δωρεάν, ευέλικτες, αποθήκευση ρυθμίσεων. Ιδανικές για καθημερινή χρήση.
+        </div>
+      </div>
+    </div>
+    <p class="click-hint" data-el="click-hint2">👆 Κάνε κλικ σε κάθε κάρτα για λεπτομέρειες</p>
+  </div>
+
+  <!-- ─────────────────────────────────────
+       DIAGRAM 3: MUSIC GENRES
+  ───────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-title" data-el="d3-title">🎵 Ρυθμίσεις ανά Είδος Μουσικής</div>
+    <div class="genre-grid">
+      <button class="genre-btn" onclick="showGenre('rock',this)"><span>🎸</span><span data-el="g-rock">Rock/Metal</span></button>
+      <button class="genre-btn" onclick="showGenre('pop',this)"><span>🎵</span><span data-el="g-pop">Pop</span></button>
+      <button class="genre-btn" onclick="showGenre('jazz',this)"><span>🎺</span><span data-el="g-jazz">Jazz/Blues</span></button>
+      <button class="genre-btn" onclick="showGenre('classical',this)"><span>🎹</span><span data-el="g-classical">Κλασική</span></button>
+      <button class="genre-btn" onclick="showGenre('edm',this)"><span>🎧</span><span data-el="g-edm">EDM</span></button>
+      <button class="genre-btn" onclick="showGenre('hiphop',this)"><span>🎤</span><span data-el="g-hiphop">Hip-Hop/R&B</span></button>
+    </div>
+    <div id="genre-panel" class="genre-panel">
+      <h4 id="genre-panel-title"></h4>
+      <ul id="genre-panel-list"></ul>
+    </div>
+    <p class="click-hint" data-el="click-hint3">👆 Επίλεξε είδος για τις συνιστώμενες ρυθμίσεις</p>
+  </div>
+
+  <!-- ─────────────────────────────────────
+       DIAGRAM 4: STEP-BY-STEP TIMELINE
+  ───────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-title" data-el="d4-title">📘 Οδηγός Ρύθμισης Βήμα-Βήμα</div>
+    <div class="timeline" id="timeline"></div>
+    <p class="click-hint" data-el="click-hint4">👆 Κάνε κλικ σε κάθε βήμα για οδηγίες</p>
+  </div>
+
+  <!-- ─────────────────────────────────────
+       DIAGRAM 5: PROS / CONS
+  ───────────────────────────────────── -->
+  <div class="section-block">
+    <div class="section-title" data-el="d5-title">⚖️ Τι Μπορεί — Τι Δεν Μπορεί ο EQ</div>
+    <div class="proscons-wrap">
+      <div class="pros-box">
+        <h4 data-el="pros-title">✅ Μπορεί να κάνει</h4>
+        <ul id="pros-list"></ul>
+      </div>
+      <div class="cons-box">
+        <h4 data-el="cons-title">⚠️ ΔΕΝ μπορεί να κάνει</h4>
+        <ul id="cons-list"></ul>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-wrap -->
+
+<script>
+/* ══════════════════════════════════
+   DATA — bilingual content
+══════════════════════════════════ */
+const DATA = {
+  el: {
+    "h-title": "🎚️ Οδηγός Equalizer",
+    "h-sub": "Κάνε κλικ σε κάθε στοιχείο για λεπτομέρειες",
+    "d1-title": "🔊 Φάσμα Συχνοτήτων — Οι 3 Ζώνες",
+    "bass-lbl": "🥁 Μπάσο",
+    "mid-lbl": "🎤 Μεσαία",
+    "treble-lbl": "✨ Ψηλά",
+    "freq-detail-text": "<b>🥁 Μπάσο (20–250 Hz):</b> Το «βάρος» της μουσικής — ντράμα, μπάσο κιθάρα. Πολύ → θολός ήχος.<br><b>🎤 Μεσαία (250–4k Hz):</b> Φωνές και κύρια όργανα. Καθορίζει τη «ζωντάνια» του ήχου.<br><b>✨ Ψηλά (4k–20k Hz):</b> Λεπτομέρεια και λάμψη. Πολύ → κουράζει τα αυτιά.",
+    "click-hint1": "👆 Κάνε κλικ για ανάπτυξη / σύμπτυξη",
+    "d2-title": "🛠️ Τύποι Equalizer",
+    "badge-beg": "Αρχάριοι", "badge-adv": "Προχωρημένοι", "badge-all": "Για όλους",
+    "card1-title": "Γραφικός",
+    "card1-detail": "Σειρά ρυθμιστών (sliders), ο καθένας για μία συχνότητα. Άμεση οπτική εικόνα. Ιδανικός για αρχάριους.",
+    "card2-title": "Παραμετρικός",
+    "card2-detail": "Πλήρης έλεγχος: συχνότητα, ένταση αλλαγής και εύρος επίδρασης. Ακριβής αλλά απαιτεί εκμάθηση.",
+    "card3-title": "Software / App",
+    "card3-detail": "Εφαρμογές (Spotify, Wavelet, Equalizer APO). Δωρεάν, ευέλικτες, αποθήκευση ρυθμίσεων.",
+    "click-hint2": "👆 Κάνε κλικ σε κάθε κάρτα για λεπτομέρειες",
+    "d3-title": "🎵 Ρυθμίσεις ανά Είδος Μουσικής",
+    "g-rock":"Rock/Metal","g-pop":"Pop","g-jazz":"Jazz/Blues","g-classical":"Κλασική","g-edm":"EDM","g-hiphop":"Hip-Hop/R&B",
+    "click-hint3": "👆 Επίλεξε είδος για τις συνιστώμενες ρυθμίσεις",
+    "d4-title": "📘 Οδηγός Ρύθμισης Βήμα-Βήμα",
+    "click-hint4": "👆 Κάνε κλικ σε κάθε βήμα για οδηγίες",
+    "d5-title": "⚖️ Τι Μπορεί — Τι Δεν Μπορεί ο EQ",
+    "pros-title": "✅ Μπορεί να κάνει",
+    "cons-title": "⚠️ ΔΕΝ μπορεί να κάνει",
+    "lang-btn": "🌐 English",
+    genres: {
+      rock:      { title:"🎸 Rock & Metal", tips:["Αύξηση μπάσου στα 60–100 Hz για δυνατό ρυθμό","Μείωση θολής μεσαίας περιοχής (200–400 Hz)","Ενίσχυση κιθάρας στα 1–3 kHz","Φωτεινότητα σύμβαλων στα 10–12 kHz"] },
+      pop:       { title:"🎵 Pop", tips:["Μικρή αύξηση στα 80 Hz","Ενίσχυση φωνής στα 1–2 kHz","Ελάχιστη λάμψη στα 8–10 kHz","Αποφύγε ακραίες αλλαγές — τα pop τραγούδια είναι ήδη καλά μαστερισμένα"] },
+      jazz:      { title:"🎺 Jazz & Blues", tips:["Ζεστά μπάσα στα 60–80 Hz","Θερμότητα στα 200–400 Hz","Ήπια διαύγεια στα 1–2 kHz","Ελάχιστη επεξεργασία — διατήρησε τον φυσικό ήχο"] },
+      classical: { title:"🎹 Κλασική & Ορχηστρική", tips:["Ελάχιστες παρεμβάσεις","Ελαφρά ζεστασιά στα 200–500 Hz","Σεβάσου τη δυναμική εμβέλεια","Μην προσθέτεις τεχνητά μπάσα"] },
+      edm:       { title:"🎧 Electronic & EDM", tips:["Δυνατά μπάσα στα 40–80 Hz","Μείωση θολής περιοχής 200–400 Hz","Συνθεσάιζερ στα 2–4 kHz","Ψηφιακή λάμψη στα 8–12 kHz — με μέτρο!"] },
+      hiphop:    { title:"🎤 Hip-Hop & R&B", tips:["Βαθύ μπάσο στα 50–80 Hz","Μείωση στα 300–500 Hz για καθαρό μείγμα","Διαύγεια φωνής στα 1–3 kHz","Ελεγχόμενα ψηλά"] }
+    },
+    steps: [
+      { h:"🎧 Προετοιμάσου σωστά", d:"Ήσυχο δωμάτιο, μέτρια ένταση. Τοποθέτησε τα ηχεία σε ισοσκελές τρίγωνο με τα αυτιά σου. Χρησιμοποίησε γνωστά τραγούδια ως αναφορά." },
+      { h:"📊 Ξεκίνα από ουδέτερο", d:"Βάλε όλους τους ρυθμιστές στο μηδέν. Άκουσε και σημείωσε: τι ακούγεται θολό, τι σκληρό, τι λείπει;" },
+      { h:"✂️ Πρώτα αφαίρεσε", d:"Πρώτα κάνε μικρές μειώσεις σε ό,τι ακούγεται άσχημα. Αν ο ήχος είναι θολός, μείωσε στα 300 Hz — μην ανεβάζεις τα ψηλά." },
+      { h:"🔢 Μικρές αλλαγές", d:"Μέγιστο 3–6 dB σε κάθε περιοχή. Αν χρειάζεσαι πάνω από 6 dB, το πρόβλημα δεν λύνεται μόνο με EQ." },
+      { h:"🎵 Δοκίμασε διάφορα κομμάτια", d:"Έλεγξε τις ρυθμίσεις με rock, pop, κλασική. Βεβαιώσου ότι λειτουργούν για όλα τα είδη που ακούς." },
+      { h:"⏱️ Δώσε χρόνο στα αυτιά σου", d:"Άκουσε 10–15 λεπτά μετά από κάθε αλλαγή πριν κρίνεις. Κάνε διαλείμματα — κουρασμένα αυτιά κάνουν κακές κρίσεις." },
+      { h:"💾 Αποθήκευσε τις ρυθμίσεις", d:"Αποθήκευσε ως preset. Φτιάξε ξεχωριστές ρυθμίσεις για μουσική, ταινίες και gaming." }
+    ],
+    pros: ["Βελτιώνει τον ήχο στο δωμάτιό σου","Διορθώνει αδυναμίες ηχείων","Προσαρμόζεται στις προτιμήσεις σου","Βελτιστοποιείται ανά μουσικό είδος","Βοηθά ακόμα και φθηνά ηχεία"],
+    cons: ["Δεν δημιουργεί ήχο που δεν υπάρχει","Δεν σώζει κακά ηχεία","Δεν διορθώνει ελαττωματικό εξοπλισμό","Δεν αντικαθιστά καλή ακουστική δωματίου","Δεν βελτιώνει κακή ηχογράφηση"]
+  },
+  en: {
+    "h-title": "🎚️ Equalizer Guide",
+    "h-sub": "Click on any element for details",
+    "d1-title": "🔊 Frequency Spectrum — The 3 Bands",
+    "bass-lbl": "🥁 Bass",
+    "mid-lbl": "🎤 Midrange",
+    "treble-lbl": "✨ Treble",
+    "freq-detail-text": "<b>🥁 Bass (20–250 Hz):</b> The 'weight' of music — drums, bass guitar. Too much → muddy sound.<br><b>🎤 Midrange (250–4k Hz):</b> Vocals and main instruments. Determines how 'alive' the sound feels.<br><b>✨ Treble (4k–20k Hz):</b> Detail and sparkle. Too much → ear fatigue.",
+    "click-hint1": "👆 Click to expand / collapse",
+    "d2-title": "🛠️ Types of Equalizer",
+    "badge-beg": "Beginners", "badge-adv": "Advanced", "badge-all": "Everyone",
+    "card1-title": "Graphic EQ",
+    "card1-detail": "A row of sliders, each controlling one frequency band. Instant visual feedback. Ideal for beginners and quick adjustments.",
+    "card2-title": "Parametric EQ",
+    "card2-detail": "Full control: choose frequency, gain, and bandwidth. Very precise but requires more learning.",
+    "card3-title": "Software / App",
+    "card3-detail": "Apps like Spotify, Wavelet, Equalizer APO. Free, flexible, presets saveable. Best for everyday use.",
+    "click-hint2": "👆 Click each card for details",
+    "d3-title": "🎵 Settings by Music Genre",
+    "g-rock":"Rock/Metal","g-pop":"Pop","g-jazz":"Jazz/Blues","g-classical":"Classical","g-edm":"EDM","g-hiphop":"Hip-Hop/R&B",
+    "click-hint3": "👆 Select a genre for recommended settings",
+    "d4-title": "📘 Step-by-Step Setup Guide",
+    "click-hint4": "👆 Click each step for instructions",
+    "d5-title": "⚖️ What EQ Can — and Cannot — Do",
+    "pros-title": "✅ What it CAN do",
+    "cons-title": "⚠️ What it CANNOT do",
+    "lang-btn": "🌐 Ελληνικά",
+    genres: {
+      rock:      { title:"🎸 Rock & Metal", tips:["Boost bass at 60–100 Hz for power","Cut muddy mids at 200–400 Hz","Boost guitar presence at 1–3 kHz","Add cymbal brightness at 10–12 kHz"] },
+      pop:       { title:"🎵 Pop", tips:["Small boost at 80 Hz","Vocal boost at 1–2 kHz","Gentle sparkle at 8–10 kHz","Avoid extreme changes — pop tracks are already well mastered"] },
+      jazz:      { title:"🎺 Jazz & Blues", tips:["Warm bass at 60–80 Hz","Warmth in mids at 200–400 Hz","Gentle clarity at 1–2 kHz","Minimal processing — preserve natural sound"] },
+      classical: { title:"🎹 Classical & Orchestral", tips:["Minimal intervention","Gentle warmth at 200–500 Hz","Respect dynamic range","Don't add artificial bass"] },
+      edm:       { title:"🎧 Electronic & EDM", tips:["Strong sub-bass at 40–80 Hz","Cut muddy range 200–400 Hz","Synth presence at 2–4 kHz","Digital sparkle at 8–12 kHz — carefully!"] },
+      hiphop:    { title:"🎤 Hip-Hop & R&B", tips:["Deep bass at 50–80 Hz","Cut 300–500 Hz for a cleaner mix","Vocal clarity at 1–3 kHz","Controlled highs"] }
+    },
+    steps: [
+      { h:"🎧 Prepare your environment", d:"Quiet room, moderate volume. Position speakers in an equilateral triangle with your ears. Use familiar tracks as reference." },
+      { h:"📊 Start flat (neutral)", d:"Set all sliders to zero. Listen and note: what sounds muddy, harsh, or missing?" },
+      { h:"✂️ Cut first, boost later", d:"First make small cuts where something sounds bad. If the sound is muddy, cut at 300 Hz — don't just boost the highs." },
+      { h:"🔢 Keep changes small", d:"Maximum 3–6 dB per band. If you need more than 6 dB, the problem likely can't be solved by EQ alone." },
+      { h:"🎵 Test with various tracks", d:"Check your settings with rock, pop, classical. Make sure they work for all genres you listen to." },
+      { h:"⏱️ Give your ears time", d:"Listen 10–15 minutes after each change before judging. Take breaks — tired ears make bad decisions." },
+      { h:"💾 Save your settings", d:"Save as a preset. Create separate settings for music, movies, and gaming." }
+    ],
+    pros: ["Improves sound in your room","Corrects speaker weaknesses","Adapts to your preferences","Optimises per music genre","Helps even budget speakers"],
+    cons: ["Cannot create sound that isn't there","Cannot save bad speakers","Cannot fix faulty equipment","Cannot replace good room acoustics","Cannot improve a bad recording"]
+  }
+};
+
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+let lang = 'el';
+let freqOpen = false;
+let currentGenre = null;
+
+/* ══════════════════════════════════
+   RENDER
+══════════════════════════════════ */
+function render() {
+  const d = DATA[lang];
+
+  // Text elements
+  Object.keys(d).forEach(k => {
+    if (typeof d[k] !== 'string') return;
+    document.querySelectorAll(`[data-el="${k}"]`).forEach(el => {
+      el.innerHTML = d[k];
+    });
+  });
+  document.getElementById('lang-btn').textContent = d['lang-btn'];
+
+  // Timeline
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = d.steps.map((s, i) => `
+    <div class="tl-step" onclick="this.classList.toggle('open')">
+      <div class="tl-num">${i+1}</div>
+      <div class="tl-content">
+        <h4>${s.h}</h4>
+        <div class="tl-detail">${s.d}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Pros / Cons
+  document.getElementById('pros-list').innerHTML = d.pros.map(p=>`<li>${p}</li>`).join('');
+  document.getElementById('cons-list').innerHTML = d.cons.map(p=>`<li>${p}</li>`).join('');
+
+  // Genre panel (re-render if open)
+  if (currentGenre) {
+    const g = d.genres[currentGenre];
+    document.getElementById('genre-panel-title').textContent = g.title;
+    document.getElementById('genre-panel-list').innerHTML = g.tips.map(t=>`<li>${t}</li>`).join('');
+  }
+}
+
+/* ══════════════════════════════════
+   INTERACTIONS
+══════════════════════════════════ */
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  render();
+}
+
+function toggleFreq() {
+  freqOpen = !freqOpen;
+  document.getElementById('freq-detail').classList.toggle('active', freqOpen);
+}
+
+function toggleCard(el) {
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.eq-type-card').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+function showGenre(id, btn) {
+  const allBtns = document.querySelectorAll('.genre-btn');
+  const panel = document.getElementById('genre-panel');
+
+  if (currentGenre === id) {
+    currentGenre = null;
+    allBtns.forEach(b => b.classList.remove('active'));
+    panel.classList.remove('active');
+    return;
+  }
+
+  currentGenre = id;
+  allBtns.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const g = DATA[lang].genres[id];
+  document.getElementById('genre-panel-title').textContent = g.title;
+  document.getElementById('genre-panel-list').innerHTML = g.tips.map(t=>`<li>${t}</li>`).join('');
+  panel.classList.add('active');
+}
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+render();
+</script>
+</body>
+</html>
