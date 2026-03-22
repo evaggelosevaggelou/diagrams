@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Εικονικοί Σκληροί Δίσκοι VHD & VHDX | Virtual Hard Disks Guide</title>
+<meta name="description" content="Πλήρης οδηγός για τους εικονικούς σκληρούς δίσκους VHD και VHDX στα Windows. Complete guide to VHD and VHDX virtual hard disks on Windows." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100%;
+    background: #fff;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #1a1a1a;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 48px;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px 0 10px;
+  }
+
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .lang-btn:hover { border-color: #3f51b5; background: #f0f2ff; color: #3f51b5; }
+  .lang-btn .globe { font-size: 15px; }
+
+  /* ── HERO ── */
+  .hero {
+    width: 100%;
+    max-width: 760px;
+    text-align: center;
+    padding: 36px 0 28px;
+  }
+
+  .hero-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    background: #e8eaf6;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-icon svg { width: 34px; height: 34px; }
+
+  .hero h1 {
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 600;
+    color: #1a237e;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+
+  .hero p {
+    font-size: 15px;
+    color: #555;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    width: 100%;
+    max-width: 760px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #999;
+    margin: 28px 0 10px;
+  }
+
+  /* ── VHD TYPE CARDS ── */
+  .types-grid {
+    width: 100%;
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .type-card {
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+    position: relative;
+  }
+
+  .type-card:hover { border-color: #9fa8da; box-shadow: 0 2px 12px rgba(63,81,181,.08); }
+  .type-card.open { border-color: #3f51b5; }
+
+  .type-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .type-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-fixed  { background: #3f51b5; }
+  .dot-dynamic{ background: #43a047; }
+  .dot-diff   { background: #fb8c00; }
+
+  .type-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1a1a;
+  }
+
+  .type-badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  .badge-speed   { background: #e8eaf6; color: #3f51b5; }
+  .badge-smart   { background: #e8f5e9; color: #2e7d32; }
+  .badge-pro     { background: #fff3e0; color: #e65100; }
+
+  .type-desc {
+    font-size: 13px;
+    color: #666;
+    margin-top: 8px;
+  }
+
+  .type-detail {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eeeeee;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.65;
+  }
+
+  .type-card.open .type-detail { display: block; }
+
+  .type-card-header::after {
+    content: '+';
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    font-size: 18px;
+    color: #bbb;
+    line-height: 1;
+    transition: transform .2s;
+  }
+
+  .type-card.open .type-card-header::after {
+    transform: rotate(45deg);
+    color: #3f51b5;
+  }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    width: 100%;
+    max-width: 760px;
+    background: #e3f2fd;
+    border-left: 4px solid #1976d2;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #0d47a1;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+
+  /* ── STEP ACCORDION ── */
+  .steps-list {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .step-item {
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+
+  .step-item:hover { border-color: #9fa8da; }
+  .step-item.open  { border-color: #3f51b5; }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff;
+    position: relative;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e8eaf6;
+    color: #3f51b5;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-item.open .step-num { background: #3f51b5; color: #fff; }
+
+  .step-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    flex: 1;
+  }
+
+  .step-chevron {
+    width: 16px;
+    height: 16px;
+    color: #bbb;
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+
+  .step-item.open .step-chevron { transform: rotate(180deg); color: #3f51b5; }
+
+  .step-body {
+    display: none;
+    padding: 0 16px 14px 56px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.65;
+    background: #fafafa;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .step-item.open .step-body { display: block; padding-top: 10px; }
+
+  /* ── PROS / CONS ── */
+  .proscons {
+    width: 100%;
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 520px) { .proscons { grid-template-columns: 1fr; } }
+
+  .pc-card {
+    border-radius: 10px;
+    padding: 16px;
+    border: 1.5px solid #e0e0e0;
+  }
+
+  .pc-card.pros { border-color: #c8e6c9; }
+  .pc-card.cons { border-color: #ffe082; }
+
+  .pc-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pc-card.pros .pc-title { color: #2e7d32; }
+  .pc-card.cons .pc-title { color: #e65100; }
+
+  .pc-list { list-style: none; }
+  .pc-list li {
+    font-size: 13px;
+    color: #444;
+    padding: 5px 0;
+    border-bottom: 1px solid #f5f5f5;
+    line-height: 1.5;
+  }
+  .pc-list li:last-child { border-bottom: none; }
+  .pc-list li::before {
+    margin-right: 6px;
+    font-size: 13px;
+  }
+  .pc-card.pros .pc-list li::before { content: '✓'; color: #43a047; }
+  .pc-card.cons .pc-list li::before { content: '!'; color: #fb8c00; }
+
+  /* ── VHD vs VHDX TABLE ── */
+  .compare-table {
+    width: 100%;
+    max-width: 760px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .compare-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .compare-table th {
+    background: #f5f7ff;
+    color: #3f51b5;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1.5px solid #e0e0e0;
+  }
+
+  .compare-table td {
+    padding: 9px 14px;
+    color: #444;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: #fafafa; }
+
+  .tag-old { background: #fce4ec; color: #c2185b; padding: 2px 7px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+  .tag-new { background: #e8f5e9; color: #2e7d32; padding: 2px 7px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    width: 100%;
+    max-width: 760px;
+    text-align: center;
+    padding-top: 36px;
+    font-size: 12px;
+    color: #bbb;
+  }
+
+  /* ── HIDDEN LANG ── */
+  [data-en], [data-el] { }
+  .lang-en [data-el] { display: none; }
+  .lang-el [data-en] { display: none; }
+</style>
+</head>
+<body class="lang-el">
+
+<!-- HEADER -->
+<div class="page-header">
+  <button class="lang-btn" id="langToggle" onclick="toggleLang()">
+    <span class="globe">🌐</span>
+    <span id="langLabel">English</span>
+  </button>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">
+    <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="9" width="28" height="16" rx="3" fill="#3f51b5" opacity=".15"/>
+      <rect x="3" y="9" width="28" height="16" rx="3" stroke="#3f51b5" stroke-width="1.8"/>
+      <circle cx="26" cy="17" r="2.5" fill="#3f51b5"/>
+      <rect x="7" y="14" width="12" height="2" rx="1" fill="#3f51b5" opacity=".5"/>
+      <rect x="7" y="18" width="8" height="2" rx="1" fill="#3f51b5" opacity=".3"/>
+    </svg>
+  </div>
+  <h1 data-el>Εικονικοί Σκληροί Δίσκοι<br>VHD &amp; VHDX</h1>
+  <h1 data-en>Virtual Hard Disks<br>VHD &amp; VHDX</h1>
+  <p data-el>Όλα όσα πρέπει να ξέρετε — απλά, κατανοητά, χωρίς τεχνική ορολογία. Κάντε κλικ στα στοιχεία για περισσότερες λεπτομέρειες.</p>
+  <p data-en>Everything you need to know — simple, clear, jargon-free. Click any element to learn more.</p>
+</div>
+
+<!-- VHD vs VHDX -->
+<div class="section-label" data-el>Σύγκριση μορφών</div>
+<div class="section-label" data-en>Format comparison</div>
+
+<div class="compare-table">
+  <table>
+    <thead>
+      <tr>
+        <th data-el>Χαρακτηριστικό</th>
+        <th data-en>Feature</th>
+        <th>VHD <span class="tag-old" data-el>παλαιό</span><span class="tag-old" data-en>legacy</span></th>
+        <th>VHDX <span class="tag-new" data-el>νέο</span><span class="tag-new" data-en>modern</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-el>Μέγιστο μέγεθος</td>
+        <td data-en>Maximum size</td>
+        <td>2 TB</td>
+        <td>64 TB</td>
+      </tr>
+      <tr>
+        <td data-el>Προστασία από βλάβες</td>
+        <td data-en>Corruption protection</td>
+        <td data-el>Βασική</td><td data-en>Basic</td>
+        <td data-el>Προχωρημένη</td><td data-en>Advanced</td>
+      </tr>
+      <tr>
+        <td data-el>Απόδοση σε μεγάλα δεδομένα</td>
+        <td data-en>Performance on large data</td>
+        <td data-el>Μέτρια</td><td data-en>Moderate</td>
+        <td data-el>Βελτιστοποιημένη</td><td data-en>Optimized</td>
+      </tr>
+      <tr>
+        <td data-el>Υποστήριξη Windows</td>
+        <td data-en>Windows support</td>
+        <td>Vista+</td>
+        <td>8 / Server 2012+</td>
+      </tr>
+      <tr>
+        <td data-el>Συνιστάται για νέους δίσκους</td>
+        <td data-en>Recommended for new disks</td>
+        <td>—</td>
+        <td>✓</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TYPE CARDS -->
+<div class="section-label" data-el>Τύποι εικονικών δίσκων — κάντε κλικ για λεπτομέρειες</div>
+<div class="section-label" data-en>Virtual disk types — click for details</div>
+
+<div class="types-grid">
+
+  <div class="type-card" onclick="toggleCard(this)">
+    <div class="type-card-header">
+      <span class="type-dot dot-fixed"></span>
+      <span class="type-name" data-el>Σταθερού Μεγέθους</span>
+      <span class="type-name" data-en>Fixed Size</span>
+      <span class="type-badge badge-speed" data-el>Γρηγορότερος</span>
+      <span class="type-badge badge-speed" data-en>Fastest</span>
+    </div>
+    <div class="type-desc" data-el>Δεσμεύει αμέσως όλον τον χώρο.</div>
+    <div class="type-desc" data-en>Allocates all space immediately.</div>
+    <div class="type-detail">
+      <p data-el>Δημιουργώντας έναν σταθερό δίσκο 50GB, αμέσως δεσμεύονται 50GB από τον πραγματικό σας δίσκο — ακόμα κι αν ο εικονικός είναι εντελώς άδειος.<br><br><strong>Ιδανικός για:</strong> εικονικές μηχανές, συστήματα που χρειάζονται σταθερή απόδοση, παραγωγικά περιβάλλοντα.</p>
+      <p data-en>Creating a 50GB fixed disk immediately occupies 50GB on your real disk — even if the virtual disk is completely empty.<br><br><strong>Best for:</strong> virtual machines, systems needing consistent performance, production environments.</p>
+    </div>
+  </div>
+
+  <div class="type-card" onclick="toggleCard(this)">
+    <div class="type-card-header">
+      <span class="type-dot dot-dynamic"></span>
+      <span class="type-name" data-el>Δυναμικής Επέκτασης</span>
+      <span class="type-name" data-en>Dynamically Expanding</span>
+      <span class="type-badge badge-smart" data-el>Έξυπνος</span>
+      <span class="type-badge badge-smart" data-en>Smart</span>
+    </div>
+    <div class="type-desc" data-el>Μεγαλώνει μόνο όσο χρειάζεται.</div>
+    <div class="type-desc" data-en>Grows only as needed.</div>
+    <div class="type-detail">
+      <p data-el>Ξεκινά σχεδόν κενός και επεκτείνεται καθώς προσθέτετε αρχεία. Ένας δίσκος ορισμένος στα 100GB με 10GB περιεχόμενο καταλαμβάνει μόνο ~10GB στον πραγματικό δίσκο.<br><br><strong>Ιδανικός για:</strong> αρχάριους, δοκιμαστικά περιβάλλοντα, εξοικονόμηση χώρου.</p>
+      <p data-en>Starts nearly empty and expands as you add files. A 100GB disk with 10GB content uses only ~10GB of real disk space.<br><br><strong>Best for:</strong> beginners, test environments, saving disk space.</p>
+    </div>
+  </div>
+
+  <div class="type-card" onclick="toggleCard(this)">
+    <div class="type-card-header">
+      <span class="type-dot dot-diff"></span>
+      <span class="type-name" data-el>Δίσκος Διαφοράς</span>
+      <span class="type-name" data-en>Differencing Disk</span>
+      <span class="type-badge badge-pro" data-el>Για ειδικούς</span>
+      <span class="type-badge badge-pro" data-en>Advanced</span>
+    </div>
+    <div class="type-desc" data-el>Αποθηκεύει μόνο τις αλλαγές.</div>
+    <div class="type-desc" data-en>Stores only changes.</div>
+    <div class="type-detail">
+      <p data-el>Βασίζεται σε έναν "γονικό" δίσκο και καταγράφει αποκλειστικά τις αλλαγές που κάνετε. Ο γονικός δίσκος παραμένει πάντα ανέγγιχτος.<br><br><strong>Ιδανικός για:</strong> πειράματα, snapshot-based backup, εργαστήρια πληροφορικής.</p>
+      <p data-en>Based on a "parent" disk, it records only the changes you make. The parent disk always remains untouched.<br><br><strong>Best for:</strong> experimentation, snapshot-based backup, IT labs.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="info-box">
+  <span data-el>💡 <strong>Συμβουλή:</strong> Αν ξεκινάτε τώρα, επιλέξτε <strong>VHDX Δυναμικής Επέκτασης</strong>. Εξοικονομεί χώρο, είναι πιο ασφαλής και συμβατός με όλες τις σύγχρονες εκδόσεις Windows.</span>
+  <span data-en>💡 <strong>Tip:</strong> If you're just starting out, choose <strong>Dynamically Expanding VHDX</strong>. It saves space, is more resilient, and compatible with all modern versions of Windows.</span>
+</div>
+
+<!-- STEPS -->
+<div class="section-label" data-el>Πώς να δημιουργήσετε τον πρώτο σας δίσκο — κάντε κλικ σε κάθε βήμα</div>
+<div class="section-label" data-en>How to create your first virtual disk — click each step</div>
+
+<div class="steps-list">
+
+  <div class="step-item" onclick="toggleStep(this)">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <span class="step-title" data-el>Ανοίξτε τη Διαχείριση Δίσκων</span>
+      <span class="step-title" data-en>Open Disk Management</span>
+      <svg class="step-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="step-body">
+      <span data-el>Πατήστε <strong>Windows + X</strong> και επιλέξτε <em>Διαχείριση Δίσκων</em>. Εναλλακτικά, πατήστε Windows + R, πληκτρολογήστε <code>diskmgmt.msc</code> και Enter.</span>
+      <span data-en>Press <strong>Windows + X</strong> and select <em>Disk Management</em>. Alternatively, press Windows + R, type <code>diskmgmt.msc</code> and hit Enter.</span>
+    </div>
+  </div>
+
+  <div class="step-item" onclick="toggleStep(this)">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <span class="step-title" data-el>Δημιουργία νέου εικονικού δίσκου</span>
+      <span class="step-title" data-en>Create a new virtual disk</span>
+      <svg class="step-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="step-body">
+      <span data-el>Στο μενού <strong>Δράση</strong> (πάνω αριστερά) κάντε κλικ στο <em>Δημιουργία και σύνδεση εικονικού σκληρού δίσκου</em>.</span>
+      <span data-en>In the <strong>Action</strong> menu (top left), click <em>Create and Attach VHD</em>.</span>
+    </div>
+  </div>
+
+  <div class="step-item" onclick="toggleStep(this)">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <span class="step-title" data-el>Επιλέξτε τοποθεσία και μέγεθος</span>
+      <span class="step-title" data-en>Choose location and size</span>
+      <svg class="step-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="step-body">
+      <span data-el>Επιλέξτε πού θα αποθηκευτεί το αρχείο (π.χ. Επιφάνεια εργασίας) και ονομάστε το <code>MyDisk.vhdx</code>. Ορίστε μέγεθος 20–50 GB για αρχή.</span>
+      <span data-en>Choose where to save the file (e.g. Desktop) and name it <code>MyDisk.vhdx</code>. Set a size of 20–50 GB to start.</span>
+    </div>
+  </div>
+
+  <div class="step-item" onclick="toggleStep(this)">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <span class="step-title" data-el>Επιλέξτε τύπο δίσκου</span>
+      <span class="step-title" data-en>Select disk type</span>
+      <svg class="step-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="step-body">
+      <span data-el>Διαλέξτε <strong>VHDX</strong> ως μορφή και <strong>Δυναμική επέκταση</strong> για εξοικονόμηση χώρου. Πατήστε ΟΚ.</span>
+      <span data-en>Choose <strong>VHDX</strong> as the format and <strong>Dynamically expanding</strong> to save space. Click OK.</span>
+    </div>
+  </div>
+
+  <div class="step-item" onclick="toggleStep(this)">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <span class="step-title" data-el>Εκκίνηση και αρχικοποίηση</span>
+      <span class="step-title" data-en>Initialize the disk</span>
+      <svg class="step-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="step-body">
+      <span data-el>Ο νέος δίσκος εμφανίζεται ως "Άγνωστος". Κάντε δεξί κλικ → <em>Εκκίνηση δίσκου</em> → επιλέξτε <strong>GPT</strong> (προτεινόμενο για σύγχρονα συστήματα).</span>
+      <span data-en>The new disk appears as "Unknown". Right-click → <em>Initialize Disk</em> → choose <strong>GPT</strong> (recommended for modern systems).</span>
+    </div>
+  </div>
+
+  <div class="step-item" onclick="toggleStep(this)">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <span class="step-title" data-el>Δημιουργία κατατμήσεων και χρήση</span>
+      <span class="step-title" data-en>Create partition and use it</span>
+      <svg class="step-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="step-body">
+      <span data-el>Κάντε δεξί κλικ στον αδέσμευτο χώρο → <em>Νέος απλός τόμος</em> → ακολουθήστε τον οδηγό. Σε λίγα δευτερόλεπτα ο δίσκος εμφανίζεται στην Εξερεύνηση αρχείων!</span>
+      <span data-en>Right-click the unallocated space → <em>New Simple Volume</em> → follow the wizard. In seconds, the disk appears in File Explorer!</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- PROS / CONS -->
+<div class="section-label" data-el>Πλεονεκτήματα &amp; μειονεκτήματα</div>
+<div class="section-label" data-en>Advantages &amp; disadvantages</div>
+
+<div class="proscons">
+  <div class="pc-card pros">
+    <div class="pc-title">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#43a047"/><path d="M4 7l2.5 2.5L10 5" stroke="#43a047" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span data-el>Πλεονεκτήματα</span><span data-en>Advantages</span>
+    </div>
+    <ul class="pc-list">
+      <li data-el>Δοκιμές χωρίς κίνδυνο για τον κύριο δίσκο</li>
+      <li data-en>Test without risk to your main disk</li>
+      <li data-el>Εύκολη μεταφορά σε άλλον υπολογιστή</li>
+      <li data-en>Easy transfer to another computer</li>
+      <li data-el>Αντίγραφα ασφαλείας ολόκληρου συστήματος</li>
+      <li data-en>Backup entire system environments</li>
+      <li data-el>Χωρίς αγορά hardware</li>
+      <li data-en>No hardware purchase needed</li>
+      <li data-el>Υποστήριξη από τα Windows χωρίς εγκατάσταση</li>
+      <li data-en>Built-in Windows support, no install needed</li>
+    </ul>
+  </div>
+  <div class="pc-card cons">
+    <div class="pc-title">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#fb8c00"/><path d="M7 4v4M7 9.5v.5" stroke="#fb8c00" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span data-el>Μειονεκτήματα</span><span data-en>Disadvantages</span>
+    </div>
+    <ul class="pc-list">
+      <li data-el>Δυναμικοί δίσκοι μπορεί να είναι ελαφρώς πιο αργοί</li>
+      <li data-en>Dynamic disks may be slightly slower</li>
+      <li data-el>Αποσύνδεση μετά από κάθε επανεκκίνηση</li>
+      <li data-en>Disconnects after every reboot</li>
+      <li data-el>Χαλασμένο αρχείο = χαμένα δεδομένα</li>
+      <li data-en>Corrupted file = lost data</li>
+      <li data-el>Ο σταθερός τύπος δεσμεύει χώρο αμέσως</li>
+      <li data-en>Fixed type reserves space immediately</li>
+    </ul>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <span data-el>lovefortechnology.net &mdash; Ενημερώθηκε 2026</span>
+  <span data-en>lovefortechnology.net &mdash; Updated 2026</span>
+</div>
+
+<script>
+  var isEn = false;
+
+  function toggleLang() {
+    isEn = !isEn;
+    document.body.className = isEn ? 'lang-en' : 'lang-el';
+    document.getElementById('langLabel').textContent = isEn ? 'Ελληνικά' : 'English';
+    document.documentElement.lang = isEn ? 'en' : 'el';
+  }
+
+  function toggleCard(el) {
+    var wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.type-card').forEach(function(c){ c.classList.remove('open'); });
+    if (!wasOpen) el.classList.add('open');
+  }
+
+  function toggleStep(el) {
+    el.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
