@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOS vs UEFI — Interactive Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bios: #c0392b;
+    --uefi: #1a6fc4;
+    --bios-light: #fdf2f1;
+    --uefi-light: #f0f7ff;
+    --neutral: #f5f5f5;
+    --text: #1a1a2e;
+    --muted: #666;
+    --border: #e0e0e0;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    --radius: 14px;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: #ffffff;
+    color: var(--text);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 16px 32px;
+    min-height: 100vh;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 820px;
+  }
+
+  /* ── LANG TOGGLE ── */
+  .lang-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+
+  .lang-btn {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 30px;
+    padding: 6px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.22s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lang-btn:hover { border-color: var(--uefi); color: var(--uefi); }
+
+  /* ── HEADER ── */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--text);
+  }
+  .header h1 span.bios-label { color: var(--bios); }
+  .header h1 span.uefi-label { color: var(--uefi); }
+  .header .subtitle {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ── PILLARS ── */
+  .pillars {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    margin-bottom: 24px;
+    align-items: start;
+  }
+
+  .pillar-head {
+    text-align: center;
+    padding: 14px 12px 12px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
+  .pillar-head.bios-head { background: var(--bios); color: white; }
+  .pillar-head.uefi-head { background: var(--uefi); color: white; }
+  .vs-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  /* ── ROWS ── */
+  .rows { display: contents; }
+
+  .row-group {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .row-group:last-child { margin-bottom: 0; }
+
+  .cell {
+    padding: 13px 16px;
+    font-size: 0.87rem;
+    line-height: 1.45;
+    transition: background 0.18s;
+    border: 1px solid var(--border);
+    background: white;
+  }
+  .cell.bios-cell {
+    border-radius: 0 0 0 0;
+    border-right: none;
+  }
+  .cell.uefi-cell {
+    border-radius: 0 0 0 0;
+    border-left: none;
+  }
+  .row-group:first-child .bios-cell { border-top: none; }
+  .row-group:first-child .uefi-cell { border-top: none; }
+  .row-group:last-child .bios-cell { border-radius: 0 0 0 var(--radius); }
+  .row-group:last-child .uefi-cell { border-radius: 0 0 var(--radius) 0; }
+
+  .row-group:hover .bios-cell { background: var(--bios-light); }
+  .row-group:hover .uefi-cell { background: var(--uefi-light); }
+
+  .cell .label {
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 3px;
+  }
+  .bios-cell .label { color: var(--bios); }
+  .uefi-cell .label { color: var(--uefi); }
+
+  .vs-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #bbb;
+    letter-spacing: 0.05em;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--neutral);
+  }
+  .row-group:first-child .vs-cell { border-top: none; }
+  .row-group:last-child .vs-cell { border-radius: 0; }
+
+  /* Detail panel */
+  .detail-panel {
+    display: none;
+    grid-column: 1 / -1;
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 14px 18px 15px;
+    font-size: 0.84rem;
+    color: #444;
+    line-height: 1.6;
+    animation: slideDown 0.2s ease;
+  }
+  .detail-panel.open { display: block; }
+  .detail-panel strong { color: var(--text); }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hint-row {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #aaa;
+    padding: 8px 0 4px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── TIMELINE ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin: 28px 0 14px;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--bios) 0%, var(--bios) 42%, #ccc 42%, #ccc 52%, var(--uefi) 52%, var(--uefi) 100%);
+    border-radius: 2px;
+  }
+
+  .tl-item {
+    position: relative;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .tl-item:last-child { margin-bottom: 0; }
+
+  .tl-dot {
+    position: absolute;
+    left: -21px;
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px currentColor;
+  }
+  .tl-item.era-bios .tl-dot { background: var(--bios); color: var(--bios); }
+  .tl-item.era-uefi .tl-dot { background: var(--uefi); color: var(--uefi); }
+  .tl-item.era-trans .tl-dot { background: #999; color: #999; }
+
+  .tl-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 15px;
+    transition: box-shadow 0.18s, transform 0.18s;
+  }
+  .tl-item:hover .tl-card { box-shadow: var(--shadow); transform: translateX(3px); }
+  .tl-item.era-bios .tl-card { border-left: 3px solid var(--bios); }
+  .tl-item.era-uefi .tl-card { border-left: 3px solid var(--uefi); }
+  .tl-item.era-trans .tl-card { border-left: 3px solid #999; }
+
+  .tl-year {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .tl-item.era-bios .tl-year { color: var(--bios); }
+  .tl-item.era-uefi .tl-year { color: var(--uefi); }
+  .tl-item.era-trans .tl-year { color: #888; }
+
+  .tl-text {
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  .tl-detail {
+    display: none;
+    margin-top: 9px;
+    padding-top: 9px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.81rem;
+    color: #666;
+    line-height: 1.55;
+    animation: slideDown 0.18s ease;
+  }
+  .tl-detail.open { display: block; }
+
+  /* ── FOOTER NOTE ── */
+  .footer-note {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: #f8f9ff;
+    border-radius: var(--radius);
+    border: 1px solid #dde5ff;
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.6;
+    text-align: center;
+  }
+  .footer-note strong { color: var(--uefi); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- LANG TOGGLE -->
+  <div class="lang-bar">
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 <span id="langLabel">English</span></button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="eyebrow" data-el="eyebrow">Firmware Technology</div>
+    <h1><span class="bios-label">BIOS</span> vs <span class="uefi-label">UEFI</span></h1>
+    <div class="subtitle" data-el="subtitle">Κάνε κλικ σε κάθε σειρά για περισσότερες λεπτομέρειες</div>
+  </div>
+
+  <!-- COMPARISON GRID -->
+  <div class="pillars" id="grid">
+    <div class="pillar-head bios-head">📼 BIOS</div>
+    <div class="vs-head">VS</div>
+    <div class="pillar-head uefi-head">💎 UEFI</div>
+
+    <!-- rows injected by JS -->
+  </div>
+
+  <div class="hint-row" data-el="hint">▲ Κλικ για να κλείσεις • Κλικ ξανά για να ανοίξεις</div>
+
+  <!-- TIMELINE -->
+  <div class="section-title" data-el="tlTitle">📅 Χρονολόγιο</div>
+  <div class="timeline" id="timeline"></div>
+
+  <!-- FOOTER -->
+  <div class="footer-note" data-el="footer">
+    💡 <strong data-el="footerStrong">Πώς να ελέγξεις:</strong> <span data-el="footerText">Πάτα Windows + R, γράψε <strong>msinfo32</strong> → "Λειτουργία BIOS". Αν γράφει UEFI, είσαι ενημερωμένος!</span>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──
+const data = {
+  el: {
+    eyebrow: "Τεχνολογία Firmware",
+    subtitle: "Κάνε κλικ σε κάθε σειρά για περισσότερες λεπτομέρειες",
+    hint: "▲ Κλικ για να κλείσεις • Κλικ ξανά για να ανοίξεις",
+    tlTitle: "📅 Χρονολόγιο",
+    footerStrong: "Πώς να ελέγξεις:",
+    footerText: "Πάτα Windows + R, γράψε msinfo32 → \"Λειτουργία BIOS\". Αν γράφει UEFI, είσαι ενημερωμένος!",
+    rows: [
+      {
+        cat: "Εμφάνιση",
+        bios: "Μαύρη οθόνη, ASCII κείμενο",
+        uefi: "Γραφικό περιβάλλον με χρώματα",
+        detail: "Το BIOS χρησιμοποιεί απλό ASCII κείμενο σε μαύρο φόντο — χαρακτηριστικό των εποχών του 1980. Το UEFI έχει σύγχρονο GUI με εικόνες, γραφήματα θερμοκρασίας και πλήρη υποστήριξη ποντικιού."
+      },
+      {
+        cat: "Είσοδος",
+        bios: "Μόνο πληκτρολόγιο",
+        uefi: "Πληκτρολόγιο + Ποντίκι",
+        detail: "Με BIOS μπορούσες να κινηθείς μόνο με τα βέλη και το Enter. Το UEFI δέχεται πλήρη είσοδο ποντικιού — κάνεις κλικ σε επιλογές σαν κανονικό πρόγραμμα."
+      },
+      {
+        cat: "Μέγιστος Δίσκος",
+        bios: "2 TB (MBR περιορισμός)",
+        uefi: "Πρακτικά απεριόριστο (GPT)",
+        detail: "Το MBR partition table του BIOS υποστηρίζει έως 2 TB. Το GPT του UEFI φτάνει θεωρητικά 9,4 ζεταμπάιτ — ουσιαστικά δεν θα αντιμετωπίσεις ποτέ όριο μεγέθους δίσκου."
+      },
+      {
+        cat: "Ταχύτητα Εκκίνησης",
+        bios: "Σειριακή — 1–3 λεπτά",
+        uefi: "Παράλληλη — 5–15 δευτερόλεπτα",
+        detail: "Το BIOS φορτώνει κάθε στοιχείο σειριακά — ένα-ένα. Το UEFI εκκινεί πολλά στοιχεία παράλληλα ταυτόχρονα, και σε συνδυασμό με SSD, ο υπολογιστής είναι έτοιμος σε δευτερόλεπτα."
+      },
+      {
+        cat: "Ασφάλεια",
+        bios: "Ελάχιστη προστασία",
+        uefi: "Secure Boot — εκκίνηση με επαλήθευση",
+        detail: "Η Ασφαλής Εκκίνηση (Secure Boot) του UEFI ελέγχει την ψηφιακή υπογραφή κάθε προγράμματος που φορτώνεται — αποτρέπει ιούς bootkit που κρύβονται βαθιά πριν τα Windows ξεκινήσουν."
+      },
+      {
+        cat: "Windows 11",
+        bios: "Δεν υποστηρίζεται",
+        uefi: "Απαραίτητη προϋπόθεση",
+        detail: "Τα Windows 11 απαιτούν UEFI με ενεργό Secure Boot. Αν ο υπολογιστής σου έχει αγοραστεί μετά το 2012, σχεδόν σίγουρα πληροί αυτή την προϋπόθεση ήδη."
+      },
+      {
+        cat: "Αρχιτεκτονική",
+        bios: "16-bit, παλιά τεχνολογία",
+        uefi: "32/64-bit, σύγχρονη πλατφόρμα",
+        detail: "Το BIOS τρέχει σε 16-bit real mode — αρχαία αρχιτεκτονική από εποχή 8086. Το UEFI τρέχει σε 32 ή 64-bit protected mode, μπορεί να εκτελεί σύνθετο κώδικα και να συνδέεται ακόμα και στο διαδίκτυο."
+      }
+    ],
+    timeline: [
+      { year: "1975–1980", era: "bios", text: "Δημιουργία του BIOS από την IBM", detail: "Ο Gary Kildall και στη συνέχεια η IBM δημιούργησαν το BIOS ως γέφυρα μεταξύ hardware και λογισμικού. Σχεδιάστηκε για μικρές μνήμες και απλά συστήματα." },
+      { year: "1981", era: "bios", text: "IBM PC — BIOS γίνεται παγκόσμιο πρότυπο", detail: "Ο IBM PC 5150 καθιέρωσε το BIOS ως κοινό πρότυπο. Όλοι οι κλώνοι PC ακολούθησαν, δημιουργώντας ένα οικοσύστημα που κράτησε 30 χρόνια." },
+      { year: "1990s", era: "bios", text: "BIOS εξελίσσεται — Plug & Play, APM", detail: "Προστέθηκαν λειτουργίες όπως Plug & Play (αυτόματη αναγνώριση hardware) και APM (διαχείριση ενέργειας). Αλλά τα θεμελιώδη όρια παρέμειναν." },
+      { year: "2000–2005", era: "trans", text: "Intel αναπτύσσει το EFI (πρόδρομος UEFI)", detail: "Η Intel δημιούργησε το EFI (Extensible Firmware Interface) για τους server Itanium. Σύντομα άλλες εταιρείες (AMD, Microsoft, HP κ.ά.) εντάχθηκαν για να δημιουργήσουν το UEFI Forum." },
+      { year: "2007", era: "trans", text: "Δημιουργία UEFI Forum — παγκόσμιο πρότυπο", detail: "Το UEFI Forum ιδρύθηκε από Intel, AMD, Microsoft, Apple και άλλους. Σκοπός: ένα ανοιχτό, σύγχρονο πρότυπο firmware για όλους τους κατασκευαστές." },
+      { year: "2012", era: "uefi", text: "Windows 8 — UEFI γίνεται mainstream", detail: "Τα Windows 8 ενσωμάτωσαν πλήρη υποστήριξη UEFI και έφεραν το Fast Boot. Όλοι οι κατασκευαστές PC άρχισαν να παραδίδουν μόνο UEFI από εδώ και πέρα." },
+      { year: "2021–σήμερα", era: "uefi", text: "Windows 11 — UEFI υποχρεωτικό", detail: "Τα Windows 11 καθιστούν το UEFI με Secure Boot και TPM 2.0 υποχρεωτική προϋπόθεση. Η εποχή του BIOS έχει πλέον τυπικά τελειώσει." }
+    ]
+  },
+  en: {
+    eyebrow: "Firmware Technology",
+    subtitle: "Click any row for more details",
+    hint: "▲ Click to close • Click again to open",
+    tlTitle: "📅 Timeline",
+    footerStrong: "How to check:",
+    footerText: "Press Windows + R, type msinfo32 → \"BIOS Mode\". If it says UEFI, you're up to date!",
+    rows: [
+      {
+        cat: "Interface",
+        bios: "Black screen, ASCII text",
+        uefi: "Graphical environment with colors",
+        detail: "BIOS uses simple ASCII text on a black background — typical of the 1980s era. UEFI has a modern GUI with images, temperature graphs, and full mouse support."
+      },
+      {
+        cat: "Input",
+        bios: "Keyboard only",
+        uefi: "Keyboard + Mouse",
+        detail: "With BIOS you could only navigate with arrow keys and Enter. UEFI accepts full mouse input — you click on options like a normal program."
+      },
+      {
+        cat: "Max Disk Size",
+        bios: "2 TB (MBR limit)",
+        uefi: "Practically unlimited (GPT)",
+        detail: "The MBR partition table used by BIOS supports up to 2 TB. UEFI's GPT theoretically reaches 9.4 zettabytes — you will effectively never hit a disk size limit."
+      },
+      {
+        cat: "Boot Speed",
+        bios: "Sequential — 1–3 minutes",
+        uefi: "Parallel — 5–15 seconds",
+        detail: "BIOS loads each component sequentially — one by one. UEFI initializes many components in parallel simultaneously, and combined with an SSD, your computer is ready in seconds."
+      },
+      {
+        cat: "Security",
+        bios: "Minimal protection",
+        uefi: "Secure Boot — verified startup",
+        detail: "UEFI's Secure Boot checks the digital signature of every program that loads — preventing bootkit viruses that hide deep before Windows starts."
+      },
+      {
+        cat: "Windows 11",
+        bios: "Not supported",
+        uefi: "Required prerequisite",
+        detail: "Windows 11 requires UEFI with active Secure Boot. If your computer was purchased after 2012, it almost certainly meets this requirement already."
+      },
+      {
+        cat: "Architecture",
+        bios: "16-bit, legacy technology",
+        uefi: "32/64-bit, modern platform",
+        detail: "BIOS runs in 16-bit real mode — ancient architecture from the 8086 era. UEFI runs in 32 or 64-bit protected mode, can execute complex code, and can even connect to the internet."
+      }
+    ],
+    timeline: [
+      { year: "1975–1980", era: "bios", text: "BIOS created by IBM", detail: "Gary Kildall and later IBM created BIOS as a bridge between hardware and software. Designed for small memories and simple systems." },
+      { year: "1981", era: "bios", text: "IBM PC — BIOS becomes global standard", detail: "The IBM PC 5150 established BIOS as the common standard. All PC clones followed, creating an ecosystem that lasted 30 years." },
+      { year: "1990s", era: "bios", text: "BIOS evolves — Plug & Play, APM", detail: "Features like Plug & Play (automatic hardware detection) and APM (power management) were added. But the fundamental limits remained." },
+      { year: "2000–2005", era: "trans", text: "Intel develops EFI (UEFI predecessor)", detail: "Intel created EFI (Extensible Firmware Interface) for Itanium servers. Soon other companies (AMD, Microsoft, HP, etc.) joined to create the UEFI Forum." },
+      { year: "2007", era: "trans", text: "UEFI Forum founded — global standard", detail: "The UEFI Forum was founded by Intel, AMD, Microsoft, Apple and others. Goal: an open, modern firmware standard for all manufacturers." },
+      { year: "2012", era: "uefi", text: "Windows 8 — UEFI goes mainstream", detail: "Windows 8 integrated full UEFI support and introduced Fast Boot. All PC manufacturers began shipping only UEFI from this point on." },
+      { year: "2021–today", era: "uefi", text: "Windows 11 — UEFI required", detail: "Windows 11 makes UEFI with Secure Boot and TPM 2.0 mandatory. The BIOS era has officially ended." }
+    ]
+  }
+};
+
+let lang = 'el';
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  document.getElementById('langLabel').textContent = lang === 'el' ? 'English' : 'Ελληνικά';
+  document.documentElement.lang = lang;
+  render();
+}
+
+function render() {
+  const d = data[lang];
+
+  // static labels
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.dataset.el;
+    if (d[key] !== undefined) el.textContent = d[key];
+  });
+
+  // grid
+  const grid = document.getElementById('grid');
+  // remove old rows (keep first 3 children: 2 pillar heads + vs-head)
+  while (grid.children.length > 3) grid.removeChild(grid.lastChild);
+
+  d.rows.forEach((row, i) => {
+    const rg = document.createElement('div');
+    rg.className = 'row-group';
+    rg.innerHTML = `
+      <div class="cell bios-cell">
+        <div class="label">${row.cat}</div>
+        <div>${row.bios}</div>
+      </div>
+      <div class="vs-cell">vs</div>
+      <div class="cell uefi-cell">
+        <div class="label">${row.cat}</div>
+        <div>${row.uefi}</div>
+      </div>
+      <div class="detail-panel" id="dp-${i}">${row.detail}</div>
+    `;
+    rg.addEventListener('click', () => {
+      const dp = document.getElementById('dp-' + i);
+      dp.classList.toggle('open');
+    });
+    grid.appendChild(rg);
+  });
+
+  // timeline
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  d.timeline.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = `tl-item era-${item.era}`;
+    div.innerHTML = `
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <div class="tl-year">${item.year}</div>
+        <div class="tl-text">${item.text}</div>
+        <div class="tl-detail" id="tld-${i}">${item.detail}</div>
+      </div>
+    `;
+    div.addEventListener('click', () => {
+      document.getElementById('tld-' + i).classList.toggle('open');
+    });
+    tl.appendChild(div);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
