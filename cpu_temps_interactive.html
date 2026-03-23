@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPU Temperature Ranges / Θερμοκρασίες Επεξεργαστή</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #f8f8f6;
+    --border: #e8e5de;
+    --text: #1a1a18;
+    --muted: #7a7a72;
+    --accent: #e63926;
+    --blue: #2563d4;
+    --green: #1a9e5f;
+    --yellow: #d97706;
+    --orange: #ea580c;
+    --red: #dc2626;
+    --dark: #111110;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .header-left { flex: 1; }
+
+  .eyebrow {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* LANG TOGGLE */
+  .lang-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    background: var(--bg);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .lang-btn:hover {
+    border-color: var(--text);
+    background: var(--text);
+    color: #fff;
+  }
+
+  .lang-btn .globe { font-size: 14px; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 20px;
+  }
+
+  /* INTRO ROW */
+  .intro-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin-bottom: 16px;
+  }
+
+  /* TEMP ROWS */
+  .temp-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .temp-row {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .temp-row:hover { border-color: #c8c5be; }
+  .temp-row.open { border-color: var(--row-color); }
+
+  .temp-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    user-select: none;
+    background: var(--bg);
+    transition: background 0.15s;
+  }
+
+  .temp-row.open .temp-summary { background: var(--card); }
+
+  .temp-badge {
+    flex-shrink: 0;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--row-color);
+    background: color-mix(in srgb, var(--row-color) 10%, white);
+    border: 1.5px solid color-mix(in srgb, var(--row-color) 25%, white);
+    border-radius: 8px;
+    padding: 4px 10px;
+    white-space: nowrap;
+    min-width: 104px;
+    text-align: center;
+  }
+
+  .temp-label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .temp-status {
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .temp-chevron {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--muted);
+    transition: transform 0.3s ease;
+  }
+
+  .temp-row.open .temp-chevron { transform: rotate(180deg); }
+
+  /* DETAIL PANEL */
+  .temp-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .temp-row.open .temp-detail { max-height: 300px; }
+
+  .temp-detail-inner {
+    padding: 0 16px 16px 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .detail-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .detail-block-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .detail-block-value {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .detail-tip {
+    grid-column: 1 / -1;
+    background: color-mix(in srgb, var(--row-color) 6%, white);
+    border: 1px solid color-mix(in srgb, var(--row-color) 20%, white);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .detail-tip strong { color: var(--row-color); }
+
+  /* THERMOMETER BAR */
+  .thermo-section { margin: 28px 0 20px; }
+
+  .thermo-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .thermo-bar {
+    height: 10px;
+    border-radius: 100px;
+    background: linear-gradient(to right, #60a5fa 0%, #34d399 25%, #fbbf24 50%, #f97316 72%, #ef4444 88%, #7f1d1d 100%);
+    position: relative;
+    margin-bottom: 6px;
+  }
+
+  .thermo-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    margin-top: 24px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .footer-note .icon { flex-shrink: 0; font-size: 16px; }
+
+  @media (max-width: 480px) {
+    .temp-detail-inner { grid-template-columns: 1fr; }
+    .detail-tip { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow" data-el="eyebrow">Οδηγός Θερμοκρασίας</div>
+      <h1 data-el="h1">Θερμοκρασία Επεξεργαστή<br>— Τι Είναι Φυσιολογικό;</h1>
+      <p class="subtitle" data-el="subtitle">Κάντε κλικ σε κάθε εύρος για λεπτομέρειες</p>
+    </div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">
+      <span class="globe">🌐</span>
+      <span id="langLabel">English</span>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- THERMO BAR -->
+  <div class="thermo-section">
+    <div class="thermo-label" data-el="thermoLabel">Εύρος Θερμοκρασιών</div>
+    <div class="thermo-bar"></div>
+    <div class="thermo-ticks">
+      <span>30°C</span><span>45°C</span><span>70°C</span><span>85°C</span><span>95°C+</span>
+    </div>
+  </div>
+
+  <!-- TEMP ROWS -->
+  <div class="temp-list" id="tempList"></div>
+
+  <!-- FOOTER -->
+  <div class="footer-note">
+    <span class="icon">💡</span>
+    <span data-el="footerNote">Χρησιμοποιήστε δωρεάν εργαλεία όπως <strong>Core Temp</strong> ή <strong>HWiNFO64</strong> για να παρακολουθείτε τις θερμοκρασίες σε πραγματικό χρόνο.</span>
+  </div>
+
+</div>
+
+<script>
+const data = {
+  el: {
+    eyebrow: "Οδηγός Θερμοκρασίας",
+    h1: "Θερμοκρασία Επεξεργαστή<br>— Τι Είναι Φυσιολογικό;",
+    subtitle: "Κάντε κλικ σε κάθε εύρος για λεπτομέρειες",
+    thermoLabel: "Εύρος Θερμοκρασιών",
+    footerNote: 'Χρησιμοποιήστε δωρεάν εργαλεία όπως <strong>Core Temp</strong> ή <strong>HWiNFO64</strong> για να παρακολουθείτε τις θερμοκρασίες σε πραγματικό χρόνο.',
+    langLabel: "English",
+    rows: [
+      {
+        range: "30°C – 45°C",
+        color: "#2563d4",
+        status: "🔵",
+        label: "Αδράνεια — Ηρεμία",
+        d_scenario: "Κατάσταση",
+        d_scenario_v: "Ο υπολογιστής είναι ανοιχτός αλλά δεν εκτελεί απαιτητικές εργασίες",
+        d_risk: "Κίνδυνος",
+        d_risk_v: "Μηδενικός",
+        tip: "✅ <strong>Απόλυτα φυσιολογικό.</strong> Το σύστημα ψύξης λειτουργεί άψογα σε κατάσταση αδράνειας."
+      },
+      {
+        range: "45°C – 70°C",
+        color: "#1a9e5f",
+        status: "🟢",
+        label: "Ιδανικό — Καθημερινή Χρήση",
+        d_scenario: "Κατάσταση",
+        d_scenario_v: "Περιήγηση στο διαδίκτυο, εφαρμογές γραφείου, streaming βίντεο",
+        d_risk: "Κίνδυνος",
+        d_risk_v: "Ανύπαρκτος",
+        tip: "⭐ <strong>Ιδανική ζώνη.</strong> Εδώ ο επεξεργαστής αποδίδει καλύτερα με πλήρη δυνατότητα boost."
+      },
+      {
+        range: "70°C – 85°C",
+        color: "#d97706",
+        status: "🟡",
+        label: "Αποδεκτό — Βαριές Εργασίες",
+        d_scenario: "Κατάσταση",
+        d_scenario_v: "Gaming, επεξεργασία φωτογραφιών ή βίντεο, rendering",
+        d_risk: "Κίνδυνος",
+        d_risk_v: "Χαμηλός — φυσιολογικό για απαιτητικές εργασίες",
+        tip: "⚡ <strong>Αποδεκτό εύρος.</strong> Φυσιολογικό σε βαριά φόρτωση. Παρακολουθήστε αν παραμένει συνεχώς πάνω από 80°C."
+      },
+      {
+        range: "85°C – 95°C",
+        color: "#ea580c",
+        status: "🟠",
+        label: "Υψηλό — Thermal Throttling",
+        d_scenario: "Κατάσταση",
+        d_scenario_v: "Ο επεξεργαστής μειώνει αυτόματα την ταχύτητά του για προστασία",
+        d_risk: "Κίνδυνος",
+        d_risk_v: "Μέτριος — πιθανή πτώση απόδοσης",
+        tip: "⚠️ <strong>Ελέγξτε το σύστημα ψύξης.</strong> Καθαρίστε τη σκόνη και εξετάστε αντικατάσταση θερμικής πάστας."
+      },
+      {
+        range: "95°C+",
+        color: "#dc2626",
+        status: "🔴",
+        label: "Κρίσιμο — Κίνδυνος Βλάβης",
+        d_scenario: "Κατάσταση",
+        d_scenario_v: "Το σύστημα μπορεί να κλείσει αυτόματα για να αποφύγει μόνιμη βλάβη",
+        d_risk: "Κίνδυνος",
+        d_risk_v: "Υψηλός — πιθανή μόνιμη ζημιά στο υλικό",
+        tip: "🚨 <strong>Άμεση δράση απαιτείται.</strong> Σταματήστε τη χρήση και ελέγξτε ψύκτρα, θερμική πάστα και αερισμό κουτιού."
+      }
+    ]
+  },
+  en: {
+    eyebrow: "Temperature Guide",
+    h1: "CPU Temperature<br>— What's Normal?",
+    subtitle: "Click each range for details",
+    thermoLabel: "Temperature Ranges",
+    footerNote: 'Use free tools like <strong>Core Temp</strong> or <strong>HWiNFO64</strong> to monitor your temperatures in real time.',
+    langLabel: "Ελληνικά",
+    rows: [
+      {
+        range: "30°C – 45°C",
+        color: "#2563d4",
+        status: "🔵",
+        label: "Idle — Resting State",
+        d_scenario: "Scenario",
+        d_scenario_v: "PC is on but not running demanding tasks",
+        d_risk: "Risk",
+        d_risk_v: "None",
+        tip: "✅ <strong>Perfectly normal.</strong> Cooling system is working flawlessly at idle."
+      },
+      {
+        range: "45°C – 70°C",
+        color: "#1a9e5f",
+        status: "🟢",
+        label: "Ideal — Everyday Use",
+        d_scenario: "Scenario",
+        d_scenario_v: "Web browsing, office apps, streaming video",
+        d_risk: "Risk",
+        d_risk_v: "None",
+        tip: "⭐ <strong>Ideal zone.</strong> CPU performs best here with full boost capability available."
+      },
+      {
+        range: "70°C – 85°C",
+        color: "#d97706",
+        status: "🟡",
+        label: "Acceptable — Heavy Load",
+        d_scenario: "Scenario",
+        d_scenario_v: "Gaming, photo or video editing, rendering",
+        d_risk: "Risk",
+        d_risk_v: "Low — normal for demanding tasks",
+        tip: "⚡ <strong>Acceptable range.</strong> Normal under heavy load. Watch if it stays above 80°C consistently."
+      },
+      {
+        range: "85°C – 95°C",
+        color: "#ea580c",
+        status: "🟠",
+        label: "High — Thermal Throttling",
+        d_scenario: "Scenario",
+        d_scenario_v: "CPU automatically reduces speed to protect itself",
+        d_risk: "Risk",
+        d_risk_v: "Moderate — likely performance drop",
+        tip: "⚠️ <strong>Check your cooling.</strong> Clean dust buildup and consider replacing thermal paste."
+      },
+      {
+        range: "95°C+",
+        color: "#dc2626",
+        status: "🔴",
+        label: "Critical — Damage Risk",
+        d_scenario: "Scenario",
+        d_scenario_v: "System may shut down automatically to prevent permanent damage",
+        d_risk: "Risk",
+        d_risk_v: "High — risk of permanent hardware damage",
+        tip: "🚨 <strong>Immediate action needed.</strong> Stop use and check cooler, thermal paste, and case airflow."
+      }
+    ]
+  }
+};
+
+let lang = 'el';
+
+function renderRows(rows) {
+  const list = document.getElementById('tempList');
+  list.innerHTML = rows.map((r, i) => `
+    <div class="temp-row" id="row-${i}" style="--row-color:${r.color}" onclick="toggleRow(${i})">
+      <div class="temp-summary">
+        <div class="temp-badge" style="color:${r.color};background:color-mix(in srgb,${r.color} 10%,white);border-color:color-mix(in srgb,${r.color} 25%,white)">${r.range}</div>
+        <div class="temp-label">${r.label}</div>
+        <div class="temp-status">${r.status}</div>
+        <svg class="temp-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 8l5 5 5-5"/>
+        </svg>
+      </div>
+      <div class="temp-detail">
+        <div class="temp-detail-inner">
+          <div class="detail-block">
+            <div class="detail-block-label">${r.d_scenario}</div>
+            <div class="detail-block-value">${r.d_scenario_v}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-block-label">${r.d_risk}</div>
+            <div class="detail-block-value">${r.d_risk_v}</div>
+          </div>
+          <div class="detail-tip">${r.tip}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateTexts(d) {
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.dataset.el;
+    if (d[key] !== undefined) el.innerHTML = d[key];
+  });
+  document.getElementById('langLabel').textContent = d.langLabel;
+}
+
+function toggleRow(i) {
+  const row = document.getElementById('row-' + i);
+  row.classList.toggle('open');
+}
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  const d = data[lang];
+  renderRows(d.rows);
+  updateTexts(d);
+}
+
+// Init
+renderRows(data.el.rows);
+</script>
+</body>
+</html>
