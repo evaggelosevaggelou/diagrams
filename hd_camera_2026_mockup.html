@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HD Camera 2026 - App Mockup</title>
+<style>
+  body {
+    margin: 0;
+    padding: 2rem 1rem;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: sans-serif;
+    box-sizing: border-box;
+  }
+  .phone {
+    width: 320px;
+    background: #0a0a0a;
+    border-radius: 36px;
+    overflow: hidden;
+    border: 8px solid #1a1a1a;
+    box-shadow: 0 0 0 1px #333, 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .status-bar {
+    background: #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px 6px;
+    font-size: 11px;
+    color: #fff;
+  }
+  .status-icons { display: flex; gap: 5px; align-items: center; }
+  .viewfinder {
+    position: relative;
+    width: 100%;
+    height: 230px;
+    overflow: hidden;
+    background: linear-gradient(160deg,#1a2233 0%,#2a3a55 40%,#1e2d3f 70%,#0d1520 100%);
+  }
+  .bokeh {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .focus-bracket {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
+    width: 80px;
+    height: 60px;
+  }
+  .badges {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    gap: 5px;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .zoom-bar {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .zoom-item { color: rgba(255,255,255,0.45); font-size: 11px; }
+  .zoom-active {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 10px;
+    border-radius: 12px;
+  }
+  .top-right-icons {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .mode-tabs {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #222;
+  }
+  .tab {
+    padding: 8px 10px;
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 0.5px;
+  }
+  .tab.active {
+    color: #fbbf24;
+    border-bottom: 2px solid #fbbf24;
+    font-weight: 600;
+  }
+  .pro-panel {
+    background: #0d0d0d;
+    padding: 10px 12px 6px;
+  }
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .ctrl { text-align: center; }
+  .ctrl-label { font-size: 9px; color: #888; }
+  .ctrl-value { font-size: 12px; font-weight: 600; margin: 1px 0; }
+  .ctrl-bar { height: 3px; background: #222; border-radius: 2px; margin-top: 3px; }
+  .ctrl-fill { height: 3px; border-radius: 2px; }
+  .histogram {
+    background: #1a1a1a;
+    border-radius: 6px;
+    padding: 4px 6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 28px;
+  }
+  .hist-bar { flex: 1; border-radius: 1px; }
+  .hist-label { font-size: 8px; color: #555; align-self: flex-start; padding-left: 2px; }
+  .bottom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0 8px;
+  }
+  .gallery-thumb {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a2233, #2a3a55);
+    border: 1.5px solid #333;
+  }
+  .shutter-outer {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: 3px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .shutter-outer:active { transform: scale(0.95); }
+  .shutter-inner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .flip-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <svg width="15" height="10" viewBox="0 0 15 10">
+        <rect x="0" y="3" width="3" height="7" rx="1" fill="#fff" opacity="0.4"/>
+        <rect x="4" y="2" width="3" height="8" rx="1" fill="#fff" opacity="0.6"/>
+        <rect x="8" y="0" width="3" height="10" rx="1" fill="#fff"/>
+      </svg>
+      <svg width="14" height="10" viewBox="0 0 14 10">
+        <rect x="1" y="0" width="12" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1"/>
+        <rect x="13" y="2.5" width="1.5" height="3" rx="0.5" fill="#fff"/>
+        <rect x="2" y="1.5" width="8" height="5" rx="1" fill="#4ade80"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Viewfinder -->
+  <div class="viewfinder">
+
+    <!-- Bokeh lights -->
+    <div class="bokeh" style="top:18px;left:55px;width:80px;height:80px;background:radial-gradient(circle,rgba(255,200,80,0.18) 0%,transparent 70%);"></div>
+    <div class="bokeh" style="top:35px;left:175px;width:55px;height:55px;background:radial-gradient(circle,rgba(255,160,60,0.12) 0%,transparent 70%);"></div>
+    <div class="bokeh" style="top:8px;right:28px;width:38px;height:38px;background:radial-gradient(circle,rgba(255,220,100,0.1) 0%,transparent 70%);"></div>
+
+    <!-- City skyline SVG -->
+    <svg style="position:absolute;bottom:0;left:0;width:100%;" viewBox="0 0 320 120" preserveAspectRatio="none">
+      <rect x="0" y="60" width="30" height="60" fill="#0d1520"/>
+      <rect x="10" y="45" width="20" height="75" fill="#111d2b"/>
+      <rect x="35" y="70" width="25" height="50" fill="#0d1520"/>
+      <rect x="65" y="35" width="35" height="85" fill="#111d2b"/>
+      <rect x="75" y="25" width="15" height="12" fill="#111d2b"/>
+      <rect x="105" y="55" width="20" height="65" fill="#0d1520"/>
+      <rect x="130" y="30" width="40" height="90" fill="#111d2b"/>
+      <rect x="140" y="20" width="20" height="12" fill="#111d2b"/>
+      <rect x="175" y="50" width="25" height="70" fill="#0d1520"/>
+      <rect x="205" y="40" width="30" height="80" fill="#111d2b"/>
+      <rect x="240" y="65" width="20" height="55" fill="#0d1520"/>
+      <rect x="265" y="35" width="35" height="85" fill="#111d2b"/>
+      <rect x="280" y="25" width="15" height="12" fill="#111d2b"/>
+      <rect x="305" y="60" width="20" height="60" fill="#0d1520"/>
+      <!-- Window lights -->
+      <rect x="70" y="42" width="3" height="3" fill="#ffd080" opacity="0.7"/>
+      <rect x="78" y="52" width="3" height="3" fill="#ffd080" opacity="0.5"/>
+      <rect x="135" y="38" width="3" height="3" fill="#ffd080" opacity="0.6"/>
+      <rect x="148" y="50" width="3" height="3" fill="#ffd080" opacity="0.4"/>
+      <rect x="210" y="55" width="3" height="3" fill="#ffd080" opacity="0.5"/>
+      <rect x="270" y="42" width="3" height="3" fill="#ffd080" opacity="0.6"/>
+      <rect x="282" y="55" width="3" height="3" fill="#ffd080" opacity="0.4"/>
+    </svg>
+
+    <!-- Focus bracket -->
+    <div class="focus-bracket">
+      <svg width="80" height="60" viewBox="0 0 80 60">
+        <path d="M0,14 L0,0 L14,0" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <path d="M66,0 L80,0 L80,14" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <path d="M0,46 L0,60 L14,60" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <path d="M66,60 L80,60 L80,46" fill="none" stroke="#4ade80" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <!-- Badges -->
+    <div class="badges">
+      <span class="badge" style="background:rgba(0,0,0,0.55);color:#fff;">4K</span>
+      <span class="badge" style="background:rgba(74,222,128,0.85);color:#052e16;">RAW</span>
+      <span class="badge" style="background:rgba(0,0,0,0.55);color:#fbbf24;">HDR</span>
+    </div>
+
+    <!-- Flash + Timer icons -->
+    <div class="top-right-icons">
+      <svg width="16" height="16" viewBox="0 0 16 16">
+        <polygon points="9,1 4,9 8,9 7,15 12,7 8,7" fill="#fbbf24"/>
+      </svg>
+      <svg width="16" height="16" viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="6" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.7"/>
+        <line x1="8" y1="4" x2="8" y2="8" stroke="#fff" stroke-width="1.5"/>
+        <line x1="8" y1="8" x2="11" y2="10" stroke="#fff" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <!-- Zoom bar -->
+    <div class="zoom-bar">
+      <span class="zoom-item">0.5x</span>
+      <span class="zoom-item">1x</span>
+      <span class="zoom-active">2x</span>
+      <span class="zoom-item">5x</span>
+      <span class="zoom-item">10x</span>
+    </div>
+
+  </div>
+
+  <!-- Mode Tabs -->
+  <div class="mode-tabs">
+    <div class="tab">VIDEO</div>
+    <div class="tab">PHOTO</div>
+    <div class="tab active">PRO</div>
+    <div class="tab">SLOW</div>
+    <div class="tab">MORE</div>
+  </div>
+
+  <!-- Pro Panel -->
+  <div class="pro-panel">
+
+    <!-- Manual Controls -->
+    <div class="controls-grid">
+      <div class="ctrl">
+        <div class="ctrl-label">ISO</div>
+        <div class="ctrl-value" style="color:#fbbf24;">400</div>
+        <div class="ctrl-bar"><div class="ctrl-fill" style="width:45%;background:#fbbf24;"></div></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">SS</div>
+        <div class="ctrl-value" style="color:#fff;">1/60</div>
+        <div class="ctrl-bar"><div class="ctrl-fill" style="width:55%;background:#888;"></div></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">EV</div>
+        <div class="ctrl-value" style="color:#fff;">+0.7</div>
+        <div class="ctrl-bar"><div class="ctrl-fill" style="width:60%;background:#888;"></div></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">WB</div>
+        <div class="ctrl-value" style="color:#60a5fa;">5500K</div>
+        <div class="ctrl-bar"><div class="ctrl-fill" style="width:65%;background:#60a5fa;"></div></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">FOCUS</div>
+        <div class="ctrl-value" style="color:#4ade80;">MF</div>
+        <div class="ctrl-bar"><div class="ctrl-fill" style="width:70%;background:#4ade80;"></div></div>
+      </div>
+    </div>
+
+    <!-- Histogram -->
+    <div class="histogram">
+      <div class="hist-bar" style="height:30%;background:#333;"></div>
+      <div class="hist-bar" style="height:45%;background:#444;"></div>
+      <div class="hist-bar" style="height:65%;background:#555;"></div>
+      <div class="hist-bar" style="height:85%;background:#666;"></div>
+      <div class="hist-bar" style="height:100%;background:#777;"></div>
+      <div class="hist-bar" style="height:90%;background:#888;"></div>
+      <div class="hist-bar" style="height:75%;background:#777;"></div>
+      <div class="hist-bar" style="height:55%;background:#666;"></div>
+      <div class="hist-bar" style="height:40%;background:#555;"></div>
+      <div class="hist-bar" style="height:25%;background:#444;"></div>
+      <div class="hist-bar" style="height:15%;background:#333;"></div>
+      <div class="hist-bar" style="height:8%;background:#2a2a2a;"></div>
+      <span class="hist-label">HIST</span>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="bottom-controls">
+      <div class="gallery-thumb"></div>
+      <div class="shutter-outer">
+        <div class="shutter-inner"></div>
+      </div>
+      <div class="flip-btn">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path d="M14 4H4a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" fill="none" stroke="#888" stroke-width="1.2"/>
+          <circle cx="9" cy="9" r="2.5" fill="none" stroke="#888" stroke-width="1.2"/>
+          <path d="M6 2l3-2 3 2" fill="none" stroke="#888" stroke-width="1.2"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
