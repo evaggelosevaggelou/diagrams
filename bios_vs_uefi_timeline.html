@@ -92,113 +92,126 @@
     font-weight: 300;
   }
 
-  /* ── PILLARS ── */
-  .pillars {
-    display: grid;
-    grid-template-columns: 1fr 60px 1fr;
-    gap: 0;
-    margin-bottom: 24px;
-    align-items: start;
+  /* ── COMPARISON TABLE ── */
+  .comparison-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 8px;
   }
 
-  .pillar-head {
-    text-align: center;
+  /* Header row */
+  .comparison-table thead tr th {
     padding: 14px 12px 12px;
-    border-radius: var(--radius) var(--radius) 0 0;
     font-family: 'Syne', sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
     letter-spacing: 0.04em;
+    text-align: center;
   }
-  .pillar-head.bios-head { background: var(--bios); color: white; }
-  .pillar-head.uefi-head { background: var(--uefi); color: white; }
-  .vs-head {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 12px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 0.85rem;
+  .th-bios {
+    background: var(--bios);
+    color: white;
+    border-radius: var(--radius) 0 0 0;
+    width: 44%;
+  }
+  .th-vs {
+    background: var(--neutral);
     color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 800;
+    width: 12%;
+  }
+  .th-uefi {
+    background: var(--uefi);
+    color: white;
+    border-radius: 0 var(--radius) 0 0;
+    width: 44%;
   }
 
-  /* ── ROWS ── */
-  .rows { display: contents; }
-
-  .row-group {
-    display: grid;
-    grid-template-columns: 1fr 60px 1fr;
-    margin-bottom: 6px;
+  /* Body rows */
+  .comparison-table tbody tr {
     cursor: pointer;
   }
-  .row-group:last-child { margin-bottom: 0; }
+  .comparison-table tbody tr:hover td.td-bios { background: var(--bios-light); }
+  .comparison-table tbody tr:hover td.td-uefi { background: var(--uefi-light); }
 
-  .cell {
-    padding: 13px 16px;
+  .comparison-table tbody td {
+    padding: 12px 14px;
     font-size: 0.87rem;
     line-height: 1.45;
-    transition: background 0.18s;
     border: 1px solid var(--border);
+    vertical-align: top;
+    transition: background 0.18s;
     background: white;
   }
-  .cell.bios-cell {
-    border-radius: 0 0 0 0;
+
+  td.td-bios {
     border-right: none;
+    text-align: left;
   }
-  .cell.uefi-cell {
-    border-radius: 0 0 0 0;
+  td.td-vs {
+    background: var(--neutral) !important;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #bbb;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+  }
+  td.td-uefi {
     border-left: none;
+    text-align: left;
   }
-  .row-group:first-child .bios-cell { border-top: none; }
-  .row-group:first-child .uefi-cell { border-top: none; }
-  .row-group:last-child .bios-cell { border-radius: 0 0 0 var(--radius); }
-  .row-group:last-child .uefi-cell { border-radius: 0 0 var(--radius) 0; }
 
-  .row-group:hover .bios-cell { background: var(--bios-light); }
-  .row-group:hover .uefi-cell { background: var(--uefi-light); }
+  /* Remove double top border on first data row */
+  .comparison-table tbody tr:first-child td {
+    border-top: none;
+  }
+  /* Rounded bottom corners on last row */
+  .comparison-table tbody tr:last-child td.td-bios {
+    border-radius: 0 0 0 var(--radius);
+  }
+  .comparison-table tbody tr:last-child td.td-uefi {
+    border-radius: 0 0 var(--radius) 0;
+  }
 
-  .cell .label {
+  .cell-label {
     font-weight: 600;
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     margin-bottom: 3px;
   }
-  .bios-cell .label { color: var(--bios); }
-  .uefi-cell .label { color: var(--uefi); }
+  td.td-bios .cell-label { color: var(--bios); }
+  td.td-uefi .cell-label { color: var(--uefi); }
 
-  .vs-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #bbb;
-    letter-spacing: 0.05em;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: var(--neutral);
-  }
-  .row-group:first-child .vs-cell { border-top: none; }
-  .row-group:last-child .vs-cell { border-radius: 0; }
-
-  /* Detail panel */
-  .detail-panel {
-    display: none;
-    grid-column: 1 / -1;
-    background: #fafafa;
-    border: 1px solid var(--border);
+  /* Detail panel row */
+  tr.detail-row td {
+    padding: 0;
     border-top: none;
-    border-radius: 0 0 10px 10px;
-    padding: 14px 18px 15px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+  }
+  tr.detail-row.hidden { display: none; }
+
+  .detail-inner {
+    padding: 13px 18px 14px;
     font-size: 0.84rem;
     color: #444;
     line-height: 1.6;
     animation: slideDown 0.2s ease;
   }
-  .detail-panel.open { display: block; }
-  .detail-panel strong { color: var(--text); }
+  .detail-inner strong { color: var(--text); }
+
+  /* Last detail row rounded bottom */
+  tr.detail-row:last-child td {
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
 
   @keyframes slideDown {
     from { opacity: 0; transform: translateY(-6px); }
@@ -206,7 +219,6 @@
   }
 
   .hint-row {
-    grid-column: 1 / -1;
     text-align: center;
     font-size: 0.75rem;
     color: #aaa;
@@ -329,14 +341,19 @@
     <div class="subtitle" data-el="subtitle">Κάνε κλικ σε κάθε σειρά για περισσότερες λεπτομέρειες</div>
   </div>
 
-  <!-- COMPARISON GRID -->
-  <div class="pillars" id="grid">
-    <div class="pillar-head bios-head">📼 BIOS</div>
-    <div class="vs-head">VS</div>
-    <div class="pillar-head uefi-head">💎 UEFI</div>
-
-    <!-- rows injected by JS -->
-  </div>
+  <!-- COMPARISON TABLE -->
+  <table class="comparison-table" id="compTable">
+    <thead>
+      <tr>
+        <th class="th-bios">📼 BIOS</th>
+        <th class="th-vs">VS</th>
+        <th class="th-uefi">💎 UEFI</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- rows injected by JS -->
+    </tbody>
+  </table>
 
   <div class="hint-row" data-el="hint">▲ Κλικ για να κλείσεις • Κλικ ξανά για να ανοίξεις</div>
 
@@ -352,7 +369,6 @@
 </div>
 
 <script>
-// ── DATA ──
 const data = {
   el: {
     eyebrow: "Τεχνολογία Firmware",
@@ -362,48 +378,13 @@ const data = {
     footerStrong: "Πώς να ελέγξεις:",
     footerText: "Πάτα Windows + R, γράψε msinfo32 → \"Λειτουργία BIOS\". Αν γράφει UEFI, είσαι ενημερωμένος!",
     rows: [
-      {
-        cat: "Εμφάνιση",
-        bios: "Μαύρη οθόνη, ASCII κείμενο",
-        uefi: "Γραφικό περιβάλλον με χρώματα",
-        detail: "Το BIOS χρησιμοποιεί απλό ASCII κείμενο σε μαύρο φόντο — χαρακτηριστικό των εποχών του 1980. Το UEFI έχει σύγχρονο GUI με εικόνες, γραφήματα θερμοκρασίας και πλήρη υποστήριξη ποντικιού."
-      },
-      {
-        cat: "Είσοδος",
-        bios: "Μόνο πληκτρολόγιο",
-        uefi: "Πληκτρολόγιο + Ποντίκι",
-        detail: "Με BIOS μπορούσες να κινηθείς μόνο με τα βέλη και το Enter. Το UEFI δέχεται πλήρη είσοδο ποντικιού — κάνεις κλικ σε επιλογές σαν κανονικό πρόγραμμα."
-      },
-      {
-        cat: "Μέγιστος Δίσκος",
-        bios: "2 TB (MBR περιορισμός)",
-        uefi: "Πρακτικά απεριόριστο (GPT)",
-        detail: "Το MBR partition table του BIOS υποστηρίζει έως 2 TB. Το GPT του UEFI φτάνει θεωρητικά 9,4 ζεταμπάιτ — ουσιαστικά δεν θα αντιμετωπίσεις ποτέ όριο μεγέθους δίσκου."
-      },
-      {
-        cat: "Ταχύτητα Εκκίνησης",
-        bios: "Σειριακή — 1–3 λεπτά",
-        uefi: "Παράλληλη — 5–15 δευτερόλεπτα",
-        detail: "Το BIOS φορτώνει κάθε στοιχείο σειριακά — ένα-ένα. Το UEFI εκκινεί πολλά στοιχεία παράλληλα ταυτόχρονα, και σε συνδυασμό με SSD, ο υπολογιστής είναι έτοιμος σε δευτερόλεπτα."
-      },
-      {
-        cat: "Ασφάλεια",
-        bios: "Ελάχιστη προστασία",
-        uefi: "Secure Boot — εκκίνηση με επαλήθευση",
-        detail: "Η Ασφαλής Εκκίνηση (Secure Boot) του UEFI ελέγχει την ψηφιακή υπογραφή κάθε προγράμματος που φορτώνεται — αποτρέπει ιούς bootkit που κρύβονται βαθιά πριν τα Windows ξεκινήσουν."
-      },
-      {
-        cat: "Windows 11",
-        bios: "Δεν υποστηρίζεται",
-        uefi: "Απαραίτητη προϋπόθεση",
-        detail: "Τα Windows 11 απαιτούν UEFI με ενεργό Secure Boot. Αν ο υπολογιστής σου έχει αγοραστεί μετά το 2012, σχεδόν σίγουρα πληροί αυτή την προϋπόθεση ήδη."
-      },
-      {
-        cat: "Αρχιτεκτονική",
-        bios: "16-bit, παλιά τεχνολογία",
-        uefi: "32/64-bit, σύγχρονη πλατφόρμα",
-        detail: "Το BIOS τρέχει σε 16-bit real mode — αρχαία αρχιτεκτονική από εποχή 8086. Το UEFI τρέχει σε 32 ή 64-bit protected mode, μπορεί να εκτελεί σύνθετο κώδικα και να συνδέεται ακόμα και στο διαδίκτυο."
-      }
+      { cat: "Εμφάνιση", bios: "Μαύρη οθόνη, ASCII κείμενο", uefi: "Γραφικό περιβάλλον με χρώματα", detail: "Το BIOS χρησιμοποιεί απλό ASCII κείμενο σε μαύρο φόντο — χαρακτηριστικό των εποχών του 1980. Το UEFI έχει σύγχρονο GUI με εικόνες, γραφήματα θερμοκρασίας και πλήρη υποστήριξη ποντικιού." },
+      { cat: "Είσοδος", bios: "Μόνο πληκτρολόγιο", uefi: "Πληκτρολόγιο + Ποντίκι", detail: "Με BIOS μπορούσες να κινηθείς μόνο με τα βέλη και το Enter. Το UEFI δέχεται πλήρη είσοδο ποντικιού — κάνεις κλικ σε επιλογές σαν κανονικό πρόγραμμα." },
+      { cat: "Μέγιστος Δίσκος", bios: "2 TB (MBR περιορισμός)", uefi: "Πρακτικά απεριόριστο (GPT)", detail: "Το MBR partition table του BIOS υποστηρίζει έως 2 TB. Το GPT του UEFI φτάνει θεωρητικά 9,4 ζεταμπάιτ — ουσιαστικά δεν θα αντιμετωπίσεις ποτέ όριο μεγέθους δίσκου." },
+      { cat: "Ταχύτητα Εκκίνησης", bios: "Σειριακή — 1–3 λεπτά", uefi: "Παράλληλη — 5–15 δευτερόλεπτα", detail: "Το BIOS φορτώνει κάθε στοιχείο σειριακά — ένα-ένα. Το UEFI εκκινεί πολλά στοιχεία παράλληλα ταυτόχρονα, και σε συνδυασμό με SSD, ο υπολογιστής είναι έτοιμος σε δευτερόλεπτα." },
+      { cat: "Ασφάλεια", bios: "Ελάχιστη προστασία", uefi: "Secure Boot — εκκίνηση με επαλήθευση", detail: "Η Ασφαλής Εκκίνηση (Secure Boot) του UEFI ελέγχει την ψηφιακή υπογραφή κάθε προγράμματος που φορτώνεται — αποτρέπει ιούς bootkit που κρύβονται βαθιά πριν τα Windows ξεκινήσουν." },
+      { cat: "Windows 11", bios: "Δεν υποστηρίζεται", uefi: "Απαραίτητη προϋπόθεση", detail: "Τα Windows 11 απαιτούν UEFI με ενεργό Secure Boot. Αν ο υπολογιστής σου έχει αγοραστεί μετά το 2012, σχεδόν σίγουρα πληροί αυτή την προϋπόθεση ήδη." },
+      { cat: "Αρχιτεκτονική", bios: "16-bit, παλιά τεχνολογία", uefi: "32/64-bit, σύγχρονη πλατφόρμα", detail: "Το BIOS τρέχει σε 16-bit real mode — αρχαία αρχιτεκτονική από εποχή 8086. Το UEFI τρέχει σε 32 ή 64-bit protected mode, μπορεί να εκτελεί σύνθετο κώδικα και να συνδέεται ακόμα και στο διαδίκτυο." }
     ],
     timeline: [
       { year: "1975–1980", era: "bios", text: "Δημιουργία του BIOS από την IBM", detail: "Ο Gary Kildall και στη συνέχεια η IBM δημιούργησαν το BIOS ως γέφυρα μεταξύ hardware και λογισμικού. Σχεδιάστηκε για μικρές μνήμες και απλά συστήματα." },
@@ -423,48 +404,13 @@ const data = {
     footerStrong: "How to check:",
     footerText: "Press Windows + R, type msinfo32 → \"BIOS Mode\". If it says UEFI, you're up to date!",
     rows: [
-      {
-        cat: "Interface",
-        bios: "Black screen, ASCII text",
-        uefi: "Graphical environment with colors",
-        detail: "BIOS uses simple ASCII text on a black background — typical of the 1980s era. UEFI has a modern GUI with images, temperature graphs, and full mouse support."
-      },
-      {
-        cat: "Input",
-        bios: "Keyboard only",
-        uefi: "Keyboard + Mouse",
-        detail: "With BIOS you could only navigate with arrow keys and Enter. UEFI accepts full mouse input — you click on options like a normal program."
-      },
-      {
-        cat: "Max Disk Size",
-        bios: "2 TB (MBR limit)",
-        uefi: "Practically unlimited (GPT)",
-        detail: "The MBR partition table used by BIOS supports up to 2 TB. UEFI's GPT theoretically reaches 9.4 zettabytes — you will effectively never hit a disk size limit."
-      },
-      {
-        cat: "Boot Speed",
-        bios: "Sequential — 1–3 minutes",
-        uefi: "Parallel — 5–15 seconds",
-        detail: "BIOS loads each component sequentially — one by one. UEFI initializes many components in parallel simultaneously, and combined with an SSD, your computer is ready in seconds."
-      },
-      {
-        cat: "Security",
-        bios: "Minimal protection",
-        uefi: "Secure Boot — verified startup",
-        detail: "UEFI's Secure Boot checks the digital signature of every program that loads — preventing bootkit viruses that hide deep before Windows starts."
-      },
-      {
-        cat: "Windows 11",
-        bios: "Not supported",
-        uefi: "Required prerequisite",
-        detail: "Windows 11 requires UEFI with active Secure Boot. If your computer was purchased after 2012, it almost certainly meets this requirement already."
-      },
-      {
-        cat: "Architecture",
-        bios: "16-bit, legacy technology",
-        uefi: "32/64-bit, modern platform",
-        detail: "BIOS runs in 16-bit real mode — ancient architecture from the 8086 era. UEFI runs in 32 or 64-bit protected mode, can execute complex code, and can even connect to the internet."
-      }
+      { cat: "Interface", bios: "Black screen, ASCII text", uefi: "Graphical environment with colors", detail: "BIOS uses simple ASCII text on a black background — typical of the 1980s era. UEFI has a modern GUI with images, temperature graphs, and full mouse support." },
+      { cat: "Input", bios: "Keyboard only", uefi: "Keyboard + Mouse", detail: "With BIOS you could only navigate with arrow keys and Enter. UEFI accepts full mouse input — you click on options like a normal program." },
+      { cat: "Max Disk Size", bios: "2 TB (MBR limit)", uefi: "Practically unlimited (GPT)", detail: "The MBR partition table used by BIOS supports up to 2 TB. UEFI's GPT theoretically reaches 9.4 zettabytes — you will effectively never hit a disk size limit." },
+      { cat: "Boot Speed", bios: "Sequential — 1–3 minutes", uefi: "Parallel — 5–15 seconds", detail: "BIOS loads each component sequentially — one by one. UEFI initializes many components in parallel simultaneously, and combined with an SSD, your computer is ready in seconds." },
+      { cat: "Security", bios: "Minimal protection", uefi: "Secure Boot — verified startup", detail: "UEFI's Secure Boot checks the digital signature of every program that loads — preventing bootkit viruses that hide deep before Windows starts." },
+      { cat: "Windows 11", bios: "Not supported", uefi: "Required prerequisite", detail: "Windows 11 requires UEFI with active Secure Boot. If your computer was purchased after 2012, it almost certainly meets this requirement already." },
+      { cat: "Architecture", bios: "16-bit, legacy technology", uefi: "32/64-bit, modern platform", detail: "BIOS runs in 16-bit real mode — ancient architecture from the 8086 era. UEFI runs in 32 or 64-bit protected mode, can execute complex code, and can even connect to the internet." }
     ],
     timeline: [
       { year: "1975–1980", era: "bios", text: "BIOS created by IBM", detail: "Gary Kildall and later IBM created BIOS as a bridge between hardware and software. Designed for small memories and simple systems." },
@@ -496,31 +442,38 @@ function render() {
     if (d[key] !== undefined) el.textContent = d[key];
   });
 
-  // grid
-  const grid = document.getElementById('grid');
-  // remove old rows (keep first 3 children: 2 pillar heads + vs-head)
-  while (grid.children.length > 3) grid.removeChild(grid.lastChild);
+  // table body
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
 
   d.rows.forEach((row, i) => {
-    const rg = document.createElement('div');
-    rg.className = 'row-group';
-    rg.innerHTML = `
-      <div class="cell bios-cell">
-        <div class="label">${row.cat}</div>
+    // Main data row
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-bios">
+        <div class="cell-label">${row.cat}</div>
         <div>${row.bios}</div>
-      </div>
-      <div class="vs-cell">vs</div>
-      <div class="cell uefi-cell">
-        <div class="label">${row.cat}</div>
+      </td>
+      <td class="td-vs">vs</td>
+      <td class="td-uefi">
+        <div class="cell-label">${row.cat}</div>
         <div>${row.uefi}</div>
-      </div>
-      <div class="detail-panel" id="dp-${i}">${row.detail}</div>
+      </td>
     `;
-    rg.addEventListener('click', () => {
+
+    // Detail row
+    const trDetail = document.createElement('tr');
+    trDetail.className = 'detail-row hidden';
+    trDetail.id = 'dp-' + i;
+    trDetail.innerHTML = `<td colspan="3"><div class="detail-inner">${row.detail}</div></td>`;
+
+    tr.addEventListener('click', () => {
       const dp = document.getElementById('dp-' + i);
-      dp.classList.toggle('open');
+      dp.classList.toggle('hidden');
     });
-    grid.appendChild(rg);
+
+    tbody.appendChild(tr);
+    tbody.appendChild(trDetail);
   });
 
   // timeline
