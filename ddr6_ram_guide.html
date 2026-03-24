@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDR6 RAM Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --ink: #0f0f0f;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent2: #f59e0b;
+    --border: #e5e7eb;
+    --card-bg: #f9fafb;
+    --pro: #16a34a;
+    --con: #dc2626;
+    --tag-bg: #eff6ff;
+    --tag-ink: #1d4ed8;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 720px;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  .header-left { flex: 1; }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: 0.93rem;
+    color: var(--muted);
+  }
+
+  /* ── Lang toggle ── */
+  .lang-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: .05em;
+    cursor: pointer;
+    transition: transform .15s, background .15s;
+    white-space: nowrap;
+    margin-top: 6px;
+  }
+  .lang-btn:hover { background: var(--accent); transform: scale(1.04); }
+
+  /* ── Speed stats strip ── */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* ── Section titles ── */
+  .section-title {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin: 32px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Speed comparison table (interactive) ── */
+  .speed-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  .speed-table th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .speed-table td {
+    padding: 10px 10px;
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .speed-table tr.ddr6-row td { font-weight: 600; }
+  .speed-table tr.ddr6-row { background: var(--tag-bg); }
+
+  .bar-cell { width: 160px; }
+  .bar-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform .7s cubic-bezier(.16,1,.3,1);
+  }
+  .bar-fill.animated { transform: scaleX(1); }
+  .bar-fill.ddr4 { width: 18%; background: #9ca3af; }
+  .bar-fill.ddr5 { width: 44%; background: #60a5fa; }
+  .bar-fill.ddr6a { width: 75%; }
+  .bar-fill.ddr6b { width: 100%; background: var(--accent2); }
+
+  /* ── Accordion cards ── */
+  .acc-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .acc-item:hover { border-color: #93c5fd; }
+
+  .acc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+    background: var(--card-bg);
+    transition: background .15s;
+  }
+  .acc-head:hover { background: var(--tag-bg); }
+
+  .acc-head-left { display: flex; align-items: center; gap: 10px; }
+  .acc-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .acc-title { font-weight: 600; font-size: 0.9rem; }
+
+  .acc-chevron {
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: transform .25s;
+  }
+  .acc-item.open .acc-chevron { transform: rotate(180deg); }
+
+  .acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s cubic-bezier(.16,1,.3,1);
+  }
+  .acc-item.open .acc-body { max-height: 500px; }
+
+  .acc-content {
+    padding: 14px 16px 16px;
+    font-size: 0.88rem;
+    color: #374151;
+    line-height: 1.65;
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+
+  /* ── Timeline ── */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--border));
+  }
+
+  .tl-item {
+    position: relative;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid #fff;
+    outline: 2px solid var(--accent);
+    transition: transform .2s;
+  }
+  .tl-item.done::before { background: var(--pro); outline-color: var(--pro); }
+  .tl-item.future::before { background: var(--border); outline-color: var(--border); }
+  .tl-item:hover::before { transform: scale(1.3); }
+
+  .tl-year {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: .05em;
+    margin-bottom: 2px;
+  }
+  .tl-item.done .tl-year { color: var(--pro); }
+  .tl-item.future .tl-year { color: var(--muted); }
+
+  .tl-text {
+    font-size: 0.87rem;
+    color: #374151;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease, opacity .3s ease;
+    opacity: 0;
+  }
+  .tl-head { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
+  .tl-item.expanded .tl-text { max-height: 120px; opacity: 1; }
+
+  /* ── Pros / Cons ── */
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  @media (max-width: 500px) { .pros-cons { grid-template-columns: 1fr; } }
+
+  .pc-box {
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 0.85rem;
+  }
+  .pc-box.pros { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .pc-box.cons { background: #fef2f2; border: 1px solid #fecaca; }
+
+  .pc-title {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .pc-box.pros .pc-title { color: var(--pro); }
+  .pc-box.cons .pc-title { color: var(--con); }
+
+  .pc-box ul { list-style: none; }
+  .pc-box li { padding: 4px 0; color: #374151; }
+  .pc-box li::before { margin-right: 6px; }
+  .pros li::before { content: '✓'; color: var(--pro); }
+  .cons li::before { content: '✕'; color: var(--con); }
+
+  /* ── Summary box ── */
+  .summary-box {
+    background: var(--ink);
+    color: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 32px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+  .summary-box strong { color: var(--accent2); }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── Responsive ── */
+  @media (max-width: 500px) {
+    .stats-strip { grid-template-columns: 1fr 1fr; }
+    .stat-box:last-child { grid-column: span 2; }
+  }
+
+  /* ── Lang hide ── */
+  [data-el] { display: none; }
+  [data-gr] { display: block; }
+  body.en [data-gr] { display: none; }
+  body.en [data-el] { display: block; }
+  [data-gr-inline] { }
+  [data-el-inline] { display: none; }
+  body.en [data-gr-inline] { display: none; }
+  body.en [data-el-inline] { display: inline; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-left">
+      <div class="kicker">
+        <span data-gr-inline>Οδηγός μνήμης</span>
+        <span data-el-inline>Memory Guide</span>
+        · 2026
+      </div>
+      <h1><span>DDR6</span> RAM</h1>
+      <p class="subtitle">
+        <span data-gr-inline>Τι είναι, πότε έρχεται, πόσο γρήγορη θα είναι</span>
+        <span data-el-inline>What it is, when it's coming, how fast it will be</span>
+      </p>
+    </div>
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">
+      🌐 <span id="langLabel">English</span>
+    </button>
+  </header>
+
+  <!-- Stats strip -->
+  <div class="stats-strip">
+    <div class="stat-box">
+      <span class="stat-num">17,600</span>
+      <span class="stat-label">
+        <span data-gr-inline>MT/s μέγιστη ταχύτητα</span>
+        <span data-el-inline>MT/s max speed</span>
+      </span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">134 GB/s</span>
+      <span class="stat-label">
+        <span data-gr-inline>Bandwidth ανά module</span>
+        <span data-el-inline>Bandwidth per module</span>
+      </span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">&lt;1.1 V</span>
+      <span class="stat-label">
+        <span data-gr-inline>Κατανάλωση ενέργειας</span>
+        <span data-el-inline>Power consumption</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Speed comparison -->
+  <div class="section-title">
+    <span data-gr-inline>⚡ Σύγκριση ταχύτητας</span>
+    <span data-el-inline>⚡ Speed Comparison</span>
+  </div>
+
+  <table class="speed-table" id="speedTable">
+    <thead>
+      <tr>
+        <th data-gr-inline>Γενιά</th>
+        <th data-el-inline>Generation</th>
+        <th>MT/s</th>
+        <th class="bar-cell"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>DDR4</td>
+        <td>2,133 – 3,200</td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill ddr4"></div></div></td>
+      </tr>
+      <tr>
+        <td>DDR5</td>
+        <td>4,800 – 8,400</td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill ddr5"></div></div></td>
+      </tr>
+      <tr class="ddr6-row">
+        <td>DDR6</td>
+        <td>8,800 – 17,600</td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill ddr6a"></div></div></td>
+      </tr>
+      <tr class="ddr6-row">
+        <td>DDR6 OC</td>
+        <td>21,000+</td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill ddr6b"></div></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Features accordion -->
+  <div class="section-title">
+    <span data-gr-inline>🔬 Τι φέρνουν οι DDR6</span>
+    <span data-el-inline>🔬 What DDR6 Brings</span>
+  </div>
+
+  <div id="accordion">
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-head-left">
+          <span class="acc-icon">🔋</span>
+          <span class="acc-title">
+            <span data-gr-inline>Μικρότερη κατανάλωση ενέργειας</span>
+            <span data-el-inline>Lower Power Consumption</span>
+          </span>
+        </div>
+        <span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <span data-gr-inline>Η DDR6 λειτουργεί σε λιγότερο από 1,1 Volt — σημαντική μείωση σε σχέση με τις DDR5. Αυτό σημαίνει λιγότερη θερμότητα, μεγαλύτερη αυτονομία για laptop και tablet, και πιο ήσυχο σύστημα συνολικά.</span>
+          <span data-el-inline>DDR6 operates at under 1.1V — a significant drop from DDR5. This means less heat output, longer battery life for laptops and tablets, and a quieter overall system.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-head-left">
+          <span class="acc-icon">🛡️</span>
+          <span class="acc-title">
+            <span data-gr-inline>Αυτόματη διόρθωση σφαλμάτων (ECC)</span>
+            <span data-el-inline>Built-in Error Correction (ECC)</span>
+          </span>
+        </div>
+        <span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <span data-gr-inline>Η μνήμη «ελέγχει τον εαυτό της» και διορθώνει μικρά σφάλματα πριν επηρεάσουν τη λειτουργία. Για servers και AI workloads αυτό είναι κρίσιμο — λιγότερα crashes, μεγαλύτερη αξιοπιστία.</span>
+          <span data-el-inline>The memory self-checks and corrects minor errors before they impact operation. For servers and AI workloads this is critical — fewer crashes, greater reliability.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-head-left">
+          <span class="acc-icon">📐</span>
+          <span class="acc-title">
+            <span data-gr-inline>Νέα 4×24-bit αρχιτεκτονική</span>
+            <span data-el-inline>New 4×24-bit Architecture</span>
+          </span>
+        </div>
+        <span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <span data-gr-inline>Αντί για το κλασικό διπλό κανάλι, η DDR6 χρησιμοποιεί τετραπλό κανάλι 24-bit. Αυτό επιτρέπει τη μεταφορά πολύ περισσότερων δεδομένων ταυτόχρονα — σαν να αντικαταστείς ένα δίδυμο με μια τετράδα οδών.</span>
+          <span data-el-inline>Instead of the classic dual-channel setup, DDR6 uses a quad 24-bit channel design. This allows far more data to transfer simultaneously — like replacing a two-lane road with a four-lane highway.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-head">
+        <div class="acc-head-left">
+          <span class="acc-icon">📱</span>
+          <span class="acc-title">
+            <span data-gr-inline>LPDDR6 για κινητά (ήδη έτοιμο!)</span>
+            <span data-el-inline>LPDDR6 for Mobile (Already Finalized!)</span>
+          </span>
+        </div>
+        <span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <span data-gr-inline>Το πρότυπο LPDDR6 οριστικοποιήθηκε από τον JEDEC τον Ιούλιο 2025 — πριν καν την desktop έκδοση! Τα πρώτα smartphones και tablet με LPDDR6 αναμένονται εντός του 2026. AI on-device apps, πιο γρήγορη κάμερα, smoother gaming.</span>
+          <span data-el-inline>The LPDDR6 standard was finalized by JEDEC in July 2025 — even before the desktop version! The first smartphones and tablets with LPDDR6 are expected within 2026. On-device AI apps, faster camera processing, smoother gaming.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Timeline -->
+  <div class="section-title">
+    <span data-gr-inline>📅 Χρονοδιάγραμμα κυκλοφορίας</span>
+    <span data-el-inline>📅 Release Timeline</span>
+  </div>
+  <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
+    <span data-gr-inline>Κάνε κλικ σε κάθε σημείο για λεπτομέρειες</span>
+    <span data-el-inline>Click each milestone for details</span>
+  </p>
+
+  <div class="timeline">
+
+    <div class="tl-item done" onclick="toggleTl(this)">
+      <div class="tl-year">✅ 2024</div>
+      <div class="tl-head">
+        <span data-gr-inline>Αρχικό πρότυπο JEDEC</span>
+        <span data-el-inline>Initial JEDEC Standard</span>
+      </div>
+      <div class="tl-text">
+        <span data-gr-inline>Ο JEDEC ολοκλήρωσε το αρχικό σχέδιο προδιαγραφών DDR6. Samsung, SK Hynix και Micron ξεκίνησαν δοκιμές πρωτότυπων μαζί με Intel και AMD.</span>
+        <span data-el-inline>JEDEC completed the initial DDR6 specification draft. Samsung, SK Hynix, and Micron began prototype testing alongside Intel and AMD.</span>
+      </div>
+    </div>
+
+    <div class="tl-item done" onclick="toggleTl(this)">
+      <div class="tl-year">✅ Ιούλιος 2025 — LPDDR6</div>
+      <div class="tl-head">
+        <span data-gr-inline>Οριστικοποίηση LPDDR6</span>
+        <span data-el-inline>LPDDR6 Finalized</span>
+      </div>
+      <div class="tl-text">
+        <span data-gr-inline>Το LPDDR6 (για κινητές συσκευές) έγινε το πρώτο μέλος της οικογένειας DDR6 που κλείδωσε επίσημα. Samsung χρησιμοποιεί 1c DRAM διαδικασία παραγωγής.</span>
+        <span data-el-inline>LPDDR6 (for mobile) became the first DDR6-family member to officially lock. Samsung is using the 1c DRAM manufacturing process.</span>
+      </div>
+    </div>
+
+    <div class="tl-item" onclick="toggleTl(this)">
+      <div class="tl-year">🔄 Τέλη 2025 / Αρχές 2026</div>
+      <div class="tl-head">
+        <span data-gr-inline>Τελικό πρότυπο DDR6</span>
+        <span data-el-inline>DDR6 Spec 1.0 Final</span>
+      </div>
+      <div class="tl-text">
+        <span data-gr-inline>Αναμένεται η Specification 1.0 για desktop DDR6. Δοκιμές σε επίπεδο πλατφόρμας σε εξέλιξη.</span>
+        <span data-el-inline>Specification 1.0 for desktop DDR6 is expected. Platform-level testing ongoing by major manufacturers.</span>
+      </div>
+    </div>
+
+    <div class="tl-item future" onclick="toggleTl(this)">
+      <div class="tl-year">📌 2026</div>
+      <div class="tl-head">
+        <span data-gr-inline>Servers & Premium Laptops</span>
+        <span data-el-inline>Servers & Premium Laptops</span>
+      </div>
+      <div class="tl-text">
+        <span data-gr-inline>Πρώτοι επεξεργαστές Intel/AMD για servers με DDR6. Κέντρα δεδομένων και AI workloads πρώτοι χρήστες. Πολύ υψηλές τιμές.</span>
+        <span data-el-inline>First Intel/AMD server processors with DDR6 support. Data centers and AI workloads are first adopters. Very high initial pricing.</span>
+      </div>
+    </div>
+
+    <div class="tl-item future" onclick="toggleTl(this)">
+      <div class="tl-year">📌 2027</div>
+      <div class="tl-head">
+        <span data-gr-inline>Desktop Consumer αγορά</span>
+        <span data-el-inline>Desktop Consumer Market</span>
+      </div>
+      <div class="tl-text">
+        <span data-gr-inline>Πρώτα DDR6 modules για κανονικούς υπολογιστές. Υψηλές τιμές αρχικά (300–500€ για 32GB kit). Απαιτεί νέα μητρική + CPU.</span>
+        <span data-el-inline>First DDR6 modules for regular PCs. High initial pricing (€300–500 for 32GB kit). Requires new motherboard + CPU.</span>
+      </div>
+    </div>
+
+    <div class="tl-item future" onclick="toggleTl(this)">
+      <div class="tl-year">📌 2028–2030</div>
+      <div class="tl-head">
+        <span data-gr-inline>Ευρεία υιοθέτηση</span>
+        <span data-el-inline>Mainstream Adoption</span>
+      </div>
+      <div class="tl-text">
+        <span data-gr-inline>Τιμές προσιτές, μεγάλη ποικιλία μητρικών, DDR6 γίνεται ο νέος κανόνας. DDR5 γίνεται budget επιλογή.</span>
+        <span data-el-inline>Affordable pricing, wide motherboard variety, DDR6 becomes the new standard. DDR5 transitions to budget tier.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pros / Cons -->
+  <div class="section-title">
+    <span data-gr-inline>⚖️ Πλεονεκτήματα & Μειονεκτήματα</span>
+    <span data-el-inline>⚖️ Pros & Cons</span>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pc-box pros">
+      <div class="pc-title">
+        <span data-gr-inline>Τι κερδίζεις</span>
+        <span data-el-inline>What You Gain</span>
+      </div>
+      <ul>
+        <li><span data-gr-inline>Διπλάσια ταχύτητα από DDR5</span><span data-el-inline>Double the speed of DDR5</span></li>
+        <li><span data-gr-inline>Λιγότερη κατανάλωση ενέργειας</span><span data-el-inline>Lower energy consumption</span></li>
+        <li><span data-gr-inline>Αυτόματη διόρθωση σφαλμάτων</span><span data-el-inline>Automatic error correction</span></li>
+        <li><span data-gr-inline>Καλύτερο multitasking</span><span data-el-inline>Better multitasking</span></li>
+        <li><span data-gr-inline>Ιδανικό για AI εφαρμογές</span><span data-el-inline>Ideal for AI applications</span></li>
+        <li><span data-gr-inline>Μεγαλύτερη σταθερότητα</span><span data-el-inline>Greater system stability</span></li>
+      </ul>
+    </div>
+    <div class="pc-box cons">
+      <div class="pc-title">
+        <span data-gr-inline>Τι πρέπει να ξέρεις</span>
+        <span data-el-inline>What to Consider</span>
+      </div>
+      <ul>
+        <li><span data-gr-inline>Πολύ υψηλό κόστος αρχικά</span><span data-el-inline>Very high initial cost</span></li>
+        <li><span data-gr-inline>Χρειάζεται νέα μητρική + CPU</span><span data-el-inline>Needs new motherboard + CPU</span></li>
+        <li><span data-gr-inline>Δεν έρχεται πριν το 2027</span><span data-el-inline>Not available before 2027</span></li>
+        <li><span data-gr-inline>Ασύμβατη με παλιά συστήματα</span><span data-el-inline>Incompatible with old systems</span></li>
+        <li><span data-gr-inline>Περιορισμένη επιλογή αρχικά</span><span data-el-inline>Limited model choices at launch</span></li>
+        <li><span data-gr-inline>Πιθανώς χρειάζεται καλύτερη ψύξη</span><span data-el-inline>May need better cooling</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-box">
+    <p>
+      <span data-gr-inline>⚡ <strong>Η σύσταση μας:</strong> Αν χρειάζεσαι αναβάθμιση <em>τώρα</em>, αγόρασε DDR5 — εξαιρετική τεχνολογία σε λογικές τιμές. Αν μπορείς να περιμένεις, το <strong>2027–2028</strong> είναι το ιδανικό παράθυρο για DDR6 σε λογική τιμή.</span>
+      <span data-el-inline>⚡ <strong>Our recommendation:</strong> If you need an upgrade <em>now</em>, buy DDR5 — excellent technology at reasonable prices. If you can wait, <strong>2027–2028</strong> is the ideal window to get DDR6 at a fair price.</span>
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span data-gr-inline>Τελευταία ενημέρωση: Μάρτιος 2026 · Πηγές: JEDEC, TrendForce, HWCooling</span>
+    <span data-el-inline>Last updated: March 2026 · Sources: JEDEC, TrendForce, HWCooling</span>
+    <br>
+    <a href="https://lovefortechnology.net" target="_blank">lovefortechnology.net</a>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+  function toggleLang() {
+    const body = document.body;
+    const label = document.getElementById('langLabel');
+    if (body.classList.contains('en')) {
+      body.classList.remove('en');
+      label.textContent = 'English';
+      document.documentElement.lang = 'el';
+    } else {
+      body.classList.add('en');
+      label.textContent = 'Ελληνικά';
+      document.documentElement.lang = 'en';
+    }
+  }
+
+  function toggleAcc(el) {
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  }
+
+  function toggleTl(el) {
+    el.classList.toggle('expanded');
+  }
+
+  // Animate bars on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(b => b.classList.add('animated'));
+    }, 200);
+  });
+</script>
+</body>
+</html>
