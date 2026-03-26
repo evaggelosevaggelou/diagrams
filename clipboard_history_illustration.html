@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Clipboard History — Android Trick #4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+@keyframes copy-flash{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLang('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<svg width="100%" viewBox="0 0 680 500">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- TOP COPY ITEMS -->
+<rect x="40" y="40" width="150" height="44" rx="8" fill="#E6F1FB" stroke="#378ADD" stroke-width="1"/>
+<text x="115" y="58" text-anchor="middle" font-size="11" font-weight="600" fill="#0C447C">+30 210 555 1234</text>
+<text id="copy1-sub" x="115" y="74" text-anchor="middle" font-size="9" fill="#185FA5">Αντιγραφή τηλεφώνου</text>
+
+<rect x="220" y="40" width="150" height="44" rx="8" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+<text x="295" y="58" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">IBAN: GR16 0110...</text>
+<text id="copy2-sub" x="295" y="74" text-anchor="middle" font-size="9" fill="#0F6E56">Αντιγραφή IBAN</text>
+
+<rect x="400" y="40" width="160" height="44" rx="8" fill="#FAEEDA" stroke="#BA7517" stroke-width="1"/>
+<text x="480" y="58" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">user@example.com</text>
+<text id="copy3-sub" x="480" y="74" text-anchor="middle" font-size="9" fill="#854F0B">Αντιγραφή email</text>
+
+<line x1="115" y1="86" x2="115" y2="130" stroke="#378ADD" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+<line x1="295" y1="86" x2="295" y2="130" stroke="#1D9E75" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+<line x1="480" y1="86" x2="480" y2="130" stroke="#BA7517" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+
+<!-- CLIPBOARD BUFFER -->
+<rect x="30" y="130" width="620" height="130" rx="12" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="1"/>
+<text id="lbl-buffer" x="340" y="150" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Clipboard History — Gboard</text>
+
+<rect x="50" y="158" width="160" height="88" rx="8" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5" opacity=".6"/>
+<text x="130" y="176" text-anchor="middle" font-size="9" fill="#185FA5" opacity=".7">3</text>
+<text id="entry1-text" x="130" y="192" text-anchor="middle" font-size="10" fill="#0C447C" opacity=".7">+30 210 555 1234</text>
+<text id="entry1-age" x="130" y="208" text-anchor="middle" font-size="9" fill="#185FA5" opacity=".6">πριν 8 λεπτά</text>
+<circle cx="195" cy="165" r="8" fill="none" stroke="#85B7EB" stroke-width="0.5" opacity=".5"/>
+<text x="195" y="169" text-anchor="middle" font-size="9" fill="#185FA5" opacity=".5">&#128204;</text>
+
+<rect x="250" y="158" width="160" height="88" rx="8" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="0.5"/>
+<text x="330" y="176" text-anchor="middle" font-size="9" fill="#0F6E56">2</text>
+<text id="entry2-text" x="330" y="192" text-anchor="middle" font-size="10" fill="#085041">IBAN: GR16 0110...</text>
+<text id="entry2-age" x="330" y="208" text-anchor="middle" font-size="9" fill="#1D9E75">πριν 4 λεπτά</text>
+<circle cx="395" cy="165" r="8" fill="none" stroke="#5DCAA5" stroke-width="0.5"/>
+<text x="395" y="169" text-anchor="middle" font-size="9" fill="#0F6E56">&#128204;</text>
+
+<rect x="450" y="158" width="160" height="88" rx="8" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text id="new-badge" x="520" y="176" text-anchor="middle" font-size="9" fill="#633806">1 — </text>
+<text id="new-label" x="548" y="176" font-size="9" fill="#BA7517">νέο</text>
+<text id="entry3-text" x="530" y="192" text-anchor="middle" font-size="10" fill="#412402">user@example.com</text>
+<text id="entry3-age" x="530" y="208" text-anchor="middle" font-size="9" fill="#BA7517">μόλις τώρα</text>
+<circle cx="595" cy="165" r="8" fill="#EF9F27" opacity=".3"/>
+<text x="595" y="169" text-anchor="middle" font-size="9" fill="#633806">&#9733;</text>
+
+<!-- PHONE -->
+<rect x="186" y="290" width="108" height="200" rx="16" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+<rect x="198" y="302" width="84" height="80" rx="6" fill="#1e2030"/>
+<text id="typing-label" x="240" y="322" text-anchor="middle" font-size="8" fill="#9c9a92">Πεδίο κειμένου</text>
+<rect x="208" y="330" width="64" height="14" rx="3" fill="#2d3150"/>
+<text id="typing-text" x="240" y="341" text-anchor="middle" font-size="8" fill="#6b7db3">Πληκτρολογείτε...</text>
+<rect x="198" y="386" width="84" height="90" rx="0" fill="#333340"/>
+<rect x="198" y="386" width="84" height="18" rx="0" fill="#222230"/>
+<rect x="204" y="389" width="18" height="12" rx="2" fill="#5F5E5A"/>
+<text x="213" y="398" text-anchor="middle" font-size="7" fill="#ccc">CB</text>
+<rect x="202" y="408" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="217" y="408" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="232" y="408" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="247" y="408" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="262" y="408" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="202" y="422" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="217" y="422" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="232" y="422" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="247" y="422" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="262" y="422" width="12" height="10" rx="2" fill="#4a4a55"/>
+<rect x="210" y="436" width="60" height="10" rx="5" fill="#4a4a55"/>
+<rect x="218" y="478" width="44" height="3" rx="1.5" fill="#444441"/>
+
+<!-- Arrow buffer → phone -->
+<path d="M340 262 L340 285 L240 285 L240 300" fill="none" stroke="#888780" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text id="lbl-select" x="340" y="278" text-anchor="middle" font-size="10" fill="#5F5E5A">Επιλέξτε → Επικόλληση</text>
+
+<!-- PIN TIP -->
+<rect x="430" y="310" width="210" height="80" rx="10" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+<text id="tip-title" x="535" y="330" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Καρφίτσωμα</text>
+<text id="tip-line1" x="535" y="348" text-anchor="middle" font-size="10" fill="#534AB7">Πατήστε το &#128204; δίπλα</text>
+<text id="tip-line2" x="535" y="363" text-anchor="middle" font-size="10" fill="#534AB7">σε οποιαδήποτε καταχώρηση</text>
+<text id="tip-line3" x="535" y="378" text-anchor="middle" font-size="10" fill="#7F77DD">για να μην εξαφανιστεί ποτέ!</text>
+
+<!-- STEPS -->
+<rect x="30" y="410" width="620" height="72" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="step-title" x="340" y="430" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Πώς να ανοίξετε το Clipboard History (Gboard)</text>
+<rect x="50" y="440" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="451" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">1</text>
+<text id="step1" x="72" y="451" font-size="10" fill="#5F5E5A">Ανοίξτε οποιοδήποτε πεδίο κειμένου ώστε να εμφανιστεί το πληκτρολόγιο</text>
+<rect x="50" y="458" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="469" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">2</text>
+<text id="step2" x="72" y="469" font-size="10" fill="#5F5E5A">Πατήστε το εικονίδιο Clipboard (CB) στην πάνω γραμμή του Gboard</text>
+</svg>
+
+<div class="action-controls">
+  <button id="btn-copy" onclick="animateCopy()">Αντέγραψε κείμενο!</button>
+  <button id="btn-reset" onclick="resetAnim()">Reset</button>
+</div>
+
+<script>
+var lang='el', copyCount=0;
+var tx={
+  el:{
+    copy1sub:'Αντιγραφή τηλεφώνου',copy2sub:'Αντιγραφή IBAN',copy3sub:'Αντιγραφή email',
+    bufLabel:'Clipboard History — Gboard',
+    age1:'πριν 8 λεπτά',age2:'πριν 4 λεπτά',age3:'μόλις τώρα',
+    newLabel:'νέο',selectLabel:'Επιλέξτε → Επικόλληση',
+    tipTitle:'Καρφίτσωμα',tipLine1:'Πατήστε το 📌 δίπλα',
+    tipLine2:'σε οποιαδήποτε καταχώρηση',tipLine3:'για να μην εξαφανιστεί ποτέ!',
+    stepTitle:'Πώς να ανοίξετε το Clipboard History (Gboard)',
+    step1:'Ανοίξτε οποιοδήποτε πεδίο κειμένου ώστε να εμφανιστεί το πληκτρολόγιο',
+    step2:'Πατήστε το εικονίδιο Clipboard (CB) στην πάνω γραμμή του Gboard',
+    typingLabel:'Πεδίο κειμένου',typingText:'Πληκτρολογείτε...',
+    btnCopy:'Αντέγραψε κείμενο!',btnReset:'Reset'
+  },
+  en:{
+    copy1sub:'Copy phone number',copy2sub:'Copy IBAN',copy3sub:'Copy email',
+    bufLabel:'Clipboard History — Gboard',
+    age1:'8 minutes ago',age2:'4 minutes ago',age3:'just now',
+    newLabel:'new',selectLabel:'Select → Paste',
+    tipTitle:'Pin an entry',tipLine1:'Tap the 📌 icon next to',
+    tipLine2:'any clipboard entry',tipLine3:'so it never disappears!',
+    stepTitle:'How to open Clipboard History (Gboard)',
+    step1:'Open any text field so the keyboard appears',
+    step2:'Tap the Clipboard (CB) icon on the top bar of Gboard',
+    typingLabel:'Text field',typingText:'Typing...',
+    btnCopy:'Copy some text!',btnReset:'Reset'
+  }
+};
+
+var items=[
+  {text:'+30 210 555 1234',entry:'entry1'},
+  {text:'IBAN: GR16 0110...',entry:'entry2'},
+  {text:'user@example.com',entry:'entry3'}
+];
+
+function setLang(l){
+  lang=l; var t=tx[l];
+  document.getElementById('copy1-sub').textContent=t.copy1sub;
+  document.getElementById('copy2-sub').textContent=t.copy2sub;
+  document.getElementById('copy3-sub').textContent=t.copy3sub;
+  document.getElementById('lbl-buffer').textContent=t.bufLabel;
+  document.getElementById('entry1-age').textContent=t.age1;
+  document.getElementById('entry2-age').textContent=t.age2;
+  document.getElementById('entry3-age').textContent=t.age3;
+  document.getElementById('new-label').textContent=t.newLabel;
+  document.getElementById('lbl-select').textContent=t.selectLabel;
+  document.getElementById('tip-title').textContent=t.tipTitle;
+  document.getElementById('tip-line1').textContent=t.tipLine1;
+  document.getElementById('tip-line2').textContent=t.tipLine2;
+  document.getElementById('tip-line3').textContent=t.tipLine3;
+  document.getElementById('step-title').textContent=t.stepTitle;
+  document.getElementById('step1').textContent=t.step1;
+  document.getElementById('step2').textContent=t.step2;
+  document.getElementById('typing-label').textContent=t.typingLabel;
+  document.getElementById('typing-text').textContent=t.typingText;
+  document.getElementById('btn-copy').textContent=t.btnCopy;
+  document.getElementById('btn-reset').textContent=t.btnReset;
+  document.getElementById('btn-el').className=(l==='el')?'active':'';
+  document.getElementById('btn-en').className=(l==='en')?'active':'';
+}
+
+function animateCopy(){
+  var idx=copyCount%3;
+  var item=items[idx];
+  var el=document.getElementById(item.entry+'-text');
+  if(el){el.style.animation='none';void el.offsetWidth;el.style.animation='copy-flash .4s ease';}
+  var ageEl=document.getElementById(item.entry+'-age');
+  if(ageEl) ageEl.textContent=(lang==='el')?'μόλις τώρα':'just now';
+  document.getElementById('typing-text').textContent=item.text;
+  copyCount++;
+}
+
+function resetAnim(){
+  var t=tx[lang];
+  document.getElementById('entry1-age').textContent=t.age1;
+  document.getElementById('entry2-age').textContent=t.age2;
+  document.getElementById('entry3-age').textContent=t.age3;
+  document.getElementById('typing-text').textContent=t.typingText;
+  copyCount=0;
+}
+
+setLang('el');
+</script>
+</body>
+</html>
