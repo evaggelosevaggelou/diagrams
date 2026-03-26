@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quick Tap — Android Trick #2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+@keyframes tap-ripple{0%{r:12;opacity:.7}100%{r:36;opacity:0}}
+@keyframes tap-ripple2{0%{r:12;opacity:.5}100%{r:50;opacity:0}}
+@keyframes flash-screen{0%,100%{opacity:0}20%,80%{opacity:1}}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:8px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLanguage('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLanguage('en')">English</button>
+</div>
+
+<svg id="main-svg" width="100%" viewBox="0 0 680 480" role="img">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <clipPath id="screen-clip"><rect x="203" y="92" width="94" height="168" rx="8"/></clipPath>
+  <clipPath id="phone-clip"><rect x="190" y="60" width="120" height="320" rx="22"/></clipPath>
+</defs>
+
+<!-- === PHONE BODY === -->
+<rect x="196" y="66" width="120" height="320" rx="22" fill="#B4B2A9" stroke="#888780" stroke-width="0.5"/>
+<rect x="190" y="60" width="120" height="320" rx="22" fill="#2C2C2A" stroke="#444441" stroke-width="1"/>
+<!-- Screen area -->
+<rect id="screen" x="203" y="92" width="94" height="168" rx="8" fill="#1a1a1a"/>
+<!-- Screen content default -->
+<g id="screen-default">
+  <rect x="203" y="92" width="94" height="168" rx="8" fill="#1e2030" clip-path="url(#screen-clip)"/>
+  <text x="250" y="148" text-anchor="middle" font-size="22" font-weight="300" fill="#ffffff">14:32</text>
+  <text id="screen-date" x="250" y="168" text-anchor="middle" font-size="9" fill="#9c9a92">Τρίτη, 26 Μαρ</text>
+  <circle cx="218" cy="100" r="2" fill="#9c9a92"/>
+  <circle cx="226" cy="100" r="2" fill="#9c9a92"/>
+  <circle cx="234" cy="100" r="2" fill="#9c9a92"/>
+  <text x="278" y="103" text-anchor="end" font-size="8" fill="#9c9a92">100%</text>
+</g>
+
+<!-- Screen result (hidden initially) -->
+<g id="screen-result" opacity="0"></g>
+
+<!-- Torch beam -->
+<g id="torch-beam" opacity="0" clip-path="url(#phone-clip)">
+  <polygon points="250,380 210,60 290,60" fill="#FAEEDA" opacity="0.18"/>
+  <polygon points="250,380 222,60 278,60" fill="#FAC775" opacity="0.22"/>
+</g>
+
+<!-- Camera bump -->
+<ellipse cx="250" cy="76" rx="8" ry="4" fill="#1a1a1a" stroke="#444441" stroke-width="0.5"/>
+<!-- Home indicator -->
+<rect x="232" y="368" width="36" height="4" rx="2" fill="#444441"/>
+<!-- Side buttons -->
+<rect x="187" y="130" width="3" height="28" rx="1.5" fill="#888780"/>
+<rect x="187" y="164" width="3" height="22" rx="1.5" fill="#888780"/>
+<rect x="310" y="138" width="3" height="34" rx="1.5" fill="#888780"/>
+
+<!-- TAP POINT on back -->
+<circle id="tap-point" cx="250" cy="295" r="10" fill="#5F5E5A" opacity="0.5"/>
+<text id="tap-text" x="250" y="299" text-anchor="middle" font-size="8" fill="#B4B2A9">tap</text>
+
+<!-- Ripple circles -->
+<circle id="rip1" cx="250" cy="295" r="12" fill="none" stroke="#BA7517" stroke-width="1.5" opacity="0"/>
+<circle id="rip2" cx="250" cy="295" r="12" fill="none" stroke="#EF9F27" stroke-width="1" opacity="0"/>
+
+<!-- === ACTION BUTTONS RIGHT === -->
+<g id="action-camera" style="cursor:pointer" onclick="selectAction('camera')">
+  <rect x="360" y="80" width="150" height="56" rx="10" fill="#E6F1FB" stroke="#378ADD" stroke-width="1"/>
+  <text id="lbl-camera" x="408" y="103" font-size="13" font-weight="500" fill="#0C447C">Κάμερα</text>
+  <text id="lbl-camera-sub" x="408" y="120" font-size="11" fill="#185FA5">Άνοιγμα άμεσα</text>
+  <rect x="368" y="91" width="24" height="18" rx="3" fill="#185FA5" opacity=".2"/>
+  <circle cx="380" cy="100" r="5" fill="#185FA5" opacity=".5"/>
+</g>
+
+<g id="action-torch" style="cursor:pointer" onclick="selectAction('torch')">
+  <rect x="360" y="156" width="150" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="1"/>
+  <text id="lbl-torch" x="408" y="179" font-size="13" font-weight="500" fill="#633806">Φακός</text>
+  <text id="lbl-torch-sub" x="408" y="196" font-size="11" fill="#854F0B">Άμεση φώτιση</text>
+  <polygon points="380,165 368,182 392,182" fill="#BA7517" opacity=".4"/>
+  <rect x="374" y="182" width="12" height="8" rx="2" fill="#BA7517" opacity=".3"/>
+</g>
+
+<g id="action-screenshot" style="cursor:pointer" onclick="selectAction('screenshot')">
+  <rect x="360" y="232" width="150" height="56" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+  <text id="lbl-screenshot" x="408" y="255" font-size="13" font-weight="500" fill="#085041">Screenshot</text>
+  <text id="lbl-screenshot-sub" x="408" y="272" font-size="11" fill="#0F6E56">Χωρίς κουμπιά</text>
+  <rect x="367" y="242" width="20" height="16" rx="2" fill="none" stroke="#1D9E75" stroke-width="1.5" opacity=".6"/>
+  <line x1="371" y1="250" x2="382" y2="250" stroke="#1D9E75" stroke-width="1" opacity=".6"/>
+  <line x1="371" y1="254" x2="378" y2="254" stroke="#1D9E75" stroke-width="1" opacity=".6"/>
+</g>
+
+<!-- Arrow from tap to actions -->
+<path d="M312 295 Q335 295 355 200" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)" opacity=".5"/>
+
+<!-- Double tap label -->
+<text id="lbl-double" x="165" y="290" text-anchor="middle" font-size="11" fill="#5F5E5A">Διπλό</text>
+<text id="lbl-tap" x="165" y="303" text-anchor="middle" font-size="11" fill="#5F5E5A">πάτημα</text>
+<path d="M178 295 L188 295" stroke="#888780" stroke-width="1" marker-end="url(#arrow)" fill="none"/>
+
+<!-- Result label -->
+<text id="result-label" x="435" y="330" text-anchor="middle" font-size="12" fill="#888780">Επίλεξε ενέργεια →</text>
+
+<!-- Step guide bottom -->
+<rect x="40" y="420" width="600" height="42" rx="8" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="lbl-steps" x="340" y="437" text-anchor="middle" font-size="11" fill="#5F5E5A">Ρυθμίσεις → Σύστημα → Χειρονομίες → Quick Tap → επίλεξε ενέργεια</text>
+<text id="lbl-compat" x="340" y="453" text-anchor="middle" font-size="10" fill="#888780">Διαθέσιμο σε Pixel και πολλά Android 11+ κινητά</text>
+
+</svg>
+
+<div class="action-controls">
+  <button id="btn-dotap" onclick="doTap()">Διπλό πάτημα!</button>
+  <button id="btn-reset" onclick="resetDemo()">Reset</button>
+</div>
+
+<script>
+var currentLang = 'el';
+var currentAction = null;
+
+var texts = {
+  el: {
+    date: 'Τρίτη, 26 Μαρ',
+    tapText: 'tap',
+    camera: 'Κάμερα',
+    cameraSub: 'Άνοιγμα άμεσα',
+    torch: 'Φακός',
+    torchSub: 'Άμεση φώτιση',
+    screenshot: 'Screenshot',
+    screenshotSub: 'Χωρίς κουμπιά',
+    double: 'Διπλό',
+    tap: 'πάτημα',
+    resultDefault: 'Επίλεξε ενέργεια →',
+    resultCamera: 'Κάμερα — τώρα πάτα!',
+    resultTorch: 'Φακός — τώρα πάτα!',
+    resultScreenshot: 'Screenshot — τώρα πάτα!',
+    resultCameraFired: 'Κάμερα άνοιξε αμέσως!',
+    resultTorchFired: 'Φακός άνοιξε αμέσως!',
+    resultScreenshotFired: 'Screenshot τραβήχτηκε!',
+    steps: 'Ρυθμίσεις → Σύστημα → Χειρονομίες → Quick Tap → επίλεξε ενέργεια',
+    compat: 'Διαθέσιμο σε Pixel και πολλά Android 11+ κινητά',
+    torchOn: 'Φακός ON',
+    cameraOpen: 'Κάμερα ανοιχτή',
+    screenshotDone: 'Screenshot!',
+    btnTap: 'Διπλό πάτημα!',
+    btnReset: 'Reset'
+  },
+  en: {
+    date: 'Tuesday, 26 Mar',
+    tapText: 'tap',
+    camera: 'Camera',
+    cameraSub: 'Open instantly',
+    torch: 'Flashlight',
+    torchSub: 'Instant light',
+    screenshot: 'Screenshot',
+    screenshotSub: 'No buttons needed',
+    double: 'Double',
+    tap: 'tap',
+    resultDefault: 'Select an action →',
+    resultCamera: 'Camera — now tap!',
+    resultTorch: 'Flashlight — now tap!',
+    resultScreenshot: 'Screenshot — now tap!',
+    resultCameraFired: 'Camera opened instantly!',
+    resultTorchFired: 'Flashlight turned on!',
+    resultScreenshotFired: 'Screenshot captured!',
+    steps: 'Settings → System → Gestures → Quick Tap → choose action',
+    compat: 'Available on Pixel and many Android 11+ devices',
+    torchOn: 'Torch ON',
+    cameraOpen: 'Camera open',
+    screenshotDone: 'Screenshot!',
+    btnTap: 'Double tap!',
+    btnReset: 'Reset'
+  }
+};
+
+function setLanguage(lang) {
+  currentLang = lang;
+  var t = texts[lang];
+  document.getElementById('screen-date').textContent = t.date;
+  document.getElementById('tap-text').textContent = t.tapText;
+  document.getElementById('lbl-camera').textContent = t.camera;
+  document.getElementById('lbl-camera-sub').textContent = t.cameraSub;
+  document.getElementById('lbl-torch').textContent = t.torch;
+  document.getElementById('lbl-torch-sub').textContent = t.torchSub;
+  document.getElementById('lbl-screenshot').textContent = t.screenshot;
+  document.getElementById('lbl-screenshot-sub').textContent = t.screenshotSub;
+  document.getElementById('lbl-double').textContent = t.double;
+  document.getElementById('lbl-tap').textContent = t.tap;
+  document.getElementById('lbl-steps').textContent = t.steps;
+  document.getElementById('lbl-compat').textContent = t.compat;
+  document.getElementById('btn-dotap').textContent = t.btnTap;
+  document.getElementById('btn-reset').textContent = t.btnReset;
+  document.getElementById('btn-el').className = (lang === 'el') ? 'active' : '';
+  document.getElementById('btn-en').className = (lang === 'en') ? 'active' : '';
+
+  // Update result label based on current state
+  if (!currentAction) {
+    document.getElementById('result-label').textContent = t.resultDefault;
+  } else {
+    var map = {camera: t.resultCamera, torch: t.resultTorch, screenshot: t.resultScreenshot};
+    document.getElementById('result-label').textContent = map[currentAction];
+  }
+}
+
+function selectAction(action) {
+  currentAction = action;
+  var t = texts[currentLang];
+  ['camera','torch','screenshot'].forEach(function(a) {
+    var el = document.getElementById('action-'+a);
+    el.style.opacity = (a === action) ? '1' : '0.45';
+    el.querySelector('rect').setAttribute('stroke-width', a === action ? '2' : '1');
+  });
+  var map = {camera: t.resultCamera, torch: t.resultTorch, screenshot: t.resultScreenshot};
+  document.getElementById('result-label').textContent = map[action];
+}
+
+function doTap() {
+  triggerRipple();
+  setTimeout(function(){ showResult(); }, 500);
+}
+
+function triggerRipple() {
+  var r1 = document.getElementById('rip1');
+  var r2 = document.getElementById('rip2');
+  r1.setAttribute('r','12'); r1.setAttribute('opacity','0.7');
+  r2.setAttribute('r','12'); r2.setAttribute('opacity','0.5');
+  var start = null;
+  function anim(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / 700, 1);
+    r1.setAttribute('r', 12 + p*28); r1.setAttribute('opacity', 0.7*(1-p));
+    r2.setAttribute('r', 12 + p*40); r2.setAttribute('opacity', 0.5*(1-p));
+    if (p < 1) requestAnimationFrame(anim);
+  }
+  requestAnimationFrame(anim);
+}
+
+function showResult() {
+  var action = currentAction || 'torch';
+  var t = texts[currentLang];
+  var sr = document.getElementById('screen-result');
+  var sd = document.getElementById('screen-default');
+  var tb = document.getElementById('torch-beam');
+  sr.innerHTML = '';
+
+  function mkEl(tag, attrs) {
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.keys(attrs).forEach(function(k){ el.setAttribute(k, attrs[k]); });
+    return el;
+  }
+
+  if (action === 'torch') {
+    tb.style.transition = 'opacity .4s';
+    tb.style.opacity = '1';
+    sr.appendChild(mkEl('circle',{cx:'250',cy:'150',r:'30',fill:'#FAC775',opacity:'0.35'}));
+    var txt = mkEl('text',{x:'250',y:'180','text-anchor':'middle','font-size':'9',fill:'#FAC775'});
+    txt.textContent = t.torchOn;
+    sr.appendChild(txt);
+    sr.setAttribute('opacity','1'); sd.setAttribute('opacity','0');
+    document.getElementById('result-label').textContent = t.resultTorchFired;
+
+  } else if (action === 'camera') {
+    sr.appendChild(mkEl('rect',{x:'203',y:'92',width:'94',height:'168',rx:'8',fill:'#0a1520','clip-path':'url(#screen-clip)'}));
+    sr.appendChild(mkEl('circle',{cx:'250',cy:'176',r:'32',fill:'none',stroke:'#ffffff','stroke-width':'1',opacity:'0.5'}));
+    sr.appendChild(mkEl('circle',{cx:'250',cy:'176',r:'4',fill:'#ffffff',opacity:'0.8'}));
+    var cap = mkEl('text',{x:'250',y:'245','text-anchor':'middle','font-size':'9',fill:'#9c9a92'});
+    cap.textContent = t.cameraOpen;
+    sr.appendChild(cap);
+    sr.setAttribute('opacity','1'); sd.setAttribute('opacity','0');
+    document.getElementById('result-label').textContent = t.resultCameraFired;
+
+  } else {
+    var bg = mkEl('rect',{x:'203',y:'92',width:'94',height:'168',rx:'8',fill:'#ffffff',opacity:'0'});
+    sr.appendChild(bg);
+    sr.setAttribute('opacity','1'); sd.setAttribute('opacity','0');
+    var op = 0, dir = 1, flashes = 0;
+    function animFlash() {
+      op += dir * 0.15;
+      if (op >= 1){ op=1; dir=-1; }
+      if (op <= 0){ op=0; dir=1; flashes++; }
+      bg.setAttribute('opacity', op);
+      if (flashes < 2) { requestAnimationFrame(animFlash); }
+      else {
+        bg.setAttribute('fill','#1e2030'); bg.setAttribute('opacity','1');
+        var mini = mkEl('rect',{x:'215',y:'120',width:'70',height:'50',rx:'4',fill:'#2C2C2A',stroke:'#5F5E5A','stroke-width':'0.5'});
+        sr.appendChild(mini);
+        var stxt = mkEl('text',{x:'250',y:'200','text-anchor':'middle','font-size':'9',fill:'#9c9a92'});
+        stxt.textContent = t.screenshotDone;
+        sr.appendChild(stxt);
+      }
+    }
+    requestAnimationFrame(animFlash);
+    document.getElementById('result-label').textContent = t.resultScreenshotFired;
+  }
+}
+
+function resetDemo() {
+  ['camera','torch','screenshot'].forEach(function(a) {
+    var el = document.getElementById('action-'+a);
+    el.style.opacity = '1';
+    el.querySelector('rect').setAttribute('stroke-width','1');
+  });
+  document.getElementById('screen-result').setAttribute('opacity','0');
+  document.getElementById('screen-result').innerHTML = '';
+  document.getElementById('screen-default').setAttribute('opacity','1');
+  document.getElementById('torch-beam').style.opacity = '0';
+  document.getElementById('result-label').textContent = texts[currentLang].resultDefault;
+  currentAction = null;
+}
+
+setLanguage('el');
+</script>
+</body>
+</html>
