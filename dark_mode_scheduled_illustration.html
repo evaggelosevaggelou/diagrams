@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Scheduled Dark Mode — Android Trick #5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+@keyframes star-twinkle{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes moon-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLang('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<svg width="100%" viewBox="0 0 680 480">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect id="sky-day" x="30" y="30" width="300" height="200" rx="12" fill="#87CEEB"/>
+<rect id="sky-night" x="350" y="30" width="300" height="200" rx="12" fill="#0a0a2e"/>
+
+<circle cx="400" cy="55" r="1.5" fill="#fff" style="animation:star-twinkle 2.1s ease-in-out infinite"/>
+<circle cx="450" cy="45" r="1" fill="#fff" style="animation:star-twinkle 1.7s ease-in-out infinite .3s"/>
+<circle cx="520" cy="60" r="1.5" fill="#fff" style="animation:star-twinkle 2.4s ease-in-out infinite .6s"/>
+<circle cx="580" cy="48" r="1" fill="#fff" style="animation:star-twinkle 1.9s ease-in-out infinite .1s"/>
+<circle cx="610" cy="70" r="1.2" fill="#fff" style="animation:star-twinkle 2.2s ease-in-out infinite .8s"/>
+<circle cx="470" cy="78" r="1" fill="#fff" style="animation:star-twinkle 1.6s ease-in-out infinite .4s"/>
+<circle cx="560" cy="90" r="1.5" fill="#fff" style="animation:star-twinkle 2.0s ease-in-out infinite .2s"/>
+
+<circle id="sun" cx="180" cy="110" r="32" fill="#FAC775"/>
+<line x1="180" y1="68" x2="180" y2="60" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+<line x1="210" y1="80" x2="216" y2="74" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+<line x1="222" y1="110" x2="230" y2="110" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+<line x1="210" y1="140" x2="216" y2="146" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="80" x2="144" y2="74" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+<line x1="138" y1="110" x2="130" y2="110" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="140" x2="144" y2="146" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/>
+
+<rect x="30" y="210" width="300" height="20" rx="0" fill="#5DCAA5" opacity=".6"/>
+<rect x="350" y="210" width="300" height="20" rx="0" fill="#1a1a3a"/>
+
+<g id="moon-g" style="opacity:0;transition:opacity .5s">
+  <circle cx="510" cy="110" r="26" fill="#D3D1C7"/>
+  <circle cx="522" cy="102" r="10" fill="#0a0a2e"/>
+</g>
+
+<text id="lbl-day" x="180" y="248" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">Ημέρα</text>
+<text id="lbl-night" x="500" y="248" text-anchor="middle" font-size="11" font-weight="600" fill="#B5D4F4">Νύχτα</text>
+<line x1="340" y1="30" x2="340" y2="230" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<text id="lbl-sunset" x="340" y="24" text-anchor="middle" font-size="10" fill="#888780">Ηλιοβασίλεμα / Ανατολή</text>
+
+<!-- Phone Light -->
+<rect x="86" y="50" width="108" height="220" rx="16" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="1.5"/>
+<rect x="98" y="62" width="84" height="148" rx="6" fill="#ffffff"/>
+<rect x="108" y="72" width="64" height="10" rx="3" fill="#E6F1FB"/>
+<rect x="108" y="86" width="64" height="60" rx="4" fill="#f0f0ea"/>
+<rect x="108" y="150" width="30" height="8" rx="2" fill="#E1F5EE"/>
+<rect x="142" y="150" width="30" height="8" rx="2" fill="#FAEEDA"/>
+<rect x="108" y="162" width="64" height="36" rx="4" fill="#f8f8f5"/>
+<rect x="108" y="62" width="64" height="10" rx="6" fill="#e0e0d8"/>
+<text x="140" y="70" text-anchor="middle" font-size="7" fill="#888780">Light</text>
+<rect x="118" y="196" width="44" height="3" rx="1.5" fill="#D3D1C7"/>
+<text id="lbl-phone-day" x="140" y="284" text-anchor="middle" font-size="11" fill="#633806">Φωτεινό θέμα</text>
+<text id="lbl-phone-day2" x="140" y="298" text-anchor="middle" font-size="10" fill="#854F0B">Κατά τη διάρκεια ημέρας</text>
+
+<!-- Phone Dark -->
+<rect x="486" y="50" width="108" height="220" rx="16" fill="#2C2C2A" stroke="#444441" stroke-width="1.5"/>
+<rect x="498" y="62" width="84" height="148" rx="6" fill="#1a1a2e"/>
+<rect x="508" y="72" width="64" height="10" rx="3" fill="#185FA5" opacity=".5"/>
+<rect x="508" y="86" width="64" height="60" rx="4" fill="#16213e"/>
+<rect x="508" y="150" width="30" height="8" rx="2" fill="#085041" opacity=".7"/>
+<rect x="542" y="150" width="30" height="8" rx="2" fill="#412402" opacity=".7"/>
+<rect x="508" y="162" width="64" height="36" rx="4" fill="#0f0f1e"/>
+<rect x="498" y="62" width="84" height="10" rx="6" fill="#111125"/>
+<text x="540" y="70" text-anchor="middle" font-size="7" fill="#B5D4F4">Dark</text>
+<rect x="518" y="196" width="44" height="3" rx="1.5" fill="#444441"/>
+<text id="lbl-phone-night" x="540" y="284" text-anchor="middle" font-size="11" fill="#B5D4F4">Σκούρο θέμα</text>
+<text id="lbl-phone-night2" x="540" y="298" text-anchor="middle" font-size="10" fill="#85B7EB">Αυτόματα το βράδυ</text>
+
+<path d="M196 160 Q340 160 484 160" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+<rect x="290" y="148" width="100" height="22" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.5"/>
+<text id="lbl-auto" x="340" y="163" text-anchor="middle" font-size="10" font-weight="600" fill="#3C3489">Αυτόματο</text>
+
+<rect x="220" y="310" width="240" height="44" rx="10" fill="#1a1a2e" stroke="#378ADD" stroke-width="1"/>
+<text id="lbl-oled1" x="340" y="328" text-anchor="middle" font-size="11" font-weight="600" fill="#B5D4F4">Bonus: OLED οθόνες</text>
+<text id="lbl-oled2" x="340" y="344" text-anchor="middle" font-size="10" fill="#85B7EB">Dark mode = μαύρα pixels = εξοικονόμηση μπαταρίας</text>
+
+<rect x="30" y="372" width="620" height="90" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="step-title" x="340" y="392" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Πώς να ρυθμίσετε τον προγραμματισμό Dark Mode</text>
+<rect x="50" y="402" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="413" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">1</text>
+<text id="step1" x="72" y="413" font-size="10" fill="#5F5E5A">Ρυθμίσεις → Οθόνη → Dark Mode (ή Σκούρο θέμα)</text>
+<rect x="50" y="420" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="431" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">2</text>
+<text id="step2" x="72" y="431" font-size="10" fill="#5F5E5A">Πατήστε "Προγραμματισμός" → Επιλέξτε ώρες ή ηλιοβασίλεμα/ανατολή</text>
+<rect x="50" y="438" width="14" height="14" rx="7" fill="#E24B4A"/>
+<text x="57" y="449" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">!</text>
+<text id="step3" x="72" y="449" font-size="10" fill="#A32D2D">Σε OLED οθόνες: τα μαύρα pixels δεν καταναλώνουν ρεύμα</text>
+</svg>
+
+<div class="action-controls">
+  <button id="btn-toggle" onclick="toggleTime()">Αλλαγή ώρας (Βράδυ/Μέρα)</button>
+  <button id="btn-reset" onclick="resetScene()">Reset</button>
+</div>
+
+<script>
+var lang='el', isNight=false;
+var tx={
+  el:{
+    day:'Ημέρα',night:'Νύχτα',sunset:'Ηλιοβασίλεμα / Ανατολή',
+    phoneDay:'Φωτεινό θέμα',phoneDay2:'Κατά τη διάρκεια ημέρας',
+    phoneNight:'Σκούρο θέμα',phoneNight2:'Αυτόματα το βράδυ',
+    auto:'Αυτόματο',
+    oled1:'Bonus: OLED οθόνες',oled2:'Dark mode = μαύρα pixels = εξοικονόμηση μπαταρίας',
+    stepTitle:'Πώς να ρυθμίσετε τον προγραμματισμό Dark Mode',
+    step1:'Ρυθμίσεις → Οθόνη → Dark Mode (ή Σκούρο θέμα)',
+    step2:'Πατήστε "Προγραμματισμός" → Επιλέξτε ώρες ή ηλιοβασίλεμα/ανατολή',
+    step3:'Σε OLED οθόνες: τα μαύρα pixels δεν καταναλώνουν ρεύμα',
+    btnToggle:'Αλλαγή ώρας (Βράδυ/Μέρα)',btnReset:'Reset'
+  },
+  en:{
+    day:'Day',night:'Night',sunset:'Sunset / Sunrise',
+    phoneDay:'Light theme',phoneDay2:'During daytime',
+    phoneNight:'Dark theme',phoneNight2:'Automatically at night',
+    auto:'Automatic',
+    oled1:'Bonus: OLED screens',oled2:'Dark mode = black pixels = battery savings',
+    stepTitle:'How to schedule Dark Mode',
+    step1:'Settings → Display → Dark Mode (or Dark theme)',
+    step2:'Tap "Schedule" → Choose times or sunset/sunrise',
+    step3:'On OLED screens: black pixels consume no power',
+    btnToggle:'Toggle time (Night/Day)',btnReset:'Reset'
+  }
+};
+
+function setLang(l){
+  lang=l; var t=tx[l];
+  document.getElementById('lbl-day').textContent=t.day;
+  document.getElementById('lbl-night').textContent=t.night;
+  document.getElementById('lbl-sunset').textContent=t.sunset;
+  document.getElementById('lbl-phone-day').textContent=t.phoneDay;
+  document.getElementById('lbl-phone-day2').textContent=t.phoneDay2;
+  document.getElementById('lbl-phone-night').textContent=t.phoneNight;
+  document.getElementById('lbl-phone-night2').textContent=t.phoneNight2;
+  document.getElementById('lbl-auto').textContent=t.auto;
+  document.getElementById('lbl-oled1').textContent=t.oled1;
+  document.getElementById('lbl-oled2').textContent=t.oled2;
+  document.getElementById('step-title').textContent=t.stepTitle;
+  document.getElementById('step1').textContent=t.step1;
+  document.getElementById('step2').textContent=t.step2;
+  document.getElementById('step3').textContent=t.step3;
+  document.getElementById('btn-toggle').textContent=t.btnToggle;
+  document.getElementById('btn-reset').textContent=t.btnReset;
+  document.getElementById('btn-el').className=(l==='el')?'active':'';
+  document.getElementById('btn-en').className=(l==='en')?'active':'';
+}
+
+function toggleTime(){
+  isNight=!isNight;
+  var sun=document.getElementById('sun');
+  var moon=document.getElementById('moon-g');
+  if(isNight){
+    document.getElementById('sky-day').setAttribute('fill','#0a0a2e');
+    document.getElementById('sky-night').setAttribute('fill','#87CEEB');
+    sun.style.transition='opacity .5s'; sun.style.opacity='0';
+    moon.style.opacity='1';
+  } else {
+    document.getElementById('sky-day').setAttribute('fill','#87CEEB');
+    document.getElementById('sky-night').setAttribute('fill','#0a0a2e');
+    sun.style.opacity='1';
+    moon.style.opacity='0';
+  }
+}
+
+function resetScene(){
+  isNight=false;
+  document.getElementById('sky-day').setAttribute('fill','#87CEEB');
+  document.getElementById('sky-night').setAttribute('fill','#0a0a2e');
+  document.getElementById('sun').style.opacity='1';
+  document.getElementById('moon-g').style.opacity='0';
+}
+
+setLang('el');
+</script>
+</body>
+</html>
