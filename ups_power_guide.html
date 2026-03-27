@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPS Power Guide | Οδηγός UPS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f7f5;
+    --border: #e8e6e0;
+    --text: #1a1a18;
+    --muted: #7a7970;
+    --accent: #1a5cff;
+    --accent2: #ff6b00;
+    --yellow: #f5c800;
+    --green: #1db35e;
+    --red: #e8331a;
+    --radius: 12px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 16px 40px;
+  }
+
+  /* ── LANG TOGGLE ── */
+  .lang-bar {
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 18px 0 0;
+  }
+
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: all .2s;
+    letter-spacing: .03em;
+  }
+  .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── HERO ── */
+  .hero {
+    width: 100%;
+    max-width: 860px;
+    margin: 28px 0 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 20px;
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 24px;
+  }
+
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.1;
+    font-weight: 400;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 520px;
+    font-weight: 300;
+  }
+
+  .hero-badge {
+    background: var(--text);
+    color: var(--bg);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    letter-spacing: .04em;
+  }
+
+  /* ── MAIN CONTAINER ── */
+  .container {
+    width: 100%;
+    max-width: 860px;
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ── SECTION HEADER ── */
+  .sec-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .sec-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .1em;
+  }
+  .sec-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+  }
+
+  /* ── WHAT IS UPS ── */
+  .what-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    border: 1.5px solid var(--border);
+  }
+  .what-card p { color: #3a3a35; font-weight: 300; }
+  .what-card p + p { margin-top: 10px; }
+
+  /* ── UPS TYPES ── */
+  .types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  @media(max-width: 640px) { .types-grid { grid-template-columns: 1fr; } }
+
+  .type-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .15s;
+  }
+  .type-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+
+  .type-header {
+    padding: 16px 18px 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .type-card.offline .type-header { background: #eef2ff; }
+  .type-card.interactive .type-header { background: #edfbf3; }
+  .type-card.online .type-header { background: #fff5ee; }
+
+  .type-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+  .type-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .offline .type-dot  { background: var(--accent); }
+  .interactive .type-dot { background: var(--green); }
+  .online .type-dot   { background: var(--accent2); }
+
+  .type-price {
+    padding: 0 18px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .offline .type-price  { color: var(--accent); }
+  .interactive .type-price { color: var(--green); }
+  .online .type-price   { color: var(--accent2); }
+
+  .type-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, padding .3s;
+    padding: 0 18px;
+    border-top: 0px solid var(--border);
+  }
+  .type-card.open .type-body {
+    max-height: 300px;
+    padding: 14px 18px 18px;
+    border-top: 1.5px solid var(--border);
+  }
+  .type-body p { font-size: 13.5px; color: #3a3a35; font-weight: 300; }
+  .type-body p + p { margin-top: 8px; }
+  .type-body strong { font-weight: 500; color: var(--text); }
+
+  .expand-hint {
+    padding: 10px 18px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .expand-hint .arrow { transition: transform .3s; display: inline-block; }
+  .type-card.open .expand-hint .arrow { transform: rotate(180deg); }
+
+  /* ── FEATURES GRID ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media(max-width: 560px) { .features-grid { grid-template-columns: 1fr; } }
+
+  .feat-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .feat-card:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,92,255,.07); }
+  .feat-card.open  { border-color: var(--accent); background: #f5f8ff; }
+
+  .feat-top { display: flex; align-items: center; gap: 10px; }
+  .feat-icon { font-size: 1.25rem; }
+  .feat-name { font-weight: 600; font-size: 14px; }
+
+  .feat-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease;
+    font-size: 13.5px;
+    color: #3a3a35;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .feat-card.open .feat-detail {
+    max-height: 200px;
+    margin-top: 10px;
+  }
+
+  /* ── PROS / CONS ── */
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media(max-width: 560px) { .pros-cons { grid-template-columns: 1fr; } }
+
+  .pc-block {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    border: 1.5px solid var(--border);
+  }
+  .pc-block.pros { background: #f0fdf5; border-color: #b9f2d0; }
+  .pc-block.cons { background: #fff5f4; border-color: #ffd1cc; }
+
+  .pc-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pc-item {
+    display: flex;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 300;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    color: #2e2e28;
+  }
+  .pc-item:last-child { border-bottom: none; }
+  .pc-mark { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+  /* ── USE CASES ── */
+  .uses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .use-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .use-item:hover { border-color: var(--accent); }
+  .use-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .use-text strong { font-weight: 600; font-size: 14px; }
+  .use-detail {
+    font-size: 13px;
+    color: var(--muted);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s;
+  }
+  .use-item.open .use-detail { max-height: 80px; margin-top: 4px; }
+  .use-item.open { border-color: var(--accent); background: #f5f8ff; }
+
+  /* ── CALC ── */
+  .calc-box {
+    background: var(--text);
+    color: var(--bg);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+  }
+  .calc-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 18px;
+  }
+  .calc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .calc-label {
+    font-size: 13px;
+    color: #bbb;
+    min-width: 180px;
+    font-weight: 300;
+  }
+  .calc-input {
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 6px;
+    padding: 7px 12px;
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    width: 90px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .calc-input:focus { border-color: var(--yellow); }
+  .calc-unit { font-size: 12px; color: #888; font-family: 'DM Mono', monospace; }
+
+  .calc-result {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,.07);
+    border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,.12);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .calc-result .big { font-size: 1.5rem; color: var(--yellow); font-weight: 500; }
+  .calc-rec { margin-top: 8px; font-size: 12px; color: #aaa; }
+
+  /* ── FAQ ── */
+  .faq-list { display: flex; flex-direction: column; gap: 0; }
+
+  .faq-item {
+    border-bottom: 1.5px solid var(--border);
+  }
+  .faq-item:first-child { border-top: 1.5px solid var(--border); }
+
+  .faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14.5px;
+    gap: 12px;
+    transition: color .2s;
+    user-select: none;
+  }
+  .faq-q:hover { color: var(--accent); }
+  .faq-icon { font-family: 'DM Mono', monospace; font-size: 16px; transition: transform .3s; flex-shrink: 0; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease;
+    font-size: 13.5px;
+    color: #3a3a35;
+    font-weight: 300;
+    padding: 0 4px;
+  }
+  .faq-item.open .faq-a { max-height: 200px; padding: 0 4px 16px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    width: 100%;
+    max-width: 860px;
+    margin-top: 36px;
+    padding-top: 18px;
+    border-top: 1.5px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+
+  /* ── SECTION WRAPPER ── */
+  section { width: 100%; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1.5px;
+    background: var(--border);
+  }
+
+</style>
+</head>
+<body>
+
+<!-- LANG BAR -->
+<div class="lang-bar">
+  <button class="lang-btn" onclick="toggleLang()" id="langBtn">🌐 <span id="langBtnText">English</span></button>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div>
+    <div class="hero-label" data-el="heroLabel">Οδηγός για αρχάριους · Μάρτιος 2026</div>
+    <h1 data-el="heroTitle">UPS — <em>Αδιάλειπτη</em><br>Παροχή Ρεύματος</h1>
+    <p class="hero-sub" data-el="heroSub">Όλα όσα πρέπει να γνωρίζεις για να προστατέψεις τον υπολογιστή και τα δεδομένα σου από διακοπές ρεύματος.</p>
+  </div>
+  <div class="hero-badge" data-el="heroBadge">🔋 UPS Guide</div>
+</header>
+
+<!-- MAIN -->
+<main class="container">
+
+  <!-- WHAT IS UPS -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title" data-el="s1title">Τι είναι το UPS;</h2>
+    </div>
+    <div class="what-card">
+      <p data-el="s1p1">Το UPS (Αδιάλειπτη Παροχή Ρεύματος) είναι μια ηλεκτρονική συσκευή που μοιάζει με μεγάλο πολύμπριζο — αλλά έχει μέσα μια επαναφορτιζόμενη μπαταρία. Ο ρόλος του είναι να προστατεύει τις συσκευές σου από απρόβλεπτες μεταβολές στο ηλεκτρικό δίκτυο.</p>
+      <p data-el="s1p2">Όταν κοπεί το ρεύμα, ενεργοποιείται άμεσα η μπαταρία — σε μερικά χιλιοστά του δευτερολέπτου — δίνοντάς σου πολύτιμα λεπτά να αποθηκεύσεις τη δουλειά σου και να κλείσεις σωστά τον υπολογιστή. Δεν είναι πολυτέλεια — είναι πρακτική ανάγκη.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- UPS TYPES -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title" data-el="s2title">Κατηγορίες UPS</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin-bottom:14px;font-weight:300;" data-el="s2hint">👆 Κλίκαρε κάθε κατηγορία για λεπτομέρειες</p>
+    <div class="types-grid">
+
+      <div class="type-card offline" onclick="toggleCard(this)">
+        <div class="type-header">
+          <div>
+            <div class="type-name" data-el="t1name">Offline<br>Standby</div>
+          </div>
+          <div class="type-dot"></div>
+        </div>
+        <div class="type-price" data-el="t1price">~40–80€</div>
+        <div class="expand-hint"><span class="arrow">↓</span> <span data-el="expandTxt">λεπτομέρειες</span></div>
+        <div class="type-body">
+          <p data-el="t1d1"><strong data-el="t1how">Πώς λειτουργεί:</strong> Παραμένει σε αναμονή και ενεργοποιείται μόνο όταν κοπεί το ρεύμα. Η πιο οικονομική επιλογή.</p>
+          <p data-el="t1d2"><strong data-el="t1ideal">Ιδανικό για:</strong> Οικιακούς υπολογιστές, τηλεοράσεις, routers.</p>
+          <p data-el="t1d3"><strong data-el="t1switch">Χρόνος μεταγωγής:</strong> ~5–25ms</p>
+        </div>
+      </div>
+
+      <div class="type-card interactive" onclick="toggleCard(this)">
+        <div class="type-header">
+          <div>
+            <div class="type-name" data-el="t2name">Line-<br>Interactive</div>
+          </div>
+          <div class="type-dot"></div>
+        </div>
+        <div class="type-price" data-el="t2price">~80–200€</div>
+        <div class="expand-hint"><span class="arrow">↓</span> <span data-el="expandTxt">λεπτομέρειες</span></div>
+        <div class="type-body">
+          <p data-el="t2d1"><strong data-el="t2how">Πώς λειτουργεί:</strong> Έχει ενσωματωμένο σταθεροποιητή τάσης που «ισοπεδώνει» τις διακυμάνσεις ρεύματος. Ιδανική ισορροπία τιμής–απόδοσης.</p>
+          <p data-el="t2d2"><strong data-el="t2ideal">Ιδανικό για:</strong> Επαγγελματικούς PC, γραφεία, NAS, μικρά δίκτυα.</p>
+          <p data-el="t2d3"><strong data-el="t2switch">Χρόνος μεταγωγής:</strong> &lt;4ms</p>
+        </div>
+      </div>
+
+      <div class="type-card online" onclick="toggleCard(this)">
+        <div class="type-header">
+          <div>
+            <div class="type-name" data-el="t3name">Online<br>Double Conv.</div>
+          </div>
+          <div class="type-dot"></div>
+        </div>
+        <div class="type-price" data-el="t3price">200€+</div>
+        <div class="expand-hint"><span class="arrow">↓</span> <span data-el="expandTxt">λεπτομέρειες</span></div>
+        <div class="type-body">
+          <p data-el="t3d1"><strong data-el="t3how">Πώς λειτουργεί:</strong> Μετατρέπει συνεχώς το ρεύμα (AC→DC→AC), εξαλείφοντας κάθε διακύμανση. Μηδενική καθυστέρηση μεταγωγής.</p>
+          <p data-el="t3d2"><strong data-el="t3ideal">Ιδανικό για:</strong> Servers, ιατρικές εφαρμογές, κρίσιμα συστήματα.</p>
+          <p data-el="t3d3"><strong data-el="t3switch">Χρόνος μεταγωγής:</strong> 0ms</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FEATURES -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title" data-el="s3title">Τι να κοιτάξεις κατά την αγορά</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin-bottom:14px;font-weight:300;" data-el="s3hint">👆 Κλίκαρε κάθε χαρακτηριστικό για εξήγηση</p>
+    <div class="features-grid">
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-top"><span class="feat-icon">⚡</span><span class="feat-name" data-el="f1name">Ισχύς (Watt & VA)</span></div>
+        <div class="feat-detail" data-el="f1detail">Άθροισε την κατανάλωση όλων των συσκευών και επέλεξε UPS με 20–30% παραπάνω ισχύ. Μετατροπή: 1000 VA ≈ 600 Watt (×0.6).</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-top"><span class="feat-icon">🔋</span><span class="feat-name" data-el="f2name">Διάρκεια Μπαταρίας</span></div>
+        <div class="feat-detail" data-el="f2detail">Για απλή αποθήκευση & σωστό κλείσιμο αρκούν 5–10 λεπτά. Για συνέχιση εργασίας κατά τη διακοπή, χρειάζεσαι μεγαλύτερη μπαταρία.</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-top"><span class="feat-icon">🛡️</span><span class="feat-name" data-el="f3name">Προστασία Υπέρτασης</span></div>
+        <div class="feat-detail" data-el="f3detail">Βεβαιώσου ότι το μοντέλο έχει ενσωματωμένη προστασία από υπερτάσεις — προφυλάσσει τις συσκευές ακόμα και χωρίς διακοπή ρεύματος.</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-top"><span class="feat-icon">🔌</span><span class="feat-name" data-el="f4name">Αριθμός Πριζών & USB</span></div>
+        <div class="feat-detail" data-el="f4detail">Κοίτα πόσες πρίζες είναι προστατευμένες με μπαταρία vs. μόνο υπέρταση. Η θύρα USB επιτρέπει αυτόματο ασφαλή τερματισμό PC.</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-top"><span class="feat-icon">📐</span><span class="feat-name" data-el="f5name">Μορφή & Μέγεθος</span></div>
+        <div class="feat-detail" data-el="f5detail">Επιτραπέζιο για σπίτι, rack-mounted για επαγγελματικές εγκαταστάσεις. Κάποια μοντέλα βουίζουν — διάβασε κριτικές πριν αγοράσεις.</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-top"><span class="feat-icon">🏷️</span><span class="feat-name" data-el="f6name">Αξιόπιστες Μάρκες</span></div>
+        <div class="feat-detail" data-el="f6detail">APC (Schneider Electric), Eaton, CyberPower. Διαθέσιμες σε όλα τα επίπεδα τιμής, με εύκολη εύρεση ανταλλακτικών μπαταρίας στην Ελλάδα.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PROS / CONS -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title" data-el="s4title">Πλεονεκτήματα & Μειονεκτήματα</h2>
+    </div>
+    <div class="pros-cons">
+      <div class="pc-block pros">
+        <div class="pc-title">✅ <span data-el="prosTitle">Πλεονεκτήματα</span></div>
+        <div class="pc-item"><span class="pc-mark">✔</span><span data-el="pro1">Αποφυγή απώλειας δεδομένων κατά τη διακοπή</span></div>
+        <div class="pc-item"><span class="pc-mark">✔</span><span data-el="pro2">Προστασία συσκευών από υπερτάσεις</span></div>
+        <div class="pc-item"><span class="pc-mark">✔</span><span data-el="pro3">Σωστός & ασφαλής τερματισμός</span></div>
+        <div class="pc-item"><span class="pc-mark">✔</span><span data-el="pro4">Αυτόματο κλείσιμο PC ακόμα κι αν απουσιάζεις</span></div>
+        <div class="pc-item"><span class="pc-mark">✔</span><span data-el="pro5">Ηρεμία — τα δεδομένα σου είναι ασφαλή</span></div>
+      </div>
+      <div class="pc-block cons">
+        <div class="pc-title">❌ <span data-el="consTitle">Μειονεκτήματα</span></div>
+        <div class="pc-item"><span class="pc-mark">✖</span><span data-el="con1">Κόστος αγοράς (ειδικά για Online)</span></div>
+        <div class="pc-item"><span class="pc-mark">✖</span><span data-el="con2">Περιορισμένη αυτονομία (λεπτά, όχι ώρες)</span></div>
+        <div class="pc-item"><span class="pc-mark">✖</span><span data-el="con3">Μπαταρία χρειάζεται αντικατάσταση κάθε 3–5 χρόνια</span></div>
+        <div class="pc-item"><span class="pc-mark">✖</span><span data-el="con4">Online UPS καταναλώνουν επιπλέον ρεύμα</span></div>
+        <div class="pc-item"><span class="pc-mark">✖</span><span data-el="con5">Κάποια μοντέλα είναι θορυβώδη ή ογκώδη</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- USE CASES -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title" data-el="s5title">Πού χρησιμοποιείται</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin-bottom:14px;font-weight:300;" data-el="s5hint">👆 Κλίκαρε για να δεις γιατί</p>
+    <div class="uses-list">
+      <div class="use-item" onclick="toggleUse(this)">
+        <span class="use-icon">🎮</span>
+        <div class="use-text">
+          <strong data-el="u1name">Gaming PC</strong>
+          <div class="use-detail" data-el="u1detail">Προστατεύει τον εξοπλισμό και αποτρέπει απώλεια προόδου σε παιχνίδια από ξαφνική διακοπή ρεύματος.</div>
+        </div>
+      </div>
+      <div class="use-item" onclick="toggleUse(this)">
+        <span class="use-icon">💼</span>
+        <div class="use-text">
+          <strong data-el="u2name">Εργασία από σπίτι</strong>
+          <div class="use-detail" data-el="u2detail">Αποφεύγεις να χάσεις σημαντικά αρχεία ή να «πέσεις» από μια επαγγελματική βιντεοκλήση.</div>
+        </div>
+      </div>
+      <div class="use-item" onclick="toggleUse(this)">
+        <span class="use-icon">📡</span>
+        <div class="use-text">
+          <strong data-el="u3name">Router / Modem</strong>
+          <div class="use-detail" data-el="u3detail">Εξασφαλίζεις ότι δεν χάνεις σύνδεση στο internet σε κρίσιμες στιγμές — βιντεοκλήσεις, streaming, τηλεφωνία VoIP.</div>
+        </div>
+      </div>
+      <div class="use-item" onclick="toggleUse(this)">
+        <span class="use-icon">🖥️</span>
+        <div class="use-text">
+          <strong data-el="u4name">NAS / Οικιακός Server</strong>
+          <div class="use-detail" data-el="u4detail">Κρίσιμο για την ακεραιότητα των δεδομένων και τη σωστή απενεργοποίηση χωρίς καταστροφή του filesystem.</div>
+        </div>
+      </div>
+      <div class="use-item" onclick="toggleUse(this)">
+        <span class="use-icon">🏥</span>
+        <div class="use-text">
+          <strong data-el="u5name">Επαγγελματικά / Data Centers</strong>
+          <div class="use-detail" data-el="u5detail">Σε data centers, νοσοκομεία και τηλεπικοινωνίες, κάθε δευτερόλεπτο διακοπής μπορεί να έχει σοβαρές συνέπειες.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CALCULATOR -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title" data-el="s6title">Υπολογιστής Ισχύος UPS</h2>
+    </div>
+    <div class="calc-box">
+      <h3 data-el="calcTitle">⚡ Βρες το κατάλληλο UPS για σένα</h3>
+      <div class="calc-row">
+        <span class="calc-label" data-el="calcL1">Κατανάλωση υπολογιστή (W)</span>
+        <input class="calc-input" type="number" id="cPC" value="200" oninput="calcUPS()">
+        <span class="calc-unit">W</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label" data-el="calcL2">Monitor (W)</span>
+        <input class="calc-input" type="number" id="cMon" value="30" oninput="calcUPS()">
+        <span class="calc-unit">W</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label" data-el="calcL3">Router / άλλα (W)</span>
+        <input class="calc-input" type="number" id="cOther" value="20" oninput="calcUPS()">
+        <span class="calc-unit">W</span>
+      </div>
+      <div class="calc-result" id="calcResult"></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FAQ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title" data-el="s7title">Συχνές Ερωτήσεις</h2>
+    </div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span data-el="q1q">Τι σημαίνει VA στο UPS;</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a" data-el="q1a">Είναι μονάδα φαινομένης ισχύος. Για να βρεις τα Watt, πολλαπλασίασε επί 0.6. Παράδειγμα: 1000 VA ≈ 600 Watt.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span data-el="q2q">Πόσο διαρκεί η μπαταρία ενός UPS;</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a" data-el="q2a">Συνήθως 3–5 χρόνια, ανάλογα με τη χρήση και τη θερμοκρασία. Αν η αυτονομία μειωθεί αισθητά, ήρθε η ώρα αντικατάστασης (~20–50€).</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span data-el="q3q">Μπορώ να συνδέσω πολύμπριζο στο UPS;</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a" data-el="q3a">Ναι, αλλά μην ξεπεράσεις τη μέγιστη ισχύ. Ποτέ μην συνδέεις θερμαντικές συσκευές (σίδερο, φούρνο μικροκυμάτων) — μπορούν να ζημιώσουν αμέσως το UPS.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span data-el="q4q">Χρειάζομαι UPS αν έχω laptop;</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a" data-el="q4a">Το laptop έχει ήδη ενσωματωμένη μπαταρία. Ωστόσο, αν συνδέεις εξωτερικό σκληρό δίσκο ή monitor, ένα μικρό UPS εξακολουθεί να έχει νόημα για την προστασία τους.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span data-el="q5q">Τι είναι το Double Conversion;</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a" data-el="q5a">Η τεχνολογία των Online UPS που μετατρέπει το ρεύμα δύο φορές (AC→DC→AC), προσφέροντας απόλυτη σταθερότητα και μηδενική καθυστέρηση μεταγωγής.</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span data-el="footerLeft">🕓 Ενημερώθηκε: Μάρτιος 2026</span>
+  <span data-el="footerRight">lovefortechnology.net</span>
+</footer>
+
+<script>
+// ── TRANSLATIONS ──
+const T = {
+  el: {
+    heroLabel: "Οδηγός για αρχάριους · Μάρτιος 2026",
+    heroTitle_html: 'UPS — <em>Αδιάλειπτη</em><br>Παροχή Ρεύματος',
+    heroSub: "Όλα όσα πρέπει να γνωρίζεις για να προστατέψεις τον υπολογιστή και τα δεδομένα σου από διακοπές ρεύματος.",
+    heroBadge: "🔋 UPS Guide",
+    s1title: "Τι είναι το UPS;",
+    s1p1: "Το UPS (Αδιάλειπτη Παροχή Ρεύματος) είναι μια ηλεκτρονική συσκευή που μοιάζει με μεγάλο πολύμπριζο — αλλά έχει μέσα μια επαναφορτιζόμενη μπαταρία. Ο ρόλος του είναι να προστατεύει τις συσκευές σου από απρόβλεπτες μεταβολές στο ηλεκτρικό δίκτυο.",
+    s1p2: "Όταν κοπεί το ρεύμα, ενεργοποιείται άμεσα η μπαταρία — σε μερικά χιλιοστά του δευτερολέπτου — δίνοντάς σου πολύτιμα λεπτά να αποθηκεύσεις τη δουλειά σου και να κλείσεις σωστά τον υπολογιστή. Δεν είναι πολυτέλεια — είναι πρακτική ανάγκη.",
+    s2title: "Κατηγορίες UPS",
+    s2hint: "👆 Κλίκαρε κάθε κατηγορία για λεπτομέρειες",
+    expandTxt: "λεπτομέρειες",
+    t1name: "Offline<br>Standby", t1price: "~40–80€",
+    t1how: "Πώς λειτουργεί:", t1ideal: "Ιδανικό για:", t1switch: "Χρόνος μεταγωγής:",
+    t1d1: "<strong>Πώς λειτουργεί:</strong> Παραμένει σε αναμονή και ενεργοποιείται μόνο όταν κοπεί το ρεύμα. Η πιο οικονομική επιλογή.",
+    t1d2: "<strong>Ιδανικό για:</strong> Οικιακούς υπολογιστές, τηλεοράσεις, routers.",
+    t1d3: "<strong>Χρόνος μεταγωγής:</strong> ~5–25ms",
+    t2name: "Line-<br>Interactive", t2price: "~80–200€",
+    t2d1: "<strong>Πώς λειτουργεί:</strong> Έχει ενσωματωμένο σταθεροποιητή τάσης που «ισοπεδώνει» τις διακυμάνσεις ρεύματος. Ιδανική ισορροπία τιμής–απόδοσης.",
+    t2d2: "<strong>Ιδανικό για:</strong> Επαγγελματικούς PC, γραφεία, NAS, μικρά δίκτυα.",
+    t2d3: "<strong>Χρόνος μεταγωγής:</strong> &lt;4ms",
+    t3name: "Online<br>Double Conv.", t3price: "200€+",
+    t3d1: "<strong>Πώς λειτουργεί:</strong> Μετατρέπει συνεχώς το ρεύμα (AC→DC→AC), εξαλείφοντας κάθε διακύμανση. Μηδενική καθυστέρηση μεταγωγής.",
+    t3d2: "<strong>Ιδανικό για:</strong> Servers, ιατρικές εφαρμογές, κρίσιμα συστήματα.",
+    t3d3: "<strong>Χρόνος μεταγωγής:</strong> 0ms",
+    s3title: "Τι να κοιτάξεις κατά την αγορά",
+    s3hint: "👆 Κλίκαρε κάθε χαρακτηριστικό για εξήγηση",
+    f1name: "Ισχύς (Watt & VA)", f1detail: "Άθροισε την κατανάλωση όλων των συσκευών και επέλεξε UPS με 20–30% παραπάνω ισχύ. Μετατροπή: 1000 VA ≈ 600 Watt (×0.6).",
+    f2name: "Διάρκεια Μπαταρίας", f2detail: "Για απλή αποθήκευση & σωστό κλείσιμο αρκούν 5–10 λεπτά. Για συνέχιση εργασίας κατά τη διακοπή, χρειάζεσαι μεγαλύτερη μπαταρία.",
+    f3name: "Προστασία Υπέρτασης", f3detail: "Βεβαιώσου ότι το μοντέλο έχει ενσωματωμένη προστασία από υπερτάσεις — προφυλάσσει τις συσκευές ακόμα και χωρίς διακοπή ρεύματος.",
+    f4name: "Αριθμός Πριζών & USB", f4detail: "Κοίτα πόσες πρίζες είναι προστατευμένες με μπαταρία vs. μόνο υπέρταση. Η θύρα USB επιτρέπει αυτόματο ασφαλή τερματισμό PC.",
+    f5name: "Μορφή & Μέγεθος", f5detail: "Επιτραπέζιο για σπίτι, rack-mounted για επαγγελματικές εγκαταστάσεις. Κάποια μοντέλα βουίζουν — διάβασε κριτικές πριν αγοράσεις.",
+    f6name: "Αξιόπιστες Μάρκες", f6detail: "APC (Schneider Electric), Eaton, CyberPower. Διαθέσιμες σε όλα τα επίπεδα τιμής, με εύκολη εύρεση ανταλλακτικών μπαταρίας στην Ελλάδα.",
+    s4title: "Πλεονεκτήματα & Μειονεκτήματα",
+    prosTitle: "Πλεονεκτήματα", consTitle: "Μειονεκτήματα",
+    pro1: "Αποφυγή απώλειας δεδομένων κατά τη διακοπή",
+    pro2: "Προστασία συσκευών από υπερτάσεις",
+    pro3: "Σωστός & ασφαλής τερματισμός",
+    pro4: "Αυτόματο κλείσιμο PC ακόμα κι αν απουσιάζεις",
+    pro5: "Ηρεμία — τα δεδομένα σου είναι ασφαλή",
+    con1: "Κόστος αγοράς (ειδικά για Online)",
+    con2: "Περιορισμένη αυτονομία (λεπτά, όχι ώρες)",
+    con3: "Μπαταρία χρειάζεται αντικατάσταση κάθε 3–5 χρόνια",
+    con4: "Online UPS καταναλώνουν επιπλέον ρεύμα",
+    con5: "Κάποια μοντέλα είναι θορυβώδη ή ογκώδη",
+    s5title: "Πού χρησιμοποιείται",
+    s5hint: "👆 Κλίκαρε για να δεις γιατί",
+    u1name: "Gaming PC", u1detail: "Προστατεύει τον εξοπλισμό και αποτρέπει απώλεια προόδου σε παιχνίδια από ξαφνική διακοπή ρεύματος.",
+    u2name: "Εργασία από σπίτι", u2detail: "Αποφεύγεις να χάσεις σημαντικά αρχεία ή να «πέσεις» από μια επαγγελματική βιντεοκλήση.",
+    u3name: "Router / Modem", u3detail: "Εξασφαλίζεις ότι δεν χάνεις σύνδεση στο internet σε κρίσιμες στιγμές — βιντεοκλήσεις, streaming, τηλεφωνία VoIP.",
+    u4name: "NAS / Οικιακός Server", u4detail: "Κρίσιμο για την ακεραιότητα των δεδομένων και τη σωστή απενεργοποίηση χωρίς καταστροφή του filesystem.",
+    u5name: "Επαγγελματικά / Data Centers", u5detail: "Σε data centers, νοσοκομεία και τηλεπικοινωνίες, κάθε δευτερόλεπτο διακοπής μπορεί να έχει σοβαρές συνέπειες.",
+    s6title: "Υπολογιστής Ισχύος UPS",
+    calcTitle: "⚡ Βρες το κατάλληλο UPS για σένα",
+    calcL1: "Κατανάλωση υπολογιστή (W)", calcL2: "Monitor (W)", calcL3: "Router / άλλα (W)",
+    calcTotal: "Συνολική κατανάλωση", calcVA: "Συνιστώμενα VA (×1.6)", calcRec: "Σύσταση",
+    calcTypes: ["Offline Standby (~650VA)", "Line-Interactive (1000VA)", "Line-Interactive (1500VA)", "Online Double Conversion (2000VA+)"],
+    calcThresh: [0, 350, 600, 900],
+    s7title: "Συχνές Ερωτήσεις",
+    q1q: "Τι σημαίνει VA στο UPS;", q1a: "Είναι μονάδα φαινομένης ισχύος. Για να βρεις τα Watt, πολλαπλασίασε επί 0.6. Παράδειγμα: 1000 VA ≈ 600 Watt.",
+    q2q: "Πόσο διαρκεί η μπαταρία ενός UPS;", q2a: "Συνήθως 3–5 χρόνια, ανάλογα με τη χρήση και τη θερμοκρασία. Αν η αυτονομία μειωθεί αισθητά, ήρθε η ώρα αντικατάστασης (~20–50€).",
+    q3q: "Μπορώ να συνδέσω πολύμπριζο στο UPS;", q3a: "Ναι, αλλά μην ξεπεράσεις τη μέγιστη ισχύ. Ποτέ μην συνδέεις θερμαντικές συσκευές (σίδερο, φούρνο μικροκυμάτων) — μπορούν να ζημιώσουν αμέσως το UPS.",
+    q4q: "Χρειάζομαι UPS αν έχω laptop;", q4a: "Το laptop έχει ήδη ενσωματωμένη μπαταρία. Ωστόσο, αν συνδέεις εξωτερικό σκληρό δίσκο ή monitor, ένα μικρό UPS εξακολουθεί να έχει νόημα για την προστασία τους.",
+    q5q: "Τι είναι το Double Conversion;", q5a: "Η τεχνολογία των Online UPS που μετατρέπει το ρεύμα δύο φορές (AC→DC→AC), προσφέροντας απόλυτη σταθερότητα και μηδενική καθυστέρηση μεταγωγής.",
+    footerLeft: "🕓 Ενημερώθηκε: Μάρτιος 2026", footerRight: "lovefortechnology.net",
+    langSwitch: "English"
+  },
+  en: {
+    heroLabel: "Beginner's Guide · March 2026",
+    heroTitle_html: 'UPS — <em>Uninterruptible</em><br>Power Supply',
+    heroSub: "Everything you need to know to protect your computer and data from power outages.",
+    heroBadge: "🔋 UPS Guide",
+    s1title: "What is a UPS?",
+    s1p1: "A UPS (Uninterruptible Power Supply) is an electronic device that looks like a large power strip — but houses a rechargeable battery inside. Its role is to protect your devices from unexpected changes in the electrical grid.",
+    s1p2: "When power is cut, the battery kicks in immediately — within milliseconds — giving you precious minutes to save your work and shut down your computer safely. It's not a luxury — it's a practical necessity.",
+    s2title: "UPS Categories",
+    s2hint: "👆 Click each category for details",
+    expandTxt: "details",
+    t1name: "Offline<br>Standby", t1price: "~€40–80",
+    t1d1: "<strong>How it works:</strong> Stays on standby and activates only when power is cut. The most budget-friendly option.",
+    t1d2: "<strong>Best for:</strong> Home computers, TVs, routers.",
+    t1d3: "<strong>Switchover time:</strong> ~5–25ms",
+    t2name: "Line-<br>Interactive", t2price: "~€80–200",
+    t2d1: "<strong>How it works:</strong> Has a built-in voltage stabilizer that smooths out power fluctuations. The ideal balance of price and reliability.",
+    t2d2: "<strong>Best for:</strong> Professional PCs, offices, NAS, small networks.",
+    t2d3: "<strong>Switchover time:</strong> &lt;4ms",
+    t3name: "Online<br>Double Conv.", t3price: "€200+",
+    t3d1: "<strong>How it works:</strong> Continuously converts power (AC→DC→AC), eliminating all fluctuations. Zero switchover delay.",
+    t3d2: "<strong>Best for:</strong> Servers, medical equipment, mission-critical systems.",
+    t3d3: "<strong>Switchover time:</strong> 0ms",
+    s3title: "What to Look for When Buying",
+    s3hint: "👆 Click each feature for an explanation",
+    f1name: "Power (Watts & VA)", f1detail: "Add up the consumption of all devices and choose a UPS with 20–30% extra capacity. Conversion: 1000 VA ≈ 600 Watts (×0.6).",
+    f2name: "Battery Runtime", f2detail: "For simple save & shutdown, 5–10 minutes is enough. To keep working during an outage, you'll need a larger battery.",
+    f3name: "Surge Protection", f3detail: "Make sure the model has built-in surge protection — it guards devices even without a full power outage, from sudden electrical spikes.",
+    f4name: "Outlet Count & USB Port", f4detail: "Check how many outlets are battery-backed vs. surge-only — they're not the same. The USB port enables automatic safe PC shutdown.",
+    f5name: "Form Factor & Size", f5detail: "Desktop for home use, rack-mounted for professional setups. Some models produce fan noise — read user reviews if placing it near your workspace.",
+    f6name: "Trusted Brands", f6detail: "APC (Schneider Electric), Eaton, CyberPower. Available at all price levels, with replacement batteries easy to find.",
+    s4title: "Pros & Cons",
+    prosTitle: "Advantages", consTitle: "Disadvantages",
+    pro1: "Prevents data loss during a power cut",
+    pro2: "Protects devices from voltage surges",
+    pro3: "Safe & clean system shutdown",
+    pro4: "Auto-shutdown even when you're away",
+    pro5: "Peace of mind — your data is protected",
+    con1: "Purchase cost (especially for Online)",
+    con2: "Limited runtime (minutes, not hours)",
+    con3: "Battery needs replacement every 3–5 years",
+    con4: "Online UPS units consume extra energy continuously",
+    con5: "Some models are noisy or bulky",
+    s5title: "Where It's Used",
+    s5hint: "👆 Click to see why",
+    u1name: "Gaming PC", u1detail: "Protects equipment and prevents loss of game progress from a sudden power cut.",
+    u2name: "Working from Home", u2detail: "Avoid losing important files or dropping out of a professional video call.",
+    u3name: "Router / Modem", u3detail: "Ensure you don't lose your internet connection at critical moments — video calls, streaming, VoIP.",
+    u4name: "NAS / Home Server", u4detail: "Critical for data integrity and proper shutdown without filesystem corruption.",
+    u5name: "Professional / Data Centers", u5detail: "In data centers, hospitals, and telecoms, every second of downtime can have serious consequences.",
+    s6title: "UPS Power Calculator",
+    calcTitle: "⚡ Find the Right UPS for You",
+    calcL1: "Computer consumption (W)", calcL2: "Monitor (W)", calcL3: "Router / other (W)",
+    calcTotal: "Total consumption", calcVA: "Recommended VA (×1.6)", calcRec: "Recommendation",
+    calcTypes: ["Offline Standby (~650VA)", "Line-Interactive (1000VA)", "Line-Interactive (1500VA)", "Online Double Conversion (2000VA+)"],
+    calcThresh: [0, 350, 600, 900],
+    s7title: "Frequently Asked Questions",
+    q1q: "What does VA mean on a UPS?", q1a: "It's a unit of apparent power. To find Watts, multiply by 0.6. Example: 1000 VA ≈ 600 Watts.",
+    q2q: "How long does a UPS battery last?", q2a: "Typically 3–5 years depending on usage and ambient temperature. If runtime drops noticeably, it's time for a replacement (~€20–50).",
+    q3q: "Can I plug a power strip into a UPS?", q3a: "Yes, but don't exceed the maximum power rating. Never connect heating appliances (iron, microwave) — they can immediately damage the UPS.",
+    q4q: "Do I need a UPS if I have a laptop?", q4a: "Laptops already have a built-in battery acting as a UPS. However, if you connect external hard drives or monitors, a small UPS still makes sense to protect them.",
+    q5q: "What is Double Conversion?", q5a: "The technology used by Online UPS units that converts power twice (AC→DC→AC), providing absolute stability and zero switchover delay.",
+    footerLeft: "🕓 Last updated: March 2026", footerRight: "lovefortechnology.net",
+    langSwitch: "Ελληνικά"
+  }
+};
+
+let lang = 'el';
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  applyLang();
+}
+
+function applyLang() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+
+  // update all data-el elements
+  document.querySelectorAll('[data-el]').forEach(el => {
+    const key = el.getAttribute('data-el');
+    if (t[key] !== undefined) {
+      if (key === 'heroTitle') {
+        el.innerHTML = t.heroTitle_html;
+      } else {
+        el.textContent = t[key];
+      }
+    }
+  });
+
+  // hero title special case
+  const ht = document.querySelector('[data-el="heroTitle"]');
+  if (ht) ht.innerHTML = t.heroTitle_html;
+
+  // type body innerHTML
+  ['t1d1','t1d2','t1d3','t2d1','t2d2','t2d3','t3d1','t3d2','t3d3'].forEach(k => {
+    document.querySelectorAll(`[data-el="${k}"]`).forEach(el => { el.innerHTML = t[k]; });
+  });
+
+  // expandTxt (multiple)
+  document.querySelectorAll('[data-el="expandTxt"]').forEach(el => { el.textContent = t.expandTxt; });
+
+  document.getElementById('langBtnText').textContent = t.langSwitch;
+  calcUPS();
+}
+
+// ── INTERACTIVE ──
+function toggleCard(card) {
+  card.classList.toggle('open');
+}
+
+function toggleFeat(card) {
+  card.classList.toggle('open');
+}
+
+function toggleUse(item) {
+  item.classList.toggle('open');
+}
+
+function toggleFaq(qEl) {
+  qEl.parentElement.classList.toggle('open');
+}
+
+// ── CALCULATOR ──
+function calcUPS() {
+  const t = T[lang];
+  const pc = parseFloat(document.getElementById('cPC').value) || 0;
+  const mon = parseFloat(document.getElementById('cMon').value) || 0;
+  const other = parseFloat(document.getElementById('cOther').value) || 0;
+  const total = pc + mon + other;
+  const va = Math.round(total / 0.6 * 1.3);
+
+  let rec = '';
+  if (total <= 350) rec = t.calcTypes[0];
+  else if (total <= 600) rec = t.calcTypes[1];
+  else if (total <= 900) rec = t.calcTypes[2];
+  else rec = t.calcTypes[3];
+
+  document.getElementById('calcResult').innerHTML =
+    `<div>${t.calcTotal}: <span class="big">${total}W</span></div>
+     <div style="margin-top:4px">${t.calcVA}: <span style="color:#f5c800;font-weight:500">${va} VA</span></div>
+     <div class="calc-rec">→ ${t.calcRec}: <strong style="color:#fff">${rec}</strong></div>`;
+}
+
+// init
+calcUPS();
+</script>
+</body>
+</html>
