@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Guest Mode — Android Trick #7</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLang('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<svg width="100%" viewBox="0 0 680 500">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- OWNER PHONE -->
+<rect id="owner-phone-body" x="46" y="50" width="168" height="280" rx="18" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1.5"/>
+<rect x="58" y="72" width="144" height="220" rx="6" fill="#1e2030"/>
+<rect x="58" y="72" width="144" height="16" rx="6" fill="#111125"/>
+<text id="owner-name" x="130" y="83" text-anchor="middle" font-size="8" fill="#B5D4F4">Βαγγέλης</text>
+<rect x="68" y="94" width="32" height="32" rx="7" fill="#378ADD"/>
+<rect x="106" y="94" width="32" height="32" rx="7" fill="#1D9E75"/>
+<rect x="144" y="94" width="32" height="32" rx="7" fill="#E24B4A"/>
+<rect x="182" y="94" width="28" height="32" rx="7" fill="#7F77DD"/>
+<rect x="68" y="132" width="32" height="32" rx="7" fill="#BA7517"/>
+<rect x="106" y="132" width="32" height="32" rx="7" fill="#D4537E"/>
+<text x="84" y="163" text-anchor="middle" font-size="7" fill="#fff">Bank</text>
+<rect x="144" y="132" width="32" height="32" rx="7" fill="#534AB7"/>
+<rect x="182" y="132" width="28" height="32" rx="7" fill="#993C1D"/>
+<rect x="68" y="172" width="142" height="20" rx="4" fill="#111125"/>
+<text id="owner-private" x="70" y="185" font-size="8" fill="#5F5E5A">Photos · Messages · Bank · Passwords</text>
+<rect x="68" y="196" width="142" height="50" rx="6" fill="#16213e" stroke="#185FA5" stroke-width="0.5"/>
+<circle cx="86" cy="221" r="12" fill="#378ADD"/>
+<text x="86" y="225" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">B</text>
+<text id="owner-contact-name" x="102" y="216" font-size="8" font-weight="600" fill="#B5D4F4">Βαγγέλης Παπαδ.</text>
+<text id="owner-contact-phone" x="102" y="227" font-size="7" fill="#5F5E5A">+30 210 555 0001</text>
+<text id="owner-contact-bank" x="102" y="237" font-size="7" fill="#BA7517">IBAN: GR16 ****</text>
+<rect x="106" y="282" width="48" height="3" rx="1.5" fill="#444441"/>
+<text id="lbl-owner" x="130" y="348" text-anchor="middle" font-size="11" font-weight="600" fill="#B5D4F4">Προφίλ ιδιοκτήτη</text>
+<text id="lbl-owner2" x="130" y="362" text-anchor="middle" font-size="10" fill="#5F5E5A">Πλήρης πρόσβαση</text>
+
+<!-- CENTER SWITCH -->
+<rect x="240" y="140" width="200" height="140" rx="12" fill="#1a1a2e" stroke="#7F77DD" stroke-width="1"/>
+<text id="lbl-switch-title" x="340" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="#CECBF6">Εναλλαγή χρήστη</text>
+<circle cx="290" cy="200" r="18" fill="#378ADD"/>
+<text x="290" y="205" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">B</text>
+<text id="switch-owner-name" x="290" y="228" text-anchor="middle" font-size="8" fill="#B5D4F4">Βαγγέλης</text>
+<circle cx="290" cy="196" r="5" fill="#1D9E75"/>
+<circle id="guest-avatar-center" cx="390" cy="200" r="18" fill="#888780"/>
+<text x="390" y="205" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">?</text>
+<text id="switch-guest-name" x="390" y="228" text-anchor="middle" font-size="8" fill="#9c9a92">Επισκέπτης</text>
+<circle id="active-dot" cx="390" cy="196" r="5" fill="#888780" opacity="0.3"/>
+<rect x="260" y="248" width="160" height="22" rx="8" fill="#2C2C2A" stroke="#7F77DD" stroke-width="0.5"/>
+<text id="lbl-add-user" x="340" y="263" text-anchor="middle" font-size="9" fill="#AFA9EC">+ Προσθήκη επισκέπτη</text>
+
+<path d="M240 200 L212 200" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+<path d="M440 200 L468 200" fill="none" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+
+<!-- GUEST PHONE -->
+<rect id="guest-phone-body" x="466" y="50" width="168" height="280" rx="18" fill="#2C2C2A" stroke="#D85A30" stroke-width="2"/>
+<rect x="478" y="72" width="144" height="220" rx="6" fill="#1e1e1e"/>
+<rect x="478" y="72" width="144" height="16" rx="6" fill="#1a1a1a"/>
+<text id="guest-status" x="550" y="83" text-anchor="middle" font-size="8" fill="#D3D1C7">Επισκέπτης</text>
+<rect x="488" y="94" width="32" height="32" rx="7" fill="#333340"/>
+<rect x="526" y="94" width="32" height="32" rx="7" fill="#333340"/>
+<rect x="564" y="94" width="28" height="32" rx="7" fill="#333340"/>
+<rect x="488" y="132" width="32" height="32" rx="7" fill="#333340"/>
+<rect x="526" y="132" width="32" height="32" rx="7" fill="#333340"/>
+<rect x="564" y="132" width="28" height="32" rx="7" fill="#333340"/>
+<text x="504" y="115" text-anchor="middle" font-size="6" fill="#888780">Phone</text>
+<text x="542" y="115" text-anchor="middle" font-size="6" fill="#888780">Camera</text>
+<text x="578" y="115" text-anchor="middle" font-size="6" fill="#888780">Maps</text>
+<rect x="488" y="172" width="114" height="20" rx="4" fill="#1a0a0a"/>
+<text id="guest-no-data" x="545" y="185" text-anchor="middle" font-size="8" fill="#E24B4A">Χωρίς πρόσβαση σε δεδομένα</text>
+<rect x="488" y="196" width="114" height="50" rx="6" fill="#1a0505" stroke="#E24B4A" stroke-width="0.5"/>
+<rect x="532" y="216" width="24" height="20" rx="4" fill="#E24B4A" opacity=".3"/>
+<path d="M536 216 Q536 207 544 207 Q552 207 552 216" fill="none" stroke="#E24B4A" stroke-width="2" stroke-linecap="round"/>
+<circle cx="544" cy="226" r="3" fill="#E24B4A"/>
+<text id="guest-locked" x="545" y="254" text-anchor="middle" font-size="8" fill="#A32D2D">Κλειδωμένο</text>
+<rect x="526" y="282" width="48" height="3" rx="1.5" fill="#444441"/>
+<text id="lbl-guest" x="550" y="348" text-anchor="middle" font-size="11" font-weight="600" fill="#D85A30">Προφίλ επισκέπτη</text>
+<text id="lbl-guest2" x="550" y="362" text-anchor="middle" font-size="10" fill="#5F5E5A">Καθαρό περιβάλλον</text>
+
+<!-- STEPS -->
+<rect x="30" y="390" width="620" height="92" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="step-title" x="340" y="410" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Πώς να ενεργοποιήσετε Guest Mode</text>
+<rect x="50" y="420" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="431" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">1</text>
+<text id="step1" x="72" y="431" font-size="10" fill="#5F5E5A">Ρυθμίσεις → Σύστημα → Πολλαπλοί χρήστες → Επισκέπτης</text>
+<rect x="50" y="438" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="449" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">2</text>
+<text id="step2" x="72" y="449" font-size="10" fill="#5F5E5A">Σύρετε status bar → Εικονίδιο χρήστη → Επισκέπτης</text>
+<rect x="50" y="456" width="14" height="14" rx="7" fill="#D85A30"/>
+<text x="57" y="467" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">!</text>
+<text id="step3" x="72" y="467" font-size="10" fill="#993C1D">Όταν τελειώσει, επιστρέψτε στο δικό σας προφίλ — τα δεδομένα είναι ανέπαφα</text>
+</svg>
+
+<div class="action-controls">
+  <button id="btn-switch" onclick="switchToGuest()">Εναλλαγή σε Επισκέπτη!</button>
+  <button id="btn-back" onclick="switchBack()">Επιστροφή στο δικό μου!</button>
+  <button id="btn-reset" onclick="resetDemo()">Reset</button>
+</div>
+
+<script>
+var lang='el';
+var tx={
+  el:{
+    ownerName:'Βαγγέλης',ownerPrivate:'Photos · Messages · Bank · Passwords',
+    ownerContactName:'Βαγγέλης Παπαδ.',ownerContactPhone:'+30 210 555 0001',ownerContactBank:'IBAN: GR16 ****',
+    lblOwner:'Προφίλ ιδιοκτήτη',lblOwner2:'Πλήρης πρόσβαση',
+    switchTitle:'Εναλλαγή χρήστη',switchOwner:'Βαγγέλης',switchGuest:'Επισκέπτης',
+    addUser:'+ Προσθήκη επισκέπτη',
+    guestStatus:'Επισκέπτης',guestNoData:'Χωρίς πρόσβαση σε δεδομένα',guestLocked:'Κλειδωμένο',
+    lblGuest:'Προφίλ επισκέπτη',lblGuest2:'Καθαρό περιβάλλον',
+    stepTitle:'Πώς να ενεργοποιήσετε Guest Mode',
+    step1:'Ρυθμίσεις → Σύστημα → Πολλαπλοί χρήστες → Επισκέπτης',
+    step2:'Σύρετε status bar → Εικονίδιο χρήστη → Επισκέπτης',
+    step3:'Όταν τελειώσει, επιστρέψτε στο δικό σας — τα δεδομένα είναι ανέπαφα',
+    btnSwitch:'Εναλλαγή σε Επισκέπτη!',btnBack:'Επιστροφή στο δικό μου!',btnReset:'Reset'
+  },
+  en:{
+    ownerName:'Vangelis',ownerPrivate:'Photos · Messages · Bank · Passwords',
+    ownerContactName:'Vangelis P.',ownerContactPhone:'+30 210 555 0001',ownerContactBank:'IBAN: GR16 ****',
+    lblOwner:'Owner profile',lblOwner2:'Full access',
+    switchTitle:'Switch user',switchOwner:'Vangelis',switchGuest:'Guest',
+    addUser:'+ Add guest',
+    guestStatus:'Guest',guestNoData:'No access to personal data',guestLocked:'Locked',
+    lblGuest:'Guest profile',lblGuest2:'Clean environment',
+    stepTitle:'How to enable Guest Mode',
+    step1:'Settings → System → Multiple users → Guest',
+    step2:'Pull down status bar → User icon → Guest',
+    step3:'When done, switch back to your profile — your data is untouched',
+    btnSwitch:'Switch to Guest!',btnBack:'Back to my profile!',btnReset:'Reset'
+  }
+};
+
+function setLang(l){
+  lang=l; var t=tx[l];
+  document.getElementById('owner-name').textContent=t.ownerName;
+  document.getElementById('owner-private').textContent=t.ownerPrivate;
+  document.getElementById('owner-contact-name').textContent=t.ownerContactName;
+  document.getElementById('owner-contact-phone').textContent=t.ownerContactPhone;
+  document.getElementById('owner-contact-bank').textContent=t.ownerContactBank;
+  document.getElementById('lbl-owner').textContent=t.lblOwner;
+  document.getElementById('lbl-owner2').textContent=t.lblOwner2;
+  document.getElementById('lbl-switch-title').textContent=t.switchTitle;
+  document.getElementById('switch-owner-name').textContent=t.switchOwner;
+  document.getElementById('switch-guest-name').textContent=t.switchGuest;
+  document.getElementById('lbl-add-user').textContent=t.addUser;
+  document.getElementById('guest-status').textContent=t.guestStatus;
+  document.getElementById('guest-no-data').textContent=t.guestNoData;
+  document.getElementById('guest-locked').textContent=t.guestLocked;
+  document.getElementById('lbl-guest').textContent=t.lblGuest;
+  document.getElementById('lbl-guest2').textContent=t.lblGuest2;
+  document.getElementById('step-title').textContent=t.stepTitle;
+  document.getElementById('step1').textContent=t.step1;
+  document.getElementById('step2').textContent=t.step2;
+  document.getElementById('step3').textContent=t.step3;
+  document.getElementById('btn-switch').textContent=t.btnSwitch;
+  document.getElementById('btn-back').textContent=t.btnBack;
+  document.getElementById('btn-reset').textContent=t.btnReset;
+  document.getElementById('btn-el').className=(l==='el')?'active':'';
+  document.getElementById('btn-en').className=(l==='en')?'active':'';
+}
+
+function switchToGuest(){
+  document.getElementById('active-dot').setAttribute('fill','#D85A30');
+  document.getElementById('active-dot').setAttribute('opacity','1');
+  document.getElementById('guest-avatar-center').setAttribute('fill','#D85A30');
+  document.getElementById('guest-phone-body').setAttribute('stroke-width','3');
+  document.getElementById('owner-phone-body').setAttribute('opacity','0.4');
+}
+
+function switchBack(){
+  document.getElementById('active-dot').setAttribute('fill','#888780');
+  document.getElementById('active-dot').setAttribute('opacity','0.3');
+  document.getElementById('guest-avatar-center').setAttribute('fill','#888780');
+  document.getElementById('guest-phone-body').setAttribute('stroke-width','2');
+  document.getElementById('owner-phone-body').setAttribute('opacity','1');
+}
+
+function resetDemo(){ switchBack(); }
+
+setLang('el');
+</script>
+</body>
+</html>
