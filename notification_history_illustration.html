@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Notification History — Android Trick #6</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLang('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<svg width="100%" viewBox="0 0 680 500">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- PHONE LEFT -->
+<rect x="96" y="40" width="208" height="320" rx="20" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1.5"/>
+<rect x="108" y="62" width="184" height="280" rx="6" fill="#1e2030"/>
+<rect x="108" y="62" width="184" height="18" rx="6" fill="#111125"/>
+<text x="200" y="74" text-anchor="middle" font-size="8" fill="#9c9a92">14:32</text>
+
+<g id="notif1">
+  <rect x="114" y="86" width="172" height="50" rx="8" fill="#1D9E75" opacity=".15"/>
+  <rect x="114" y="86" width="4" height="50" rx="2" fill="#1D9E75"/>
+  <text x="126" y="101" font-size="8" font-weight="600" fill="#9FE1CB">WhatsApp</text>
+  <text id="notif1-text" x="126" y="113" font-size="8" fill="#888780">Γιώργος: Τα βλέπεις τα νέα;</text>
+  <text id="notif1-time" x="126" y="125" font-size="7" fill="#5F5E5A">πριν 2 λεπτά</text>
+</g>
+
+<g id="notif2">
+  <rect x="114" y="142" width="172" height="50" rx="8" fill="#E24B4A" opacity=".1"/>
+  <rect x="114" y="142" width="4" height="50" rx="2" fill="#E24B4A"/>
+  <text x="126" y="157" font-size="8" font-weight="600" fill="#F09595">Gmail</text>
+  <text id="notif2-text" x="126" y="169" font-size="8" fill="#888780">Νέο email από Anthropic</text>
+  <text id="notif2-time" x="126" y="181" font-size="7" fill="#5F5E5A">πριν 8 λεπτά</text>
+</g>
+
+<g id="notif3">
+  <rect x="114" y="198" width="172" height="50" rx="8" fill="#378ADD" opacity=".12"/>
+  <rect x="114" y="198" width="4" height="50" rx="2" fill="#378ADD"/>
+  <text x="126" y="213" font-size="8" font-weight="600" fill="#85B7EB">Τράπεζα</text>
+  <text id="notif3-text" x="126" y="225" font-size="8" fill="#888780">Χρέωση 45,00€ — Σούπερ μάρκετ</text>
+  <text id="notif3-time" x="126" y="237" font-size="7" fill="#5F5E5A">πριν 15 λεπτά</text>
+</g>
+
+<text id="swipe-hint" x="200" y="258" text-anchor="middle" font-size="8" fill="#5F5E5A">← σύρετε για διαγραφή</text>
+<rect x="128" y="268" width="144" height="22" rx="6" fill="#333340"/>
+<text id="lbl-clear-all" x="200" y="282" text-anchor="middle" font-size="9" fill="#888780">Εκκαθάριση όλων</text>
+<rect x="176" y="350" width="48" height="3" rx="1.5" fill="#444441"/>
+<text id="lbl-phone-l" x="200" y="378" text-anchor="middle" font-size="11" fill="#888780">Ειδοποιήσεις τώρα</text>
+
+<!-- DELETE ARROW -->
+<path d="M310 200 Q340 200 340 230 Q340 270 370 270" fill="none" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<rect x="296" y="188" width="78" height="20" rx="6" fill="#FCEBEB" stroke="#E24B4A" stroke-width="0.5"/>
+<text id="lbl-swipe" x="335" y="201" text-anchor="middle" font-size="9" fill="#A32D2D">Σβήνετε κατά λάθος!</text>
+
+<!-- PHONE RIGHT -->
+<rect x="356" y="40" width="208" height="320" rx="20" fill="#2C2C2A" stroke="#1D9E75" stroke-width="2"/>
+<rect x="368" y="62" width="184" height="280" rx="6" fill="#1e2030"/>
+<rect x="368" y="62" width="184" height="18" rx="6" fill="#111125"/>
+<text id="lbl-status-r" x="460" y="74" text-anchor="middle" font-size="8" fill="#9c9a92">Ιστορικό ειδοποιήσεων</text>
+
+<rect x="374" y="86" width="172" height="20" rx="4" fill="#0F6E56" opacity=".3"/>
+<text id="lbl-hist-today" x="460" y="99" text-anchor="middle" font-size="8" font-weight="600" fill="#9FE1CB">Σήμερα</text>
+
+<g id="hist1">
+  <rect x="374" y="110" width="172" height="46" rx="6" fill="#1a2030" stroke="#378ADD" stroke-width="0.5" opacity=".7"/>
+  <rect x="374" y="110" width="3" height="46" rx="1.5" fill="#378ADD" opacity=".5"/>
+  <text x="386" y="124" font-size="8" font-weight="600" fill="#85B7EB" opacity=".8">Τράπεζα</text>
+  <text id="hist1-text" x="386" y="136" font-size="8" fill="#5F5E5A">Χρέωση 45,00€ — Σούπερ μάρκετ</text>
+  <text id="hist1-time" x="386" y="147" font-size="7" fill="#444441">πριν 15 λεπτά · διαγράφηκε</text>
+</g>
+
+<rect x="374" y="162" width="172" height="18" rx="4" fill="#1a1a2a"/>
+<text id="lbl-hist-yesterday" x="460" y="174" text-anchor="middle" font-size="8" font-weight="600" fill="#5F5E5A">Χθες</text>
+
+<g id="hist2">
+  <rect x="374" y="184" width="172" height="46" rx="6" fill="#1a2030" opacity=".5"/>
+  <rect x="374" y="184" width="3" height="46" rx="1.5" fill="#1D9E75" opacity=".4"/>
+  <text x="386" y="198" font-size="8" font-weight="600" fill="#5DCAA5" opacity=".6">WhatsApp</text>
+  <text id="hist2-text" x="386" y="210" font-size="8" fill="#444441">Μαρία: Τα βλέπεις αυτό;</text>
+  <text id="hist2-time" x="386" y="221" font-size="7" fill="#444441">χθες 19:42</text>
+</g>
+
+<g id="hist3">
+  <rect x="374" y="234" width="172" height="46" rx="6" fill="#1a2030" opacity=".4"/>
+  <rect x="374" y="234" width="3" height="46" rx="1.5" fill="#E24B4A" opacity=".3"/>
+  <text x="386" y="248" font-size="8" font-weight="600" fill="#F09595" opacity=".5">Gmail</text>
+  <text id="hist3-text" x="386" y="260" font-size="8" fill="#444441">Newsletter: Προσφορές Σαββ.</text>
+  <text id="hist3-time" x="386" y="271" font-size="7" fill="#444441">χθες 11:05</text>
+</g>
+
+<rect x="436" y="350" width="48" height="3" rx="1.5" fill="#444441"/>
+<rect x="374" y="286" width="172" height="28" rx="8" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+<text id="lbl-found" x="460" y="304" text-anchor="middle" font-size="10" font-weight="600" fill="#085041">Βρήκατε την ειδοποίηση!</text>
+<text id="lbl-phone-r" x="460" y="378" text-anchor="middle" font-size="11" fill="#1D9E75">Ιστορικό (24 ώρες)</text>
+
+<!-- STEPS -->
+<rect x="30" y="400" width="620" height="82" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="step-title" x="340" y="420" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Πώς να ενεργοποιήσετε το Ιστορικό ειδοποιήσεων</text>
+<rect x="50" y="430" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="441" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">1</text>
+<text id="step1" x="72" y="441" font-size="10" fill="#5F5E5A">Ρυθμίσεις → Ειδοποιήσεις → Ιστορικό ειδοποιήσεων</text>
+<rect x="50" y="448" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="57" y="459" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">2</text>
+<text id="step2" x="72" y="459" font-size="10" fill="#5F5E5A">Ενεργοποιήστε το — αποθηκεύει όλες τις ειδοποιήσεις 24 ωρών</text>
+<rect x="50" y="466" width="14" height="14" rx="7" fill="#1D9E75"/>
+<text x="57" y="477" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">!</text>
+<text id="step3" x="72" y="477" font-size="10" fill="#0F6E56">Οι ειδοποιήσεις που σβήσατε εμφανίζονται με γκρι χρώμα</text>
+</svg>
+
+<div class="action-controls">
+  <button id="btn-swipe" onclick="swipeDelete()">Σβήστε ειδοποίηση!</button>
+  <button id="btn-recover" onclick="recoverNotif()">Δείτε στο ιστορικό!</button>
+  <button id="btn-reset" onclick="resetDemo()">Reset</button>
+</div>
+
+<script>
+var lang='el', deleted=false;
+var tx={
+  el:{
+    notif1:'Γιώργος: Τα βλέπεις τα νέα;',notif1time:'πριν 2 λεπτά',
+    notif2:'Νέο email από Anthropic',notif2time:'πριν 8 λεπτά',
+    notif3:'Χρέωση 45,00€ — Σούπερ μάρκετ',notif3time:'πριν 15 λεπτά',
+    clearAll:'Εκκαθάριση όλων',swipe:'Σβήνετε κατά λάθος!',
+    phoneL:'Ειδοποιήσεις τώρα',phoneR:'Ιστορικό (24 ώρες)',
+    histToday:'Σήμερα',histYesterday:'Χθες',
+    hist1:'Χρέωση 45,00€ — Σούπερ μάρκετ',hist1time:'πριν 15 λεπτά · διαγράφηκε',
+    hist2:'Μαρία: Τα βλέπεις αυτό;',hist2time:'χθες 19:42',
+    hist3:'Newsletter: Προσφορές Σαββ.',hist3time:'χθες 11:05',
+    found:'Βρήκατε την ειδοποίηση!',
+    swipeHint:'← σύρετε για διαγραφή',statusR:'Ιστορικό ειδοποιήσεων',
+    stepTitle:'Πώς να ενεργοποιήσετε το Ιστορικό ειδοποιήσεων',
+    step1:'Ρυθμίσεις → Ειδοποιήσεις → Ιστορικό ειδοποιήσεων',
+    step2:'Ενεργοποιήστε το — αποθηκεύει όλες τις ειδοποιήσεις 24 ωρών',
+    step3:'Οι ειδοποιήσεις που σβήσατε εμφανίζονται με γκρι χρώμα',
+    btnSwipe:'Σβήστε ειδοποίηση!',btnRecover:'Δείτε στο ιστορικό!',btnReset:'Reset'
+  },
+  en:{
+    notif1:'George: Did you see the news?',notif1time:'2 minutes ago',
+    notif2:'New email from Anthropic',notif2time:'8 minutes ago',
+    notif3:'Charge €45.00 — Supermarket',notif3time:'15 minutes ago',
+    clearAll:'Clear all',swipe:'Dismissed by accident!',
+    phoneL:'Current notifications',phoneR:'History (24 hours)',
+    histToday:'Today',histYesterday:'Yesterday',
+    hist1:'Charge €45.00 — Supermarket',hist1time:'15 min ago · dismissed',
+    hist2:'Maria: Did you see this?',hist2time:'Yesterday 7:42 PM',
+    hist3:'Newsletter: Weekend Deals',hist3time:'Yesterday 11:05 AM',
+    found:'Found the notification!',
+    swipeHint:'← swipe to dismiss',statusR:'Notification history',
+    stepTitle:'How to enable Notification History',
+    step1:'Settings → Notifications → Notification History',
+    step2:'Enable it — it saves all notifications for 24 hours',
+    step3:'Dismissed notifications appear greyed out in history',
+    btnSwipe:'Dismiss notification!',btnRecover:'View in history!',btnReset:'Reset'
+  }
+};
+
+function setLang(l){
+  lang=l; var t=tx[l];
+  document.getElementById('notif1-text').textContent=t.notif1;
+  document.getElementById('notif1-time').textContent=t.notif1time;
+  document.getElementById('notif2-text').textContent=t.notif2;
+  document.getElementById('notif2-time').textContent=t.notif2time;
+  document.getElementById('notif3-text').textContent=t.notif3;
+  document.getElementById('notif3-time').textContent=t.notif3time;
+  document.getElementById('lbl-clear-all').textContent=t.clearAll;
+  document.getElementById('lbl-swipe').textContent=t.swipe;
+  document.getElementById('lbl-phone-l').textContent=t.phoneL;
+  document.getElementById('lbl-phone-r').textContent=t.phoneR;
+  document.getElementById('lbl-hist-today').textContent=t.histToday;
+  document.getElementById('lbl-hist-yesterday').textContent=t.histYesterday;
+  document.getElementById('hist1-text').textContent=t.hist1;
+  document.getElementById('hist1-time').textContent=t.hist1time;
+  document.getElementById('hist2-text').textContent=t.hist2;
+  document.getElementById('hist2-time').textContent=t.hist2time;
+  document.getElementById('hist3-text').textContent=t.hist3;
+  document.getElementById('hist3-time').textContent=t.hist3time;
+  document.getElementById('lbl-found').textContent=t.found;
+  document.getElementById('swipe-hint').textContent=t.swipeHint;
+  document.getElementById('lbl-status-r').textContent=t.statusR;
+  document.getElementById('step-title').textContent=t.stepTitle;
+  document.getElementById('step1').textContent=t.step1;
+  document.getElementById('step2').textContent=t.step2;
+  document.getElementById('step3').textContent=t.step3;
+  document.getElementById('btn-swipe').textContent=t.btnSwipe;
+  document.getElementById('btn-recover').textContent=t.btnRecover;
+  document.getElementById('btn-reset').textContent=t.btnReset;
+  document.getElementById('btn-el').className=(l==='el')?'active':'';
+  document.getElementById('btn-en').className=(l==='en')?'active':'';
+}
+
+function swipeDelete(){
+  var n3=document.getElementById('notif3');
+  n3.style.transition='opacity .5s, transform .5s';
+  n3.style.opacity='0';
+  n3.style.transform='translateX(120px)';
+  document.getElementById('swipe-hint').style.opacity='0';
+  deleted=true;
+}
+
+function recoverNotif(){
+  document.getElementById('hist1').style.transition='opacity .4s';
+  document.getElementById('hist1').style.opacity='1';
+  if(!deleted) document.getElementById('notif3').style.opacity='0.3';
+}
+
+function resetDemo(){
+  var n3=document.getElementById('notif3');
+  n3.style.transition='';n3.style.opacity='1';n3.style.transform='';
+  document.getElementById('swipe-hint').style.opacity='1';
+  document.getElementById('hist1').style.opacity='.7';
+  deleted=false;
+}
+
+setLang('el');
+</script>
+</body>
+</html>
