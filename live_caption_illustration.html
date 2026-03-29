@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Live Caption — Android Trick #10</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+@keyframes caption-type{from{width:0;opacity:0}to{width:100%;opacity:1}}
+@keyframes sound-wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLang('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<svg width="100%" viewBox="0 0 680 520">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <clipPath id="phone-clip"><rect x="214" y="62" width="172" height="320" rx="10"/></clipPath>
+</defs>
+
+<!-- ===== PHONE ===== -->
+<rect x="202" y="40" width="196" height="360" rx="24" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1.5"/>
+<rect x="214" y="62" width="172" height="320" rx="10" fill="#1a1a2e"/>
+
+<!-- Status bar -->
+<rect x="214" y="62" width="172" height="20" rx="10" fill="#111125"/>
+<text id="lbl-time" x="300" y="75" text-anchor="middle" font-size="9" fill="#9c9a92">14:32</text>
+
+<!-- Volume indicator left side (shows when volume pressed) -->
+<rect id="vol-indicator" x="225" y="92" width="22" height="90" rx="6" fill="#222235" stroke="#378ADD" stroke-width="0.5" opacity="0"/>
+<rect id="vol-fill" x="229" y="140" width="14" height="38" rx="3" fill="#378ADD" opacity="0"/>
+<!-- Volume icon -->
+<text id="vol-icon" x="236" y="107" text-anchor="middle" font-size="10" fill="#B5D4F4" opacity="0">▐)</text>
+<!-- Caption toggle button in volume panel -->
+<rect id="caption-btn" x="225" y="190" width="22" height="20" rx="5" fill="#378ADD" opacity="0"/>
+<text id="caption-btn-text" x="236" y="204" text-anchor="middle" font-size="7" fill="#fff" opacity="0">CC</text>
+
+<!-- Video content on screen -->
+<rect x="214" y="86" width="172" height="130" rx="4" fill="#0a0a18"/>
+<!-- Video scene: mountains silhouette -->
+<rect x="214" y="170" width="172" height="46" rx="4" fill="#162438"/>
+<polygon points="214,216 250,160 280,195 310,150 350,185 386,216" fill="#1a3a5c"/>
+<rect x="214" y="196" width="172" height="20" rx="0" fill="#0d1a28"/>
+<!-- Play bar -->
+<rect x="220" y="210" width="160" height="4" rx="2" fill="#333340"/>
+<rect id="progress-bar" x="220" y="210" width="60" height="4" rx="2" fill="#378ADD"/>
+<circle cx="280" cy="212" r="5" fill="#378ADD"/>
+<!-- Sound waves from video -->
+<g id="sound-waves">
+  <rect x="356" y="104" width="3" height="20" rx="1.5" fill="#378ADD" opacity=".7" style="animation:sound-wave 0.6s ease-in-out infinite"/>
+  <rect x="362" y="98" width="3" height="32" rx="1.5" fill="#378ADD" opacity=".8" style="animation:sound-wave 0.6s ease-in-out infinite .1s"/>
+  <rect x="368" y="94" width="3" height="40" rx="1.5" fill="#378ADD" opacity=".9" style="animation:sound-wave 0.6s ease-in-out infinite .2s"/>
+  <rect x="374" y="98" width="3" height="32" rx="1.5" fill="#378ADD" opacity=".8" style="animation:sound-wave 0.6s ease-in-out infinite .15s"/>
+  <rect x="380" y="104" width="3" height="20" rx="1.5" fill="#378ADD" opacity=".7" style="animation:sound-wave 0.6s ease-in-out infinite .05s"/>
+</g>
+
+<!-- CAPTION BOX (initially hidden) -->
+<g id="caption-box" opacity="0">
+  <rect x="218" y="222" width="164" height="50" rx="8" fill="#000000" opacity=".85"/>
+  <rect x="218" y="222" width="164" height="50" rx="8" fill="none" stroke="#378ADD" stroke-width="1"/>
+  <text id="caption-line1" x="300" y="242" text-anchor="middle" font-size="9" fill="#ffffff">...ο καιρός στην Αθήνα</text>
+  <text id="caption-line2" x="300" y="258" text-anchor="middle" font-size="9" fill="#ffffff">αναμένεται ηλιόλουστος...</text>
+  <!-- Blinking cursor -->
+  <rect id="cursor" x="354" y="252" width="2" height="10" rx="1" fill="#378ADD" style="animation:pulse 1s ease-in-out infinite"/>
+</g>
+
+<!-- CC badge top right -->
+<g id="cc-badge" opacity="0">
+  <rect x="362" y="64" width="22" height="14" rx="4" fill="#378ADD"/>
+  <text x="373" y="74" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">CC</text>
+</g>
+
+<!-- Below video: app info -->
+<rect x="220" y="225" width="160" height="12" rx="3" fill="#222240" opacity=".5" id="app-title-bar"/>
+<text id="lbl-app-title" x="300" y="234" text-anchor="middle" font-size="8" fill="#5F5E5A">YouTube</text>
+
+<!-- More content below -->
+<rect x="220" y="282" width="100" height="10" rx="3" fill="#222240" opacity=".6"/>
+<rect x="220" y="296" width="160" height="8" rx="3" fill="#222240" opacity=".4"/>
+<rect x="220" y="308" width="130" height="8" rx="3" fill="#222240" opacity=".3"/>
+<rect x="220" y="324" width="160" height="32" rx="6" fill="#16213e" opacity=".6"/>
+<rect x="220" y="360" width="160" height="10" rx="3" fill="#222240" opacity=".4"/>
+
+<!-- Home bar -->
+<rect x="278" y="386" width="44" height="3" rx="1.5" fill="#444441"/>
+
+<!-- ===== RIGHT SIDE: Use cases ===== -->
+<rect x="430" y="50" width="220" height="200" rx="12" fill="#E6F1FB" stroke="#378ADD" stroke-width="1"/>
+<text id="lbl-usecases-title" x="440" y="70" font-size="11" font-weight="600" fill="#0C447C">Πότε χρησιμεύει:</text>
+
+<rect x="440" y="78" width="8" height="8" rx="2" fill="#378ADD"/>
+<text id="uc1" x="454" y="87" font-size="10" fill="#0C447C">Δημόσιος χώρος χωρίς ήχο</text>
+<rect x="440" y="98" width="8" height="8" rx="2" fill="#378ADD"/>
+<text id="uc2" x="454" y="107" font-size="10" fill="#0C447C">Θορυβώδες περιβάλλον</text>
+<rect x="440" y="118" width="8" height="8" rx="2" fill="#378ADD"/>
+<text id="uc3" x="454" y="127" font-size="10" fill="#0C447C">Ξενόγλωσσο περιεχόμενο</text>
+<rect x="440" y="138" width="8" height="8" rx="2" fill="#378ADD"/>
+<text id="uc4" x="454" y="147" font-size="10" fill="#0C447C">Χαμηλή ποιότητα ήχου</text>
+<rect x="440" y="158" width="8" height="8" rx="2" fill="#378ADD"/>
+<text id="uc5" x="454" y="167" font-size="10" fill="#0C447C">Podcast / βίντεο χωρίς ακουστικά</text>
+
+<!-- Features -->
+<rect x="440" y="185" width="200" height="56" rx="8" fill="#042C53" opacity=".9"/>
+<text id="feat1" x="450" y="202" font-size="9" font-weight="600" fill="#B5D4F4">Λειτουργεί OFFLINE</text>
+<text id="feat2" x="450" y="217" font-size="9" fill="#85B7EB">Δεν στέλνει δεδομένα στο cloud</text>
+<text id="feat3" x="450" y="232" font-size="9" fill="#85B7EB">Λειτουργεί σε οποιαδήποτε εφαρμογή</text>
+
+<!-- How to activate -->
+<rect x="430" y="262" width="220" height="100" rx="12" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="how-title" x="440" y="280" font-size="11" font-weight="600" fill="#444441">Πώς να το ανοίξετε:</text>
+
+<rect x="440" y="288" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="447" y="299" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">1</text>
+<text id="how1" x="460" y="299" font-size="10" fill="#5F5E5A">Πατήστε το κουμπί έντασης</text>
+
+<rect x="440" y="308" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="447" y="319" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">2</text>
+<text id="how2" x="460" y="319" font-size="10" fill="#5F5E5A">Εμφανίζεται slider έντασης</text>
+
+<rect x="440" y="328" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="447" y="339" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">3</text>
+<text id="how3" x="460" y="339" font-size="10" fill="#5F5E5A">Πατήστε εικονίδιο υπότιτλων (CC)</text>
+
+<rect x="440" y="348" width="14" height="14" rx="7" fill="#1D9E75"/>
+<text x="447" y="359" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">!</text>
+<text id="how4" x="460" y="359" font-size="10" fill="#0F6E56">Ή: Ρυθμίσεις → Προσβασιμότητα → Live Caption</text>
+
+<!-- Steps bottom -->
+<rect x="30" y="430" width="620" height="72" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="step-title" x="340" y="450" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Live Caption — Αυτόματοι υπότιτλοι σε πραγματικό χρόνο</text>
+<text id="step1" x="40" y="466" font-size="10" fill="#5F5E5A">Λειτουργεί με: YouTube, Netflix, Podcasts, τηλεφωνικές κλήσεις, βίντεο κλήσεις, και οτιδήποτε παράγει ήχο</text>
+<text id="step2" x="40" y="482" font-size="10" fill="#5F5E5A">Διαθέσιμο Android 10+ · Pixel 3+ · Samsung One UI 3+ · OnePlus · Xiaomi (MIUI)</text>
+<text id="step3" x="40" y="496" font-size="10" fill="#5F5E5A">Η μεταγραφή γίνεται εντός της συσκευής — δεν απαιτείται σύνδεση internet</text>
+</svg>
+
+<div class="action-controls">
+  <button id="btn-play" onclick="showCaptions()">Ενεργοποίηση Live Caption!</button>
+  <button id="btn-reset" onclick="resetDemo()">Reset</button>
+</div>
+
+<script>
+var lang='el', captionsOn=false;
+var tx={
+  el:{
+    time:'14:32', appTitle:'YouTube',
+    ucTitle:'Πότε χρησιμεύει:',
+    uc1:'Δημόσιος χώρος χωρίς ήχο', uc2:'Θορυβώδες περιβάλλον',
+    uc3:'Ξενόγλωσσο περιεχόμενο', uc4:'Χαμηλή ποιότητα ήχου',
+    uc5:'Podcast / βίντεο χωρίς ακουστικά',
+    feat1:'Λειτουργεί OFFLINE', feat2:'Δεν στέλνει δεδομένα στο cloud',
+    feat3:'Λειτουργεί σε οποιαδήποτε εφαρμογή',
+    howTitle:'Πώς να το ανοίξετε:',
+    how1:'Πατήστε το κουμπί έντασης',
+    how2:'Εμφανίζεται slider έντασης',
+    how3:'Πατήστε εικονίδιο υπότιτλων (CC)',
+    how4:'Ή: Ρυθμίσεις → Προσβασιμότητα → Live Caption',
+    cap1:'...ο καιρός στην Αθήνα', cap2:'αναμένεται ηλιόλουστος...',
+    stepTitle:'Live Caption — Αυτόματοι υπότιτλοι σε πραγματικό χρόνο',
+    step1:'Λειτουργεί με: YouTube, Netflix, Podcasts, τηλεφωνικές κλήσεις, βίντεο κλήσεις, και οτιδήποτε παράγει ήχο',
+    step2:'Διαθέσιμο Android 10+ · Pixel 3+ · Samsung One UI 3+ · OnePlus · Xiaomi (MIUI)',
+    step3:'Η μεταγραφή γίνεται εντός της συσκευής — δεν απαιτείται σύνδεση internet',
+    btnPlay:'Ενεργοποίηση Live Caption!', btnReset:'Reset'
+  },
+  en:{
+    time:'2:32 PM', appTitle:'YouTube',
+    ucTitle:'When it helps:',
+    uc1:'Public place without sound', uc2:'Noisy environment',
+    uc3:'Foreign language content', uc4:'Poor audio quality',
+    uc5:'Podcast / video without headphones',
+    feat1:'Works OFFLINE', feat2:'Does not send data to the cloud',
+    feat3:'Works in any app',
+    howTitle:'How to open it:',
+    how1:'Press the volume button',
+    how2:'Volume slider appears',
+    how3:'Tap the caption icon (CC)',
+    how4:'Or: Settings → Accessibility → Live Caption',
+    cap1:'...the weather in Athens', cap2:'is expected to be sunny...',
+    stepTitle:'Live Caption — Automatic real-time subtitles',
+    step1:'Works with: YouTube, Netflix, Podcasts, phone calls, video calls, and anything that plays audio',
+    step2:'Available Android 10+ · Pixel 3+ · Samsung One UI 3+ · OnePlus · Xiaomi (MIUI)',
+    step3:'Transcription happens on-device — no internet connection required',
+    btnPlay:'Enable Live Caption!', btnReset:'Reset'
+  }
+};
+
+function setLang(l){
+  lang=l; var t=tx[l];
+  document.getElementById('lbl-time').textContent=t.time;
+  document.getElementById('lbl-app-title').textContent=t.appTitle;
+  document.getElementById('lbl-usecases-title').textContent=t.ucTitle;
+  document.getElementById('uc1').textContent=t.uc1;
+  document.getElementById('uc2').textContent=t.uc2;
+  document.getElementById('uc3').textContent=t.uc3;
+  document.getElementById('uc4').textContent=t.uc4;
+  document.getElementById('uc5').textContent=t.uc5;
+  document.getElementById('feat1').textContent=t.feat1;
+  document.getElementById('feat2').textContent=t.feat2;
+  document.getElementById('feat3').textContent=t.feat3;
+  document.getElementById('how-title').textContent=t.howTitle;
+  document.getElementById('how1').textContent=t.how1;
+  document.getElementById('how2').textContent=t.how2;
+  document.getElementById('how3').textContent=t.how3;
+  document.getElementById('how4').textContent=t.how4;
+  document.getElementById('caption-line1').textContent=t.cap1;
+  document.getElementById('caption-line2').textContent=t.cap2;
+  document.getElementById('step-title').textContent=t.stepTitle;
+  document.getElementById('step1').textContent=t.step1;
+  document.getElementById('step2').textContent=t.step2;
+  document.getElementById('step3').textContent=t.step3;
+  document.getElementById('btn-play').textContent=t.btnPlay;
+  document.getElementById('btn-reset').textContent=t.btnReset;
+  document.getElementById('btn-el').className=(l==='el')?'active':'';
+  document.getElementById('btn-en').className=(l==='en')?'active':'';
+}
+
+function showCaptions(){
+  captionsOn=true;
+  // Show volume panel
+  document.getElementById('vol-indicator').setAttribute('opacity','1');
+  document.getElementById('vol-fill').setAttribute('opacity','1');
+  document.getElementById('vol-icon').setAttribute('opacity','1');
+  document.getElementById('caption-btn').setAttribute('opacity','1');
+  document.getElementById('caption-btn-text').setAttribute('opacity','1');
+  // After brief delay, show caption box
+  setTimeout(function(){
+    document.getElementById('caption-box').setAttribute('opacity','1');
+    document.getElementById('cc-badge').setAttribute('opacity','1');
+    document.getElementById('app-title-bar').setAttribute('opacity','0');
+    document.getElementById('lbl-app-title').setAttribute('opacity','0');
+    // Animate progress bar
+    var pb=document.getElementById('progress-bar');
+    pb.style.transition='width 3s linear';
+    pb.setAttribute('width','130');
+    var circle=document.querySelector('circle[fill="#378ADD"]');
+    if(circle){ circle.style.transition='cx 3s linear'; circle.setAttribute('cx','350'); }
+  }, 400);
+  document.getElementById('btn-play').textContent=(lang==='el')?'Caption ενεργό!':'Caption active!';
+}
+
+function resetDemo(){
+  captionsOn=false;
+  ['vol-indicator','vol-fill','vol-icon','caption-btn','caption-btn-text','caption-box','cc-badge'].forEach(function(id){
+    document.getElementById(id).setAttribute('opacity','0');
+  });
+  document.getElementById('app-title-bar').setAttribute('opacity','0.5');
+  document.getElementById('lbl-app-title').setAttribute('opacity','1');
+  document.getElementById('progress-bar').setAttribute('width','60');
+  document.getElementById('progress-bar').style.transition='';
+  var circle=document.querySelector('circle[fill="#378ADD"]');
+  if(circle){ circle.style.transition=''; circle.setAttribute('cx','280'); }
+  document.getElementById('btn-play').textContent=tx[lang].btnPlay;
+}
+
+setLang('el');
+</script>
+</body>
+</html>
