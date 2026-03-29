@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sound Amplifier — Android Trick #12</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;padding:1rem}
+@keyframes wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes noise-fade{0%,100%{opacity:.8}50%{opacity:.3}}
+@keyframes clean-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.lang-controls{display:flex;justify-content:center;gap:8px;margin:0 0 10px}
+.lang-controls button{padding:6px 14px;font-size:13px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff}
+.lang-controls button.active{font-weight:700;border-color:#888;background:#f0f0f0}
+.action-controls{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
+.action-controls button{font-size:13px;padding:6px 18px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.action-controls button:hover{background:#f0f0f0}
+.slider-row{display:flex;align-items:center;gap:10px;margin:4px 0;font-size:12px}
+.slider-row label{min-width:130px;color:#5F5E5A}
+.slider-row input{flex:1}
+.slider-row span{min-width:40px;text-align:right;color:#444441;font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="lang-controls">
+  <button id="btn-el" class="active" onclick="setLang('el')">Ελληνικά</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<svg id="main-svg" width="100%" viewBox="0 0 680 480">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- ===== PHONE ===== -->
+<rect x="50" y="30" width="180" height="360" rx="22" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1.5"/>
+<rect x="62" y="52" width="156" height="300" rx="8" fill="#1e2030"/>
+
+<!-- Status bar -->
+<rect x="62" y="52" width="156" height="18" rx="8" fill="#111125"/>
+<text id="lbl-status" x="140" y="64" text-anchor="middle" font-size="8" fill="#9c9a92">Sound Amplifier</text>
+
+<!-- App header -->
+<rect x="68" y="76" width="144" height="30" rx="6" fill="#0C447C"/>
+<text id="lbl-app-title" x="140" y="90" text-anchor="middle" font-size="10" font-weight="600" fill="#E6F1FB">Sound Amplifier</text>
+<text id="lbl-app-sub" x="140" y="102" text-anchor="middle" font-size="7" fill="#85B7EB">Google</text>
+
+<!-- Headphone required notice -->
+<rect x="68" y="112" width="144" height="22" rx="5" fill="#16213e" stroke="#378ADD" stroke-width="0.5"/>
+<text id="lbl-headphone" x="140" y="126" text-anchor="middle" font-size="8" fill="#85B7EB">Συνδέστε ακουστικά για έναρξη</text>
+
+<!-- Connected state (shown after connect) -->
+<rect id="connected-bar" x="68" y="112" width="144" height="22" rx="5" fill="#085041" stroke="#1D9E75" stroke-width="0.5" opacity="0"/>
+<text id="lbl-connected" x="140" y="126" text-anchor="middle" font-size="8" fill="#9FE1CB" opacity="0">Ακουστικά συνδεδεμένα</text>
+
+<!-- Left ear boost -->
+<rect x="68" y="142" width="66" height="80" rx="8" fill="#16213e" stroke="#5F5E5A" stroke-width="0.5"/>
+<text id="lbl-left" x="101" y="158" text-anchor="middle" font-size="8" fill="#9c9a92">Αριστερό</text>
+<text id="lbl-left-val" x="101" y="198" text-anchor="middle" font-size="18" font-weight="600" fill="#378ADD">0</text>
+<text x="101" y="210" text-anchor="middle" font-size="7" fill="#5F5E5A">dB</text>
+
+<!-- Right ear boost -->
+<rect x="146" y="142" width="66" height="80" rx="8" fill="#16213e" stroke="#5F5E5A" stroke-width="0.5"/>
+<text id="lbl-right" x="179" y="158" text-anchor="middle" font-size="8" fill="#9c9a92">Δεξί</text>
+<text id="lbl-right-val" x="179" y="198" text-anchor="middle" font-size="18" font-weight="600" fill="#378ADD">0</text>
+<text x="179" y="210" text-anchor="middle" font-size="7" fill="#5F5E5A">dB</text>
+
+<!-- Noise reduction toggle -->
+<rect x="68" y="230" width="144" height="36" rx="8" fill="#16213e" stroke="#5F5E5A" stroke-width="0.5"/>
+<text id="lbl-noise-red" x="100" y="246" font-size="9" fill="#9c9a92">Μείωση θορύβου</text>
+<text id="lbl-noise-red2" x="100" y="258" font-size="8" fill="#5F5E5A">Περιβαλλοντικοί θόρυβοι</text>
+<!-- Toggle pill -->
+<rect id="noise-toggle-bg" x="188" y="239" width="20" height="12" rx="6" fill="#333340"/>
+<circle id="noise-toggle-dot" cx="194" cy="245" r="5" fill="#5F5E5A"/>
+
+<!-- Equalizer section -->
+<rect x="68" y="274" width="144" height="64" rx="8" fill="#16213e" stroke="#5F5E5A" stroke-width="0.5"/>
+<text id="lbl-eq" x="80" y="290" font-size="8" font-weight="600" fill="#9c9a92">Ισοσταθμιστής</text>
+<!-- EQ bars -->
+<g id="eq-bars">
+  <rect x="78" y="320" width="10" height="14" rx="2" fill="#5F5E5A"/>
+  <rect x="93" y="310" width="10" height="24" rx="2" fill="#5F5E5A"/>
+  <rect x="108" y="305" width="10" height="29" rx="2" fill="#378ADD" opacity=".7"/>
+  <rect x="123" y="308" width="10" height="26" rx="2" fill="#378ADD" opacity=".8"/>
+  <rect x="138" y="315" width="10" height="19" rx="2" fill="#5F5E5A"/>
+  <rect x="153" y="320" width="10" height="14" rx="2" fill="#5F5E5A"/>
+  <rect x="168" y="318" width="10" height="16" rx="2" fill="#5F5E5A"/>
+</g>
+<!-- EQ frequency labels -->
+<text x="83" y="340" text-anchor="middle" font-size="5" fill="#444441">125</text>
+<text x="98" y="340" text-anchor="middle" font-size="5" fill="#444441">250</text>
+<text x="113" y="340" text-anchor="middle" font-size="5" fill="#444441">500</text>
+<text x="128" y="340" text-anchor="middle" font-size="5" fill="#444441">1k</text>
+<text x="143" y="340" text-anchor="middle" font-size="5" fill="#444441">2k</text>
+<text x="158" y="340" text-anchor="middle" font-size="5" fill="#444441">4k</text>
+<text x="173" y="340" text-anchor="middle" font-size="5" fill="#444441">8k</text>
+
+<!-- Home bar -->
+<rect x="118" y="372" width="44" height="3" rx="1.5" fill="#444441"/>
+
+<!-- ===== SOUND VISUALIZATION CENTER ===== -->
+
+<!-- BEFORE: noisy signal -->
+<text id="lbl-before" x="290" y="62" text-anchor="middle" font-size="10" font-weight="600" fill="#888780">Χωρίς Sound Amplifier</text>
+<rect x="240" y="70" width="100" height="60" rx="8" fill="#1a1a2e" stroke="#333340" stroke-width="0.5"/>
+<!-- Messy noise waveform -->
+<polyline points="248,100 252,88 256,108 260,82 264,104 268,90 272,112 276,86 280,98 284,84 288,106 292,92 296,114 300,88 304,100 308,86 312,108 316,92 320,100 324,88 328,104" fill="none" stroke="#E24B4A" stroke-width="1.2" opacity=".7"/>
+<text id="lbl-noisy" x="290" y="142" text-anchor="middle" font-size="8" fill="#A32D2D">Θορυβώδης, ακανόνιστος</text>
+
+<!-- Arrow down -->
+<line x1="290" y1="152" x2="290" y2="172" stroke="#7F77DD" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+<rect x="264" y="158" width="52" height="16" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.5"/>
+<text id="lbl-process" x="290" y="169" text-anchor="middle" font-size="8" fill="#3C3489">Επεξεργασία</text>
+
+<!-- AFTER: clean signal -->
+<text id="lbl-after" x="290" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#1D9E75">Με Sound Amplifier</text>
+<rect x="240" y="200" width="100" height="60" rx="8" fill="#04342C" stroke="#1D9E75" stroke-width="1"/>
+<!-- Clean sine wave -->
+<path id="clean-wave" d="M248,230 C252,220 258,220 262,230 C266,240 272,240 276,230 C280,220 286,220 290,230 C294,240 300,240 304,230 C308,220 314,220 318,230 C322,240 326,240 330,230" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+<text id="lbl-clean" x="290" y="272" text-anchor="middle" font-size="8" fill="#0F6E56">Καθαρός, ενισχυμένος</text>
+
+<!-- Headphones icon right of center -->
+<circle cx="390" cy="160" r="28" fill="#1e2030" stroke="#378ADD" stroke-width="1.5"/>
+<path d="M378,155 Q378,143 390,143 Q402,143 402,155" fill="none" stroke="#378ADD" stroke-width="2.5" stroke-linecap="round"/>
+<rect x="374" y="153" width="8" height="14" rx="4" fill="#378ADD"/>
+<rect x="398" y="153" width="8" height="14" rx="4" fill="#378ADD"/>
+<text id="lbl-required" x="390" y="206" text-anchor="middle" font-size="9" fill="#5F5E5A">Απαιτούνται ακουστικά</text>
+
+<!-- ===== RIGHT PANEL: Features ===== -->
+<rect x="430" y="40" width="220" height="250" rx="12" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="rp-title" x="442" y="60" font-size="11" font-weight="600" fill="#444441">Τι κάνει:</text>
+
+<rect x="442" y="68" width="12" height="12" rx="3" fill="#378ADD"/>
+<text id="feat1" x="460" y="79" font-size="10" fill="#0C447C">Ενισχύει τους ήχους</text>
+<text id="feat1b" x="460" y="91" font-size="9" fill="#5F5E5A">Κάνει πιο δυνατές τις φωνές</text>
+
+<rect x="442" y="102" width="12" height="12" rx="3" fill="#1D9E75"/>
+<text id="feat2" x="460" y="113" font-size="10" fill="#085041">Μειώνει τον θόρυβο</text>
+<text id="feat2b" x="460" y="125" font-size="9" fill="#5F5E5A">Φιλτράρει θόρυβο περιβάλλοντος</text>
+
+<rect x="442" y="136" width="12" height="12" rx="3" fill="#7F77DD"/>
+<text id="feat3" x="460" y="147" font-size="10" fill="#3C3489">Ξεχωριστή ρύθμιση</text>
+<text id="feat3b" x="460" y="159" font-size="9" fill="#5F5E5A">Αριστερό και δεξί αυτί ξεχωριστά</text>
+
+<rect x="442" y="170" width="12" height="12" rx="3" fill="#BA7517"/>
+<text id="feat4" x="460" y="181" font-size="10" fill="#633806">Ισοσταθμιστής</text>
+<text id="feat4b" x="460" y="193" font-size="9" fill="#5F5E5A">Προσαρμογή ανά συχνότητα</text>
+
+<!-- Who benefits -->
+<rect x="442" y="208" width="198" height="70" rx="8" fill="#E6F1FB" stroke="#378ADD" stroke-width="0.5"/>
+<text id="who-title" x="452" y="224" font-size="10" font-weight="600" fill="#0C447C">Ιδανικό για:</text>
+<text id="who1" x="452" y="240" font-size="9" fill="#185FA5">Χώρους με πολύ θόρυβο</text>
+<text id="who2" x="452" y="254" font-size="9" fill="#185FA5">Άτομα με ήπια προβλήματα ακοής</text>
+<text id="who3" x="452" y="268" font-size="9" fill="#185FA5">Παρακολούθηση με χαμηλή ένταση</text>
+
+<!-- How to enable -->
+<rect x="430" y="302" width="220" height="110" rx="12" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+<text id="how-title" x="442" y="320" font-size="11" font-weight="600" fill="#3C3489">Πώς να το ανοίξετε:</text>
+<rect x="442" y="328" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="449" y="339" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">1</text>
+<text id="how1" x="462" y="339" font-size="10" fill="#534AB7">Ρυθμίσεις → Προσβασιμότητα</text>
+<rect x="442" y="348" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="449" y="359" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">2</text>
+<text id="how2" x="462" y="359" font-size="10" fill="#534AB7">Επιλέξτε Sound Amplifier</text>
+<rect x="442" y="368" width="14" height="14" rx="7" fill="#7F77DD"/>
+<text x="449" y="379" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">3</text>
+<text id="how3" x="462" y="379" font-size="10" fill="#534AB7">Συνδέστε ακουστικά → Ρυθμίστε</text>
+<rect x="442" y="388" width="14" height="14" rx="7" fill="#1D9E75"/>
+<text x="449" y="399" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">!</text>
+<text id="how4" x="462" y="399" font-size="10" fill="#0F6E56">Διαθέσιμο Android 6+ με Google Play</text>
+
+<!-- Steps bottom -->
+<rect x="30" y="428" width="620" height="42" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+<text id="step-title" x="340" y="447" text-anchor="middle" font-size="11" font-weight="600" fill="#444441">Sound Amplifier — Ενίσχυση ήχου με ακουστικά</text>
+<text id="step1" x="340" y="462" text-anchor="middle" font-size="10" fill="#5F5E5A">Ενισχύει φωνές, μειώνει θόρυβο, ισοσταθμιστής ανά αυτί — ιδανικό για χώρους με πολύ θόρυβο</text>
+</svg>
+
+<!-- Interactive sliders -->
+<div style="background:#f0f0ea;border-radius:10px;padding:12px;margin:10px 0;border:1px solid #d3d1c7">
+  <div class="slider-row">
+    <label id="sl-left-label">Αριστερό αυτί (dB)</label>
+    <input type="range" min="0" max="20" value="0" id="sl-left" oninput="updateLeft(this.value)"/>
+    <span id="sl-left-val">0 dB</span>
+  </div>
+  <div class="slider-row">
+    <label id="sl-right-label">Δεξί αυτί (dB)</label>
+    <input type="range" min="0" max="20" value="0" id="sl-right" oninput="updateRight(this.value)"/>
+    <span id="sl-right-val">0 dB</span>
+  </div>
+  <div class="slider-row">
+    <label id="sl-noise-label">Μείωση θορύβου</label>
+    <input type="range" min="0" max="100" value="0" id="sl-noise" oninput="updateNoise(this.value)"/>
+    <span id="sl-noise-val">0%</span>
+  </div>
+</div>
+
+<div class="action-controls">
+  <button id="btn-connect" onclick="connectHeadphones()">Σύνδεση ακουστικών!</button>
+  <button id="btn-reset" onclick="resetDemo()">Reset</button>
+</div>
+
+<script>
+var lang='el', connected=false;
+var tx={
+  el:{
+    status:'Sound Amplifier', appTitle:'Sound Amplifier', appSub:'Google',
+    headphone:'Συνδέστε ακουστικά για έναρξη', connectedTxt:'Ακουστικά συνδεδεμένα',
+    left:'Αριστερό', right:'Δεξί',
+    noiseRed:'Μείωση θορύβου', noiseRed2:'Περιβαλλοντικοί θόρυβοι',
+    eq:'Ισοσταθμιστής',
+    before:'Χωρίς Sound Amplifier', noisy:'Θορυβώδης, ακανόνιστος',
+    process:'Επεξεργασία',
+    after:'Με Sound Amplifier', clean:'Καθαρός, ενισχυμένος',
+    required:'Απαιτούνται ακουστικά',
+    rpTitle:'Τι κάνει:',
+    feat1:'Ενισχύει τους ήχους', feat1b:'Κάνει πιο δυνατές τις φωνές',
+    feat2:'Μειώνει τον θόρυβο', feat2b:'Φιλτράρει θόρυβο περιβάλλοντος',
+    feat3:'Ξεχωριστή ρύθμιση', feat3b:'Αριστερό και δεξί αυτί ξεχωριστά',
+    feat4:'Ισοσταθμιστής', feat4b:'Προσαρμογή ανά συχνότητα',
+    whoTitle:'Ιδανικό για:',
+    who1:'Χώρους με πολύ θόρυβο', who2:'Άτομα με ήπια προβλήματα ακοής',
+    who3:'Παρακολούθηση με χαμηλή ένταση',
+    howTitle:'Πώς να το ανοίξετε:',
+    how1:'Ρυθμίσεις → Προσβασιμότητα',
+    how2:'Επιλέξτε Sound Amplifier',
+    how3:'Συνδέστε ακουστικά → Ρυθμίστε',
+    how4:'Διαθέσιμο Android 6+ με Google Play',
+    stepTitle:'Sound Amplifier — Ενίσχυση ήχου με ακουστικά',
+    step1:'Ενισχύει φωνές, μειώνει θόρυβο, ισοσταθμιστής ανά αυτί — ιδανικό για χώρους με πολύ θόρυβο',
+    slLeft:'Αριστερό αυτί (dB)', slRight:'Δεξί αυτί (dB)', slNoise:'Μείωση θορύβου',
+    btnConnect:'Σύνδεση ακουστικών!', btnReset:'Reset'
+  },
+  en:{
+    status:'Sound Amplifier', appTitle:'Sound Amplifier', appSub:'Google',
+    headphone:'Connect headphones to start', connectedTxt:'Headphones connected',
+    left:'Left', right:'Right',
+    noiseRed:'Noise reduction', noiseRed2:'Environmental noise',
+    eq:'Equalizer',
+    before:'Without Sound Amplifier', noisy:'Noisy, irregular',
+    process:'Processing',
+    after:'With Sound Amplifier', clean:'Clean, amplified',
+    required:'Headphones required',
+    rpTitle:'What it does:',
+    feat1:'Amplifies sounds', feat1b:'Makes voices louder and clearer',
+    feat2:'Reduces noise', feat2b:'Filters out environmental noise',
+    feat3:'Independent adjustment', feat3b:'Left and right ear separately',
+    feat4:'Equalizer', feat4b:'Frequency adjustment per ear',
+    whoTitle:'Ideal for:',
+    who1:'Noisy environments', who2:'People with mild hearing difficulties',
+    who3:'Listening at low volume',
+    howTitle:'How to open it:',
+    how1:'Settings → Accessibility',
+    how2:'Select Sound Amplifier',
+    how3:'Connect headphones → Adjust',
+    how4:'Available Android 6+ via Google Play',
+    stepTitle:'Sound Amplifier — Audio boost with headphones',
+    step1:'Amplifies voices, reduces noise, per-ear equalizer — ideal for noisy environments',
+    slLeft:'Left ear (dB)', slRight:'Right ear (dB)', slNoise:'Noise reduction',
+    btnConnect:'Connect headphones!', btnReset:'Reset'
+  }
+};
+
+function setLang(l){
+  lang=l; var t=tx[l];
+  document.getElementById('lbl-status').textContent=t.status;
+  document.getElementById('lbl-app-title').textContent=t.appTitle;
+  document.getElementById('lbl-app-sub').textContent=t.appSub;
+  document.getElementById('lbl-headphone').textContent=t.headphone;
+  document.getElementById('lbl-connected').textContent=t.connectedTxt;
+  document.getElementById('lbl-left').textContent=t.left;
+  document.getElementById('lbl-right').textContent=t.right;
+  document.getElementById('lbl-noise-red').textContent=t.noiseRed;
+  document.getElementById('lbl-noise-red2').textContent=t.noiseRed2;
+  document.getElementById('lbl-eq').textContent=t.eq;
+  document.getElementById('lbl-before').textContent=t.before;
+  document.getElementById('lbl-noisy').textContent=t.noisy;
+  document.getElementById('lbl-process').textContent=t.process;
+  document.getElementById('lbl-after').textContent=t.after;
+  document.getElementById('lbl-clean').textContent=t.clean;
+  document.getElementById('lbl-required').textContent=t.required;
+  document.getElementById('rp-title').textContent=t.rpTitle;
+  document.getElementById('feat1').textContent=t.feat1;
+  document.getElementById('feat1b').textContent=t.feat1b;
+  document.getElementById('feat2').textContent=t.feat2;
+  document.getElementById('feat2b').textContent=t.feat2b;
+  document.getElementById('feat3').textContent=t.feat3;
+  document.getElementById('feat3b').textContent=t.feat3b;
+  document.getElementById('feat4').textContent=t.feat4;
+  document.getElementById('feat4b').textContent=t.feat4b;
+  document.getElementById('who-title').textContent=t.whoTitle;
+  document.getElementById('who1').textContent=t.who1;
+  document.getElementById('who2').textContent=t.who2;
+  document.getElementById('who3').textContent=t.who3;
+  document.getElementById('how-title').textContent=t.howTitle;
+  document.getElementById('how1').textContent=t.how1;
+  document.getElementById('how2').textContent=t.how2;
+  document.getElementById('how3').textContent=t.how3;
+  document.getElementById('how4').textContent=t.how4;
+  document.getElementById('step-title').textContent=t.stepTitle;
+  document.getElementById('step1').textContent=t.step1;
+  document.getElementById('sl-left-label').textContent=t.slLeft;
+  document.getElementById('sl-right-label').textContent=t.slRight;
+  document.getElementById('sl-noise-label').textContent=t.slNoise;
+  document.getElementById('btn-connect').textContent=t.btnConnect;
+  document.getElementById('btn-reset').textContent=t.btnReset;
+  document.getElementById('btn-el').className=(l==='el')?'active':'';
+  document.getElementById('btn-en').className=(l==='en')?'active':'';
+}
+
+function connectHeadphones(){
+  connected=true;
+  document.getElementById('lbl-headphone').setAttribute('opacity','0');
+  document.getElementById('connected-bar').setAttribute('opacity','1');
+  document.getElementById('lbl-connected').setAttribute('opacity','1');
+  document.getElementById('btn-connect').textContent=(lang==='el')?'Συνδεδεμένα!':'Connected!';
+  document.getElementById('btn-connect').disabled=true;
+}
+
+function updateLeft(v){
+  document.getElementById('lbl-left-val').textContent=v+' dB';
+  document.getElementById('sl-left-val').textContent=v+' dB';
+  var col=v>10?'#E24B4A':v>5?'#EF9F27':'#378ADD';
+  document.getElementById('lbl-left-val').setAttribute('fill',col);
+  animEQ(parseInt(v));
+}
+
+function updateRight(v){
+  document.getElementById('lbl-right-val').textContent=v+' dB';
+  document.getElementById('sl-right-val').textContent=v+' dB';
+  var col=v>10?'#E24B4A':v>5?'#EF9F27':'#378ADD';
+  document.getElementById('lbl-right-val').setAttribute('fill',col);
+  animEQ(parseInt(v));
+}
+
+function updateNoise(v){
+  document.getElementById('sl-noise-val').textContent=v+'%';
+  var on=parseInt(v)>50;
+  document.getElementById('noise-toggle-bg').setAttribute('fill',on?'#1D9E75':'#333340');
+  document.getElementById('noise-toggle-dot').setAttribute('cx',on?'202':'194');
+  document.getElementById('noise-toggle-dot').setAttribute('fill',on?'#fff':'#5F5E5A');
+  // Animate clean wave opacity based on noise reduction
+  var wave=document.getElementById('clean-wave');
+  wave.setAttribute('opacity', 0.4 + (parseInt(v)/100)*0.6);
+}
+
+function animEQ(boost){
+  var bars=document.querySelectorAll('#eq-bars rect');
+  var base=[14,24,29,26,19,14,16];
+  bars.forEach(function(bar,i){
+    var newH=Math.min(50, base[i] + Math.round(boost*1.5));
+    var newY=334 - newH;
+    bar.setAttribute('height', newH);
+    bar.setAttribute('y', newY);
+    bar.setAttribute('fill', boost>10?'#E24B4A':boost>5?'#EF9F27':'#378ADD');
+  });
+}
+
+function resetDemo(){
+  connected=false;
+  document.getElementById('lbl-headphone').setAttribute('opacity','1');
+  document.getElementById('connected-bar').setAttribute('opacity','0');
+  document.getElementById('lbl-connected').setAttribute('opacity','0');
+  document.getElementById('btn-connect').textContent=tx[lang].btnConnect;
+  document.getElementById('btn-connect').disabled=false;
+  document.getElementById('sl-left').value=0;
+  document.getElementById('sl-right').value=0;
+  document.getElementById('sl-noise').value=0;
+  document.getElementById('sl-left-val').textContent='0 dB';
+  document.getElementById('sl-right-val').textContent='0 dB';
+  document.getElementById('sl-noise-val').textContent='0%';
+  document.getElementById('lbl-left-val').textContent='0';
+  document.getElementById('lbl-right-val').textContent='0';
+  document.getElementById('lbl-left-val').setAttribute('fill','#378ADD');
+  document.getElementById('lbl-right-val').setAttribute('fill','#378ADD');
+  document.getElementById('noise-toggle-bg').setAttribute('fill','#333340');
+  document.getElementById('noise-toggle-dot').setAttribute('cx','194');
+  document.getElementById('noise-toggle-dot').setAttribute('fill','#5F5E5A');
+  document.getElementById('clean-wave').setAttribute('opacity','1');
+  animEQ(0);
+}
+
+setLang('el');
+</script>
+</body>
+</html>
