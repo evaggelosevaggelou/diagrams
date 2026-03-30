@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPU Thermal Throttling Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cold:    #0ea5e9;
+    --normal:  #22c55e;
+    --warm:    #f59e0b;
+    --hot:     #ef4444;
+    --critical:#991b1b;
+    --bg:      #ffffff;
+    --surface: #f8fafc;
+    --border:  #e2e8f0;
+    --text:    #1e293b;
+    --muted:   #64748b;
+    --radius:  10px;
+    --shadow:  0 2px 12px rgba(0,0,0,0.07);
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 18px 12px 10px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 14px;
+    width: 100%;
+    max-width: 760px;
+  }
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .header p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* ── Language toggle ── */
+  .lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: background .2s, border-color .2s;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .lang-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
+
+  /* ── Thermometer section ── */
+  .thermo-wrap {
+    width: 100%;
+    max-width: 760px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px 12px;
+    margin-bottom: 12px;
+  }
+  .thermo-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 10px;
+  }
+  .thermo-bar {
+    display: flex;
+    height: 28px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .thermo-bar .seg {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+    transition: filter .2s, transform .15s;
+  }
+  .thermo-bar .seg:hover { filter: brightness(1.1); transform: scaleY(1.08); }
+  .seg.s1 { background: linear-gradient(90deg,#0ea5e9,#38bdf8); }
+  .seg.s2 { background: linear-gradient(90deg,#22c55e,#4ade80); }
+  .seg.s3 { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+  .seg.s4 { background: linear-gradient(90deg,#ef4444,#f87171); }
+  .seg.s5 { background: linear-gradient(90deg,#dc2626,#991b1b); }
+
+  .thermo-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+  }
+
+  .thermo-popup {
+    margin-top: 10px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    min-height: 46px;
+    transition: opacity .2s;
+    color: var(--text);
+  }
+  .thermo-popup strong { font-weight: 600; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 760px;
+  }
+  .tab {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 4px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background .2s, border-color .2s, color .2s;
+    font-family: inherit;
+    color: var(--muted);
+  }
+  .tab.active {
+    background: #1e293b;
+    border-color: #1e293b;
+    color: #fff;
+  }
+  .tab:hover:not(.active) { border-color: #94a3b8; color: var(--text); }
+
+  /* ── Panels ── */
+  .panel { display: none; width: 100%; max-width: 760px; }
+  .panel.active { display: block; }
+
+  /* ── Cards grid ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 13px;
+    cursor: pointer;
+    transition: box-shadow .2s, border-color .2s, transform .15s;
+    user-select: none;
+  }
+  .card:hover { box-shadow: var(--shadow); transform: translateY(-2px); border-color: #94a3b8; }
+  .card.open { border-color: #3b82f6; background: #eff6ff; }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.84rem;
+  }
+  .card-icon { font-size: 1.3rem; }
+  .card-body {
+    display: none;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.55;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+  .card.open .card-body { display: block; }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── Steps ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: box-shadow .2s, border-color .2s;
+  }
+  .step:hover { box-shadow: var(--shadow); border-color: #94a3b8; }
+  .step.open { border-color: #22c55e; background: #f0fdf4; }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #1e293b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .step.open .step-num { background: #22c55e; }
+  .step-content { flex: 1; }
+  .step-title { font-weight: 600; font-size: 0.84rem; }
+  .step-desc {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .step.open .step-desc { display: block; }
+  .step-arrow { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; transition: transform .2s; }
+  .step.open .step-arrow { transform: rotate(90deg); }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 14px;
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1 data-el="title">🌡️ Thermal Throttling — Οδηγός Διάγνωσης & Αντιμετώπισης</h1>
+  <p data-el="subtitle">Κάνε κλικ σε κάθε ενότητα για περισσότερες πληροφορίες</p>
+</div>
+
+<button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">English</span></button>
+
+<!-- Temperature Bar -->
+<div class="thermo-wrap">
+  <div class="thermo-title" data-el="thermo-title">Ζώνες Θερμοκρασίας CPU — κάνε κλικ για λεπτομέρειες</div>
+  <div class="thermo-bar">
+    <div class="seg s1" onclick="showTemp(0)"></div>
+    <div class="seg s2" onclick="showTemp(1)"></div>
+    <div class="seg s3" onclick="showTemp(2)"></div>
+    <div class="seg s4" onclick="showTemp(3)"></div>
+    <div class="seg s5" onclick="showTemp(4)"></div>
+  </div>
+  <div class="thermo-labels">
+    <span>20°C</span><span>40°C</span><span>60°C</span><span>80°C</span><span>90°C</span><span>100°C+</span>
+  </div>
+  <div class="thermo-popup" id="thermo-popup" data-el="thermo-default">
+    👆 Κάνε κλικ σε μια ζώνη για να δεις τι σημαίνει η θερμοκρασία αυτή.
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('symptoms',this)" data-el="tab-symptoms">⚠️ Συμπτώματα</button>
+  <button class="tab" onclick="switchTab('tools',this)" data-el="tab-tools">🔍 Εργαλεία</button>
+  <button class="tab" onclick="switchTab('solutions',this)" data-el="tab-solutions">🛠️ Λύσεις</button>
+</div>
+
+<!-- Panel: Symptoms -->
+<div class="panel active" id="panel-symptoms">
+  <div class="cards" id="cards-symptoms"></div>
+</div>
+
+<!-- Panel: Tools -->
+<div class="panel" id="panel-tools">
+  <div class="cards" id="cards-tools"></div>
+</div>
+
+<!-- Panel: Solutions -->
+<div class="panel" id="panel-solutions">
+  <div class="steps" id="steps-solutions"></div>
+</div>
+
+<p class="footer">lovefortechnology.net</p>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const data = {
+  el: {
+    'title':         ['🌡️ Thermal Throttling — Οδηγός Διάγνωσης & Αντιμετώπισης',
+                      '🌡️ Thermal Throttling — Diagnosis & Fix Guide'],
+    'subtitle':      ['Κάνε κλικ σε κάθε ενότητα για περισσότερες πληροφορίες',
+                      'Click any section for more details'],
+    'thermo-title':  ['Ζώνες Θερμοκρασίας CPU — κάνε κλικ για λεπτομέρειες',
+                      'CPU Temperature Zones — click for details'],
+    'thermo-default':['👆 Κάνε κλικ σε μια ζώνη για να δεις τι σημαίνει η θερμοκρασία αυτή.',
+                      '👆 Click a zone to see what that temperature means.'],
+    'tab-symptoms':  ['⚠️ Συμπτώματα', '⚠️ Symptoms'],
+    'tab-tools':     ['🔍 Εργαλεία', '🔍 Tools'],
+    'tab-solutions': ['🛠️ Λύσεις', '🛠️ Solutions'],
+  },
+
+  temps: [
+    { el: ['🔵 20–40°C — Αδρανής κατάσταση (Idle)','🔵 20–40°C — Idle State'],
+      gr: 'Ο επεξεργαστής ηρεμεί. Ιδανικό εύρος χωρίς φόρτο εργασίας. Κανένας κίνδυνος.',
+      en: 'Processor is idle. Ideal range with no workload. No risk whatsoever.' },
+    { el: ['🟢 40–60°C — Κανονική λειτουργία','🟢 40–60°C — Normal Operation'],
+      gr: 'Φυσιολογικές θερμοκρασίες κατά τη συνηθισμένη χρήση. Το σύστημα ψύξης λειτουργεί σωστά.',
+      en: 'Normal temperatures during everyday use. Cooling system working correctly.' },
+    { el: ['🟡 60–80°C — Υψηλό φορτίο','🟡 60–80°C — High Load'],
+      gr: 'Αποδεκτό υπό απαιτητικές εφαρμογές (gaming, βίντεο). Παρακολούθηση συνιστάται.',
+      en: 'Acceptable under demanding apps (gaming, video). Monitoring recommended.' },
+    { el: ['🔴 80–90°C — Οριακό επίπεδο','🔴 80–90°C — Borderline'],
+      gr: 'Πιθανή ενεργοποίηση thermal throttling. Ελέγξτε αμέσως ψύξη και αερισμό.',
+      en: 'Thermal throttling may activate. Check cooling and airflow immediately.' },
+    { el: ['🚨 90°C+ — Κρίσιμη υπερθέρμανση','🚨 90°C+ — Critical Overheating'],
+      gr: 'Σοβαρός κίνδυνος βλάβης. Το σύστημα μπορεί να απενεργοποιηθεί αυτόματα. Άμεση παρέμβαση απαραίτητη.',
+      en: 'Serious damage risk. System may shut down automatically. Immediate action required.' },
+  ],
+
+  symptoms: [
+    { icon:'🐌', titleGr:'Απότομη επιβράδυνση', titleEn:'Sudden Slowdown',
+      gr:'Ο υπολογιστής γίνεται αισθητά πιο αργός κατά τη χρήση, ακόμη κι αν λειτουργούσε κανονικά λίγα λεπτά πριν.',
+      en:'The computer becomes noticeably slower during use, even if it was running fine just minutes before.',
+      tagGr:'Βασικό σύμπτωμα', tagEn:'Primary symptom', tagColor:'#ef4444' },
+    { icon:'🎮', titleGr:'Πτώση FPS στα παιχνίδια', titleEn:'FPS Drop in Games',
+      gr:'Ξεκινάς με 60 FPS και μετά από λίγα λεπτά πέφτεις στα 20–30 FPS. Χαρακτηριστική ένδειξη θερμικού περιορισμού.',
+      en:'You start at 60 FPS and after a few minutes drop to 20–30 FPS. Classic sign of thermal limiting.',
+      tagGr:'Gaming', tagEn:'Gaming', tagColor:'#8b5cf6' },
+    { icon:'💨', titleGr:'Έντονος θόρυβος ανεμιστήρων', titleEn:'Loud Fan Noise',
+      gr:'Οι ανεμιστήρες τρέχουν συνεχώς σε μέγιστες στροφές (RPM) προσπαθώντας να μειώσουν τη θερμοκρασία.',
+      en:'Fans run continuously at maximum RPM trying to reduce temperature.',
+      tagGr:'Ακουστικό σήμα', tagEn:'Audible sign', tagColor:'#0ea5e9' },
+    { icon:'🔥', titleGr:'Υπερβολική θερμότητα laptop', titleEn:'Excessive Laptop Heat',
+      gr:'Το πληκτρολόγιο ή το κάτω μέρος γίνεται εξαιρετικά ζεστό στην αφή. Ένδειξη ανεπαρκούς απαγωγής θερμότητας.',
+      en:'Keyboard or bottom becomes extremely hot to the touch. Sign of insufficient heat dissipation.',
+      tagGr:'Laptop', tagEn:'Laptop', tagColor:'#f59e0b' },
+    { icon:'⚡', titleGr:'Αυτόματος τερματισμός', titleEn:'Automatic Shutdown',
+      gr:'Σε ακραίες περιπτώσεις το σύστημα απενεργοποιείται χωρίς προειδοποίηση. Τελευταίο επίπεδο προστασίας.',
+      en:'In extreme cases the system powers off without warning. Last line of hardware protection.',
+      tagGr:'Κρίσιμο', tagEn:'Critical', tagColor:'#dc2626' },
+  ],
+
+  tools: [
+    { icon:'📊', titleGr:'HWMonitor', titleEn:'HWMonitor',
+      gr:'Εμφανίζει θερμοκρασίες, τάσεις και στροφές ανεμιστήρων σε πραγματικό χρόνο. Ιδανικό για γρήγορο έλεγχο.',
+      en:'Shows temperatures, voltages and fan RPM in real time. Ideal for a quick system check.',
+      tagGr:'Αρχάριοι', tagEn:'Beginner-friendly', tagColor:'#22c55e' },
+    { icon:'🎯', titleGr:'Core Temp', titleEn:'Core Temp',
+      gr:'Εξειδικευμένο εργαλείο για τον επεξεργαστή. Εμφανίζει θερμοκρασία κάθε πυρήνα ξεχωριστά.',
+      en:'Specialized CPU tool. Shows per-core temperature individually.',
+      tagGr:'CPU-centric', tagEn:'CPU-centric', tagColor:'#3b82f6' },
+    { icon:'🖥️', titleGr:'MSI Afterburner', titleEn:'MSI Afterburner',
+      gr:'Ιδανικό για gamers. On-screen overlay μέσα στα παιχνίδια με θερμοκρασίες, FPS και χρήση GPU/CPU.',
+      en:'Ideal for gamers. In-game overlay with temperatures, FPS and GPU/CPU usage.',
+      tagGr:'Gaming', tagEn:'Gaming', tagColor:'#8b5cf6' },
+    { icon:'⚡', titleGr:'ThrottleStop', titleEn:'ThrottleStop',
+      gr:'Εμφανίζει ξεκάθαρα αν ενεργοποιείται το throttling και την αιτία του. Για προχωρημένους χρήστες.',
+      en:'Clearly shows if throttling is active and its cause. For advanced users.',
+      tagGr:'Προχωρημένο', tagEn:'Advanced', tagColor:'#f59e0b' },
+  ],
+
+  solutions: [
+    { num:'1', icon:'🧹',
+      titleGr:'Καθαρισμός σκόνης', titleEn:'Dust Cleaning',
+      gr:'Χρησιμοποίησε πεπιεσμένο αέρα στους ανεμιστήρες και την ψύκτρα. Κάνε το κάθε 3–6 μήνες. Απόφυγε ηλεκτρική σκούπα (κίνδυνος στατικού ηλεκτρισμού).',
+      en:'Use compressed air on fans and heatsink. Do this every 3–6 months. Avoid vacuum cleaners (static electricity risk).' },
+    { num:'2', icon:'💨',
+      titleGr:'Βελτίωση αερισμού', titleEn:'Improve Airflow',
+      gr:'Desktop: 10–15 εκ. κενό γύρω από το κουτί. Laptop: αποφύγε μαλακές επιφάνειες, χρησιμοποίησε cooling pad.',
+      en:'Desktop: 10–15 cm clearance around the case. Laptop: avoid soft surfaces, use a cooling pad.' },
+    { num:'3', icon:'⚙️',
+      titleGr:'Ρυθμίσεις Windows', titleEn:'Windows Settings',
+      gr:'Μείωσε τη μέγιστη κατάσταση επεξεργαστή στο 85–90% από τις Ρυθμίσεις Ενέργειας. Κλείσε περιττές διεργασίες από τον Task Manager.',
+      en:'Reduce max processor state to 85–90% in Power Options. Close unnecessary background processes via Task Manager.' },
+    { num:'4', icon:'🎮',
+      titleGr:'Περιορισμός FPS', titleEn:'Cap FPS',
+      gr:'Όρισε frame cap (π.χ. 60 FPS) στα παιχνίδια για να μειώσεις το φορτίο της GPU και κατ\' επέκταση τις θερμοκρασίες.',
+      en:'Set a frame cap (e.g. 60 FPS) in games to reduce GPU load and consequently temperatures.' },
+    { num:'5', icon:'🔧',
+      titleGr:'Αντικατάσταση thermal paste', titleEn:'Replace Thermal Paste',
+      gr:'Κάθε 2–4 χρόνια σε desktop, 1–2 χρόνια σε laptop. Χρησιμοποίησε Arctic MX-4 ή Noctua NT-H1. Καθάρισε πρώτα με ισοπροπυλική αλκοόλη 90%+.',
+      en:'Every 2–4 years on desktop, 1–2 years on laptop. Use Arctic MX-4 or Noctua NT-H1. Clean first with 90%+ isopropyl alcohol.' },
+    { num:'6', icon:'🌀',
+      titleGr:'Αναβάθμιση ψύκτρας', titleEn:'Upgrade Cooler',
+      gr:'Αντικατάστησε τη stock ψύκτρα με air tower cooler ή AIO υδρόψυξη για σημαντικά χαμηλότερες θερμοκρασίες.',
+      en:'Replace the stock cooler with an air tower or AIO liquid cooler for significantly lower temperatures.' },
+  ],
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let lang = 0; // 0=Greek, 1=English
+let activeTab = 'symptoms';
+
+// ── Lang toggle ────────────────────────────────────────────────────────────
+function toggleLang() {
+  lang = 1 - lang;
+  document.getElementById('lang-label').textContent = lang === 0 ? 'English' : 'Ελληνικά';
+  document.documentElement.lang = lang === 0 ? 'el' : 'en';
+
+  // Update static elements
+  for (const [key, vals] of Object.entries(data.el)) {
+    document.querySelectorAll(`[data-el="${key}"]`).forEach(el => {
+      el.textContent = vals[lang];
+    });
+  }
+
+  // Re-render dynamic content
+  renderSymptoms();
+  renderTools();
+  renderSolutions();
+}
+
+// ── Temperature bar ────────────────────────────────────────────────────────
+function showTemp(i) {
+  const t = data.temps[i];
+  const popup = document.getElementById('thermo-popup');
+  popup.innerHTML = `<strong>${t.el[lang]}</strong><br>${lang === 0 ? t.gr : t.en}`;
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  activeTab = name;
+}
+
+// ── Render Symptoms ────────────────────────────────────────────────────────
+function renderSymptoms() {
+  const wrap = document.getElementById('cards-symptoms');
+  wrap.innerHTML = data.symptoms.map((s, i) => `
+    <div class="card" id="sym-${i}" onclick="toggleCard('sym-${i}')">
+      <div class="card-head"><span class="card-icon">${s.icon}</span>${lang === 0 ? s.titleGr : s.titleEn}</div>
+      <div class="card-body">
+        ${lang === 0 ? s.gr : s.en}
+        <span class="card-tag" style="background:${s.tagColor}22;color:${s.tagColor}">${lang === 0 ? s.tagGr : s.tagEn}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── Render Tools ───────────────────────────────────────────────────────────
+function renderTools() {
+  const wrap = document.getElementById('cards-tools');
+  wrap.innerHTML = data.tools.map((t, i) => `
+    <div class="card" id="tool-${i}" onclick="toggleCard('tool-${i}')">
+      <div class="card-head"><span class="card-icon">${t.icon}</span>${t.titleGr}</div>
+      <div class="card-body">
+        ${lang === 0 ? t.gr : t.en}
+        <span class="card-tag" style="background:${t.tagColor}22;color:${t.tagColor}">${lang === 0 ? t.tagGr : t.tagEn}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── Render Solutions ───────────────────────────────────────────────────────
+function renderSolutions() {
+  const wrap = document.getElementById('steps-solutions');
+  wrap.innerHTML = data.solutions.map((s, i) => `
+    <div class="step" id="sol-${i}" onclick="toggleStep('sol-${i}')">
+      <div class="step-num">${s.num}</div>
+      <div class="step-content">
+        <div class="step-title">${s.icon} ${lang === 0 ? s.titleGr : s.titleEn}</div>
+        <div class="step-desc">${lang === 0 ? s.gr : s.en}</div>
+      </div>
+      <div class="step-arrow">▶</div>
+    </div>`).join('');
+}
+
+function toggleCard(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+function toggleStep(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+renderSymptoms();
+renderTools();
+renderSolutions();
+</script>
+</body>
+</html>
