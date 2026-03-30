@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beauty Camera – Features Map</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px 32px;
+}
+
+#lang-btn {
+  position: fixed; top: 14px; right: 14px;
+  background: #ff6b9d; color: #fff;
+  border: none; border-radius: 20px;
+  padding: 7px 16px; font-size: 13px; font-weight: 600;
+  cursor: pointer; z-index: 100;
+  box-shadow: 0 2px 8px rgba(255,107,157,.35);
+  transition: background .2s;
+}
+#lang-btn:hover { background: #e05589; }
+
+/* HEADER */
+.header { text-align: center; margin-bottom: 30px; }
+.app-icon {
+  width: 72px; height: 72px; border-radius: 18px;
+  background: linear-gradient(135deg, #ff6b9d, #c44dff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; margin: 0 auto 12px;
+  box-shadow: 0 4px 16px rgba(255,107,157,.4);
+}
+.header h1 { font-size: 22px; font-weight: 700; color: #222; }
+.header p  { font-size: 13px; color: #888; margin-top: 4px; }
+.badge-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.badge { background:#fff0f6; color:#c44dff; border:1.5px solid #e8b4ff; border-radius:20px; padding:4px 13px; font-size:12px; font-weight:600; }
+.badge.gold { background:#fffbe6; color:#d4a000; border-color:#ffe066; }
+
+/* MAIN LAYOUT */
+.main-layout {
+  display: flex; gap: 28px; align-items: flex-start;
+  width: 100%; max-width: 960px;
+  flex-wrap: wrap; justify-content: center;
+}
+
+/* PHONE */
+.phone-wrap { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.phone-label { font-size: 11px; color: #aaa; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+.phone {
+  width: 200px;
+  background: #1a1a2e;
+  border-radius: 36px;
+  padding: 14px 10px;
+  box-shadow: 0 0 0 2px #333, 0 0 0 6px #111, 0 20px 50px rgba(0,0,0,.45);
+  position: relative;
+}
+.phone::before {
+  content: '';
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  width: 48px; height: 10px;
+  background: #111; border-radius: 0 0 10px 10px; z-index: 10;
+}
+.screen {
+  background: #0d0d1a; border-radius: 26px;
+  overflow: hidden; position: relative;
+  height: 360px; display: flex; flex-direction: column;
+}
+
+/* Viewfinder */
+.viewfinder {
+  flex: 1;
+  background: linear-gradient(170deg,#1a0a2e 0%,#2d1b4e 40%,#1a2a1a 100%);
+  position: relative; overflow: hidden; cursor: pointer;
+  transition: background .4s;
+}
+.face-oval {
+  position: absolute; top: 18%; left: 50%; transform: translateX(-50%);
+  width: 80px; height: 96px;
+  border: 2px dashed rgba(255,107,157,.6); border-radius: 50%;
+}
+.beauty-glow {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+  width: 110px; height: 130px;
+  background: radial-gradient(ellipse, rgba(255,107,157,.12) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.ar-sticker  { position: absolute; top: 8%;  right: 12%; font-size: 20px; animation: float 2.5s ease-in-out infinite; }
+.ar-sticker2 { position: absolute; top: 14%; left: 10%;  font-size: 16px; animation: float 3s ease-in-out infinite reverse; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+.filter-dots { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+.fdot {
+  width: 24px; height: 24px; border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,.25);
+  font-size: 11px; display: flex; align-items: center; justify-content: center;
+  transition: border-color .3s, box-shadow .3s;
+}
+.fdot.active { border-color: #ff6b9d; box-shadow: 0 0 6px rgba(255,107,157,.7); }
+
+.effect-label {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(255,107,157,.85); color: #fff;
+  font-size: 9px; font-weight: 700; border-radius: 6px; padding: 2px 7px;
+}
+
+/* Sticker panel on hover */
+.sticker-panel {
+  position: absolute; bottom: 38px; left: 0; right: 0;
+  background: rgba(10,8,20,.88);
+  padding: 5px 6px;
+  display: none; flex-wrap: wrap; gap: 4px; justify-content: center;
+}
+.viewfinder:hover .sticker-panel { display: flex; }
+.sticker-chip {
+  background: rgba(255,107,157,.18); border: 1px solid rgba(255,107,157,.35);
+  border-radius: 7px; padding: 2px 7px; font-size: 10px; color: #ff9dc8;
+}
+
+/* Controls */
+.controls-bar { background: rgba(10,8,20,.95); padding: 9px 8px 7px; display: flex; flex-direction: column; gap: 6px; }
+.beauty-sliders { display: flex; gap: 5px; align-items: center; }
+.slider-label { font-size: 7px; width: 32px; }
+.slider-track { flex: 1; height: 3px; background: #333; border-radius: 2px; position: relative; }
+.slider-fill  { height: 100%; border-radius: 2px; background: linear-gradient(90deg,#ff6b9d,#c44dff); }
+.f70{width:70%} .f55{width:55%} .f40{width:40%}
+.cam-row { display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+.cam-btn-sm { width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:13px; }
+.shutter { width:46px; height:46px; border-radius:50%; background:#fff; border:3px solid #ff6b9d; box-shadow:0 0 12px rgba(255,107,157,.5); display:flex; align-items:center; justify-content:center; }
+.shutter-inner { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#ff6b9d,#c44dff); }
+
+/* Tabs */
+.app-tabs { display:flex; background:rgba(10,8,20,.95); padding:0 4px 4px; }
+.tab { flex:1; text-align:center; padding:4px 0; font-size:7.5px; color:#666; cursor:pointer; }
+.tab.active { color:#ff6b9d; border-bottom:1.5px solid #ff6b9d; }
+.tab-icon { font-size:12px; display:block; margin-bottom:1px; }
+
+.screen-hint { text-align:center; font-size:11px; color:#bbb; font-style:italic; }
+
+/* FEATURE CARDS */
+.feat-grid {
+  flex: 1; min-width: 280px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 11px;
+}
+.card {
+  background:#fff; border:2px solid #f0e0fa; border-radius:14px; padding:14px 13px 11px;
+  cursor:pointer; transition:transform .18s, box-shadow .18s, border-color .18s;
+  position:relative; overflow:hidden;
+}
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--accent); border-radius:14px 14px 0 0; }
+.card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(196,77,255,.14); border-color:var(--accent); }
+.card.open  { border-color:var(--accent); box-shadow:0 5px 18px rgba(196,77,255,.16); }
+.card-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.card-icon   { font-size:22px; }
+.card-title  { font-size:13px; font-weight:700; color:#222; }
+.card-sub    { font-size:11px; color:#aaa; margin-top:1px; }
+.expand-arrow { margin-left:auto; font-size:11px; color:#ccc; transition:transform .2s; }
+.card.open .expand-arrow { transform:rotate(180deg); color:var(--accent); }
+.features { display:none; flex-wrap:wrap; gap:5px; margin-top:8px; border-top:1px solid #f5eeff; padding-top:8px; }
+.card.open .features { display:flex; }
+.pill { background:var(--pill-bg); color:var(--pill-fg); border-radius:10px; padding:3px 9px; font-size:11px; font-weight:500; }
+
+.c1{--accent:#ff6b9d;--pill-bg:#fff0f5;--pill-fg:#d63b7a}
+.c2{--accent:#c44dff;--pill-bg:#f8f0ff;--pill-fg:#9b3fcb}
+.c3{--accent:#ff9f43;--pill-bg:#fff6ec;--pill-fg:#c97020}
+.c4{--accent:#1dd1a1;--pill-bg:#edfff8;--pill-fg:#0d8f70}
+.c5{--accent:#54a0ff;--pill-bg:#eef4ff;--pill-fg:#2657c4}
+.c6{--accent:#ffd32a;--pill-bg:#fffce0;--pill-fg:#9a7a00}
+
+/* STATS */
+.stats { display:flex; gap:14px; justify-content:center; margin-top:24px; flex-wrap:wrap; }
+.stat-box { background:#fdf5ff; border:1.5px solid #e8c4ff; border-radius:12px; padding:10px 18px; text-align:center; min-width:100px; }
+.stat-value { font-size:20px; font-weight:800; color:#c44dff; }
+.stat-label { font-size:11px; color:#999; margin-top:1px; }
+
+.footer-note { margin-top:18px; font-size:12px; color:#bbb; text-align:center; }
+</style>
+</head>
+<body>
+
+<button id="lang-btn" onclick="toggleLang()">🌐 English</button>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="app-icon">📷</div>
+  <h1 data-el="Χάρτης Λειτουργιών" data-en="Features Map">Χάρτης Λειτουργιών</h1>
+  <p data-el="Beauty Camera – Selfie Camera (iJoysoft)" data-en="Beauty Camera – Selfie Camera (iJoysoft)">Beauty Camera – Selfie Camera (iJoysoft)</p>
+  <div class="badge-row">
+    <span class="badge gold">⭐ 4.7 / 5</span>
+    <span class="badge" data-el="10M+ Λήψεις" data-en="10M+ Downloads">10M+ Λήψεις</span>
+    <span class="badge" data-el="Δωρεάν" data-en="Free">Δωρεάν</span>
+    <span class="badge">Android</span>
+  </div>
+</div>
+
+<div class="main-layout">
+
+  <!-- PHONE MOCKUP -->
+  <div class="phone-wrap">
+    <div class="phone-label" data-el="Προεπισκόπηση UI" data-en="UI Preview">Προεπισκόπηση UI</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="viewfinder" id="vf" onclick="cycleEffect()" title="">
+          <div class="beauty-glow"></div>
+          <div class="face-oval"></div>
+          <div class="ar-sticker" id="s1">🌸</div>
+          <div class="ar-sticker2" id="s2">✨</div>
+          <div class="effect-label" id="effect-badge">✨ Smooth</div>
+          <div class="sticker-panel">
+            <span class="sticker-chip">🐱 Cat</span>
+            <span class="sticker-chip">🌺 Flower</span>
+            <span class="sticker-chip">👑 Crown</span>
+            <span class="sticker-chip">😍 Hearts</span>
+          </div>
+          <div class="filter-dots" id="fdots">
+            <div class="fdot active">🌸</div>
+            <div class="fdot">🌟</div>
+            <div class="fdot">🎨</div>
+            <div class="fdot">💎</div>
+            <div class="fdot">🌙</div>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <div class="beauty-sliders">
+            <span class="slider-label" style="color:#ff9dc8" data-el="Λείο" data-en="Smooth">Λείο</span>
+            <div class="slider-track"><div class="slider-fill f70"></div></div>
+          </div>
+          <div class="beauty-sliders">
+            <span class="slider-label" style="color:#cdb4ff" data-el="Λάμψη" data-en="Glow">Λάμψη</span>
+            <div class="slider-track"><div class="slider-fill f55"></div></div>
+          </div>
+          <div class="beauty-sliders">
+            <span class="slider-label" style="color:#a3d8f4" data-el="Λεύκος" data-en="White">Λεύκος</span>
+            <div class="slider-track"><div class="slider-fill f40"></div></div>
+          </div>
+          <div class="cam-row">
+            <div class="cam-btn-sm">🖼️</div>
+            <div class="cam-btn-sm">🎭</div>
+            <div class="shutter"><div class="shutter-inner"></div></div>
+            <div class="cam-btn-sm">🔄</div>
+            <div class="cam-btn-sm">⚙️</div>
+          </div>
+        </div>
+
+        <div class="app-tabs">
+          <div class="tab"><span class="tab-icon">📸</span><span data-el="Φωτο" data-en="Photo">Φωτο</span></div>
+          <div class="tab active"><span class="tab-icon">✨</span><span data-el="Beauty" data-en="Beauty">Beauty</span></div>
+          <div class="tab"><span class="tab-icon">🎭</span><span>AR</span></div>
+          <div class="tab"><span class="tab-icon">🎬</span><span data-el="Video" data-en="Video">Video</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-hint" data-el="👆 κλικ για εναλλαγή εφέ" data-en="👆 click to cycle effects">👆 κλικ για εναλλαγή εφέ</div>
+  </div>
+
+  <!-- FEATURE CARDS -->
+  <div class="feat-grid">
+
+    <div class="card c1" onclick="toggle(this)">
+      <div class="card-header">
+        <span class="card-icon">✨</span>
+        <div>
+          <div class="card-title" data-el="Beauty & Ομορφιά" data-en="Beauty & Retouch">Beauty & Ομορφιά</div>
+          <div class="card-sub" data-el="Εφέ σε real-time" data-en="Real-time effects">Εφέ σε real-time</div>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="features">
+        <span class="pill" data-el="Λείανση Δέρματος" data-en="Skin Smoothing">Λείανση Δέρματος</span>
+        <span class="pill" data-el="Λεύκανση Δοντιών" data-en="Teeth Whitener">Λεύκανση Δοντιών</span>
+        <span class="pill" data-el="Φωτεινά Μάτια" data-en="Eye Brightener">Φωτεινά Μάτια</span>
+        <span class="pill" data-el="Face Tune" data-en="Face Tune">Face Tune</span>
+        <span class="pill" data-el="Makeup Effects" data-en="Makeup Effects">Makeup Effects</span>
+      </div>
+    </div>
+
+    <div class="card c2" onclick="toggle(this)">
+      <div class="card-header">
+        <span class="card-icon">🎭</span>
+        <div>
+          <div class="card-title" data-el="AR Stickers & Μάσκες" data-en="AR Stickers & Masks">AR Stickers & Μάσκες</div>
+          <div class="card-sub" data-el="Αναγνώριση προσώπου" data-en="Facial recognition">Αναγνώριση προσώπου</div>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="features">
+        <span class="pill" data-el="Live AR Stickers" data-en="Live AR Stickers">Live AR Stickers</span>
+        <span class="pill" data-el="3D Αξεσουάρ" data-en="3D Accessories">3D Αξεσουάρ</span>
+        <span class="pill" data-el="Ζωάκια" data-en="Cute Animals">Ζωάκια</span>
+        <span class="pill" data-el="Μάσκες Προσώπου" data-en="Face Masks">Μάσκες Προσώπου</span>
+        <span class="pill" data-el="Distortion Εφέ" data-en="Distortion Effects">Distortion Εφέ</span>
+      </div>
+    </div>
+
+    <div class="card c3" onclick="toggle(this)">
+      <div class="card-header">
+        <span class="card-icon">🖼️</span>
+        <div>
+          <div class="card-title" data-el="Επεξεργασία Φωτο" data-en="Photo Editor">Επεξεργασία Φωτο</div>
+          <div class="card-sub" data-el="Φίλτρα & Ρυθμίσεις" data-en="Filters & Adjustments">Φίλτρα & Ρυθμίσεις</div>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="features">
+        <span class="pill" data-el="Δεκάδες Φίλτρα" data-en="Dozens of Filters">Δεκάδες Φίλτρα</span>
+        <span class="pill" data-el="Crop & Resize" data-en="Crop & Resize">Crop & Resize</span>
+        <span class="pill" data-el="Slim / Stretch" data-en="Slim / Stretch">Slim / Stretch</span>
+        <span class="pill" data-el="Collage Maker" data-en="Collage Maker">Collage Maker</span>
+        <span class="pill" data-el="Photo Grid" data-en="Photo Grid">Photo Grid</span>
+      </div>
+    </div>
+
+    <div class="card c4" onclick="toggle(this)">
+      <div class="card-header">
+        <span class="card-icon">🎬</span>
+        <div>
+          <div class="card-title" data-el="Βίντεο & Selfie" data-en="Video & Selfie">Βίντεο & Selfie</div>
+          <div class="card-sub" data-el="Loop video & trimmer" data-en="Loop video & trimmer">Loop video & trimmer</div>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="features">
+        <span class="pill" data-el="Loop Βίντεο" data-en="Loop Video">Loop Βίντεο</span>
+        <span class="pill" data-el="Video Trimmer" data-en="Video Trimmer">Video Trimmer</span>
+        <span class="pill" data-el="Selfie Timer" data-en="Selfie Timer">Selfie Timer</span>
+        <span class="pill" data-el="Καλλιτεχνικά Εφέ" data-en="Artistic Effects">Καλλιτεχνικά Εφέ</span>
+        <span class="pill" data-el="Άμεση Κοινοποίηση" data-en="Direct Share">Άμεση Κοινοποίηση</span>
+      </div>
+    </div>
+
+    <div class="card c5" onclick="toggle(this)">
+      <div class="card-header">
+        <span class="card-icon">🔧</span>
+        <div>
+          <div class="card-title" data-el="Επιπλέον Εργαλεία" data-en="Extra Tools">Επιπλέον Εργαλεία</div>
+          <div class="card-sub" data-el="Backgrounds & More" data-en="Backgrounds & More">Backgrounds & More</div>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="features">
+        <span class="pill" data-el="Photo Backgrounds" data-en="Photo Backgrounds">Photo Backgrounds</span>
+        <span class="pill" data-el="Body Retouch" data-en="Body Retouch">Body Retouch</span>
+        <span class="pill" data-el="Multi-Face Recog." data-en="Multi-Face Recog.">Multi-Face Recog.</span>
+        <span class="pill" data-el="Rotate & Flip" data-en="Rotate & Flip">Rotate & Flip</span>
+      </div>
+    </div>
+
+    <div class="card c6" onclick="toggle(this)">
+      <div class="card-header">
+        <span class="card-icon">🔒</span>
+        <div>
+          <div class="card-title" data-el="Απόρρητο & Δεδομένα" data-en="Privacy & Data">Απόρρητο & Δεδομένα</div>
+          <div class="card-sub" data-el="Τι συλλέγεται;" data-en="What is collected?">Τι συλλέγεται;</div>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="features">
+        <span class="pill" data-el="Κρυπτογράφηση" data-en="Encrypted transit">Κρυπτογράφηση</span>
+        <span class="pill" data-el="Χωρίς κοινοποίηση 3ων" data-en="No 3rd-party sharing">Χωρίς κοινοποίηση 3ων</span>
+        <span class="pill" data-el="Συλλέγει Device ID" data-en="Collects Device ID">Συλλέγει Device ID</span>
+        <span class="pill" data-el="Περιέχει Διαφημίσεις" data-en="Contains Ads">Περιέχει Διαφημίσεις</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-box">
+    <div class="stat-value">4.7⭐</div>
+    <div class="stat-label" data-el="Βαθμολογία" data-en="Rating">Βαθμολογία</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">96.8K</div>
+    <div class="stat-label" data-el="Αξιολογήσεις" data-en="Reviews">Αξιολογήσεις</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">10M+</div>
+    <div class="stat-label" data-el="Λήψεις" data-en="Downloads">Λήψεις</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">Mar '26</div>
+    <div class="stat-label" data-el="Τελ. Ενημέρωση" data-en="Last Update">Τελ. Ενημέρωση</div>
+  </div>
+</div>
+
+<p class="footer-note" data-el="👆 Κλικ στις κάρτες για λεπτομέρειες · Κλικ στην οθόνη για εναλλαγή εφέ" data-en="👆 Click cards to expand · Click the screen to cycle effects">👆 Κλικ στις κάρτες για λεπτομέρειες · Κλικ στην οθόνη για εναλλαγή εφέ</p>
+
+<script>
+let lang = 'el';
+
+const effects = [
+  { label:'✨ Smooth',  s1:'🌸', s2:'✨', bg:'linear-gradient(170deg,#1a0a2e 0%,#2d1b4e 40%,#1a2a1a 100%)' },
+  { label:'🎭 AR Mask',  s1:'🐱', s2:'👑', bg:'linear-gradient(170deg,#0a1e2e 0%,#1b3a4e 40%,#1a1a2e 100%)' },
+  { label:'🌺 Flower',  s1:'🌺', s2:'🌼', bg:'linear-gradient(170deg,#1e0a1a 0%,#4e1b3a 40%,#2a1a1a 100%)' },
+  { label:'💎 Glam',    s1:'💎', s2:'⚡', bg:'linear-gradient(170deg,#0a0a1e 0%,#1b1b4e 40%,#1a2a3a 100%)' },
+  { label:'🌙 Night',   s1:'🌙', s2:'⭐', bg:'linear-gradient(170deg,#05050e 0%,#0f0f2a 40%,#0a0a1a 100%)' },
+];
+let effectIdx = 0;
+
+function cycleEffect() {
+  effectIdx = (effectIdx + 1) % effects.length;
+  const e = effects[effectIdx];
+  const vf = document.getElementById('vf');
+  vf.style.background = e.bg;
+  document.getElementById('effect-badge').textContent = e.label;
+  document.getElementById('s1').textContent = e.s1;
+  document.getElementById('s2').textContent = e.s2;
+  document.querySelectorAll('.fdot').forEach((d,i) => d.classList.toggle('active', i === effectIdx));
+}
+
+function toggle(card) { card.classList.toggle('open'); }
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  document.getElementById('lang-btn').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+  document.querySelectorAll('[data-el]').forEach(el => {
+    el.textContent = lang === 'el' ? el.dataset.el : el.dataset.en;
+  });
+  document.documentElement.lang = lang === 'el' ? 'el' : 'en';
+}
+</script>
+</body>
+</html>
