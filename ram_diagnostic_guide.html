@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAM Diagnostic Guide | lovefortechnology.net</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #fff;
+    color: #1e293b;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 14px;
+  }
+  .lang-btn:hover { background: #e2e8f0; color: #1e293b; }
+
+  .header h1 {
+    font-size: clamp(17px, 4vw, 22px);
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.3;
+  }
+
+  .header p.subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 5px;
+  }
+
+  /* ── Section titles ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin: 22px 0 10px;
+  }
+
+  /* ── Symptom chips ── */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    user-select: none;
+  }
+  .chip:hover { border-color: #93c5fd; background: #eff6ff; }
+  .chip.active-chip { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+  .chip.warn-chip.active-chip { background: #d97706; border-color: #d97706; color: #fff; }
+  .chip.crit-chip.active-chip { background: #dc2626; border-color: #dc2626; color: #fff; }
+
+  .symptom-detail {
+    display: none;
+    background: #f0f7ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 13.5px;
+    color: #1e3a6e;
+    line-height: 1.6;
+    margin-top: 8px;
+    animation: fadeIn .2s ease;
+  }
+  .symptom-detail.warn-detail { background: #fffbeb; border-color: #fcd34d; color: #78350f; }
+  .symptom-detail.crit-detail { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+  .symptom-detail.show { display: block; }
+
+  /* ── OS Tabs ── */
+  .os-tabs {
+    display: flex;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid #e2e8f0;
+    margin-bottom: 12px;
+  }
+
+  .os-tab {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #f8fafc;
+    color: #64748b;
+    border: none;
+    transition: all .2s;
+  }
+  .os-tab:first-child { border-right: 1.5px solid #e2e8f0; }
+  .os-tab.active-tab { background: #0f172a; color: #fff; }
+
+  .os-panel { display: none; }
+  .os-panel.active-panel { display: block; }
+
+  /* ── Steps ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .step:hover { border-color: #93c5fd; background: #eff6ff; }
+  .step.open { border-color: #3b82f6; background: #eff6ff; }
+
+  .step-num {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1d4ed8;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step.open .step-num { background: #1d4ed8; }
+
+  .step-mac .step-num { background: #64748b; }
+  .step-mac.open .step-num { background: #0f172a; }
+  .step-mac:hover { border-color: #94a3b8; background: #f8fafc; }
+  .step-mac.open { border-color: #0f172a; background: #f1f5f9; }
+
+  .step-content { flex: 1; }
+  .step-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
+  .step-body {
+    display: none;
+    font-size: 13px;
+    color: #475569;
+    margin-top: 7px;
+    line-height: 1.65;
+    animation: fadeIn .2s ease;
+  }
+  .step.open .step-body { display: block; }
+
+  .step-body code {
+    background: #1e293b;
+    color: #7dd3fc;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .step-arrow {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 3px;
+    transition: transform .2s;
+  }
+  .step.open .step-arrow { transform: rotate(90deg); color: #3b82f6; }
+
+  /* ── Tool cards ── */
+  .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  @media (max-width: 480px) { .tools-grid { grid-template-columns: 1fr; } }
+
+  .tool-card {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tool-card:hover { border-color: #93c5fd; }
+  .tool-card.open { border-color: #3b82f6; }
+
+  .tool-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 13px;
+    background: #f8fafc;
+  }
+  .tool-card.open .tool-card-header { background: #eff6ff; }
+
+  .tool-icon { font-size: 20px; }
+  .tool-name { font-size: 13.5px; font-weight: 700; color: #0f172a; flex: 1; }
+  .tool-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: #dcfce7;
+    color: #166534;
+  }
+  .tool-tag.builtin { background: #dbeafe; color: #1e40af; }
+
+  .tool-card-body {
+    display: none;
+    padding: 11px 13px;
+    font-size: 12.5px;
+    color: #475569;
+    line-height: 1.6;
+    border-top: 1px solid #e2e8f0;
+    animation: fadeIn .2s ease;
+  }
+  .tool-card.open .tool-card-body { display: block; }
+
+  /* ── Tip box ── */
+  .tip-box {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 13px;
+    color: #166534;
+    line-height: 1.6;
+    margin-top: 6px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 11px;
+    color: #94a3b8;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .footer a { color: #94a3b8; text-decoration: none; }
+  .footer a:hover { color: #64748b; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <button class="lang-btn" onclick="toggleLang()" id="langBtn">🌐 English</button>
+    <h1 id="mainTitle">Διαγνωστικός Οδηγός Μνήμης RAM</h1>
+    <p class="subtitle" id="mainSub">Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες</p>
+  </div>
+
+  <!-- SYMPTOMS -->
+  <div class="section-label" id="lblSymptoms">⚠️ Συμπτώματα — επέλεξε αυτό που βλέπεις</div>
+  <div class="chips" id="chipsArea">
+    <div class="chip" data-key="s1" onclick="showSymptom('s1',this)">🐌 <span class="t" data-el="Αργή απόδοση" data-en="Slow performance">Αργή απόδοση</span></div>
+    <div class="chip warn-chip" data-key="s2" onclick="showSymptom('s2',this)">🔵 <span class="t" data-el="Μπλε οθόνη (BSOD)" data-en="Blue Screen (BSOD)">Μπλε οθόνη (BSOD)</span></div>
+    <div class="chip crit-chip" data-key="s3" onclick="showSymptom('s3',this)">🔄 <span class="t" data-el="Τυχαία επανεκκίνηση" data-en="Random restart">Τυχαία επανεκκίνηση</span></div>
+    <div class="chip warn-chip" data-key="s4" onclick="showSymptom('s4',this)">💥 <span class="t" data-el="Κολλημένες εφαρμογές" data-en="Apps crashing">Κολλημένες εφαρμογές</span></div>
+    <div class="chip crit-chip" data-key="s5" onclick="showSymptom('s5',this)">🖥️ <span class="t" data-el="Αλλοιωμένα γραφικά" data-en="Corrupted graphics">Αλλοιωμένα γραφικά</span></div>
+    <div class="chip" data-key="s6" onclick="showSymptom('s6',this)">⚡ <span class="t" data-el="Δεν ξεκινά ο υπολογιστής" data-en="Won't boot">Δεν ξεκινά ο υπολογιστής</span></div>
+  </div>
+
+  <div id="symptomDetail" class="symptom-detail"></div>
+
+  <!-- OS STEPS -->
+  <div class="section-label" id="lblOs">💻 Βήματα ελέγχου — επέλεξε λειτουργικό σύστημα</div>
+  <div class="os-tabs">
+    <button class="os-tab active-tab" id="tabWin" onclick="switchOS('win')">🪟 Windows 10 / 11</button>
+    <button class="os-tab" id="tabMac" onclick="switchOS('mac')">🍎 macOS</button>
+  </div>
+
+  <!-- Windows panel -->
+  <div class="os-panel active-panel" id="panelWin">
+    <div class="steps">
+      <div class="step" onclick="toggleStep(this)">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Άνοιγμα εργαλείου διαγνωστικού" data-en="Open the diagnostic tool">Άνοιγμα εργαλείου διαγνωστικού</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Πατήστε Windows + R, πληκτρολογήστε mdsched.exe και Enter. Εναλλακτικά αναζητήστε «Διαγνωστικό μνήμης» στο μενού Έναρξης."
+            data-en="Press Windows + R, type mdsched.exe and press Enter. Alternatively search 'Windows Memory Diagnostic' in the Start menu.">
+            Πατήστε <strong>Windows + R</strong>, πληκτρολογήστε <code>mdsched.exe</code> και Enter. Εναλλακτικά αναζητήστε «Διαγνωστικό μνήμης» στο μενού Έναρξης.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+
+      <div class="step" onclick="toggleStep(this)">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Αποθήκευση & επανεκκίνηση" data-en="Save & restart">Αποθήκευση & επανεκκίνηση</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Επιλέξτε «Επανεκκίνηση τώρα και έλεγχος». Αποθηκεύστε πρώτα όλα τα ανοιχτά αρχεία σας! Ο υπολογιστής επανεκκινείται αυτόματα."
+            data-en="Select 'Restart now and check for problems'. Save all open files first! The computer restarts automatically.">
+            Επιλέξτε <strong>«Επανεκκίνηση τώρα και έλεγχος»</strong>. Αποθηκεύστε πρώτα όλα τα ανοιχτά αρχεία σας! Ο υπολογιστής επανεκκινείται αυτόματα.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+
+      <div class="step" onclick="toggleStep(this)">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Αναμονή (10–20 λεπτά)" data-en="Wait (10–20 minutes)">Αναμονή (10–20 λεπτά)</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Μια μπλε οθόνη εμφανίζει την πρόοδο. Μην κλείσετε τον υπολογιστή. Τα αποτελέσματα εμφανίζονται στην επιφάνεια εργασίας μόλις μπείτε στα Windows."
+            data-en="A blue progress screen appears. Don't turn off the computer. Results appear on the desktop once you log back into Windows.">
+            Μια μπλε οθόνη εμφανίζει την πρόοδο. Μην κλείσετε τον υπολογιστή. Τα αποτελέσματα εμφανίζονται στην επιφάνεια εργασίας μόλις μπείτε στα Windows.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+
+      <div class="step" onclick="toggleStep(this)">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Δεν εμφανίστηκαν αποτελέσματα;" data-en="Results didn't appear?">Δεν εμφανίστηκαν αποτελέσματα;</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Ανοίξτε τον Προβολέα Συμβάντων → Αρχεία καταγραφής Windows → Σύστημα. Αναζητήστε «MemoryDiagnostics-Results» για να δείτε τα αποτελέσματα."
+            data-en="Open Event Viewer → Windows Logs → System. Search for 'MemoryDiagnostics-Results' to see the test outcome.">
+            Ανοίξτε τον <strong>Προβολέα Συμβάντων</strong> → Αρχεία καταγραφής Windows → Σύστημα. Αναζητήστε <code>MemoryDiagnostics-Results</code>.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- macOS panel -->
+  <div class="os-panel" id="panelMac">
+    <div class="steps">
+      <div class="step step-mac" onclick="toggleStep(this)">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Apple Silicon (M1/M2/M3/M4)" data-en="Apple Silicon (M1/M2/M3/M4)">Apple Silicon (M1/M2/M3/M4)</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Απενεργοποιήστε τον Mac. Κρατήστε πατημένο το κουμπί λειτουργίας μέχρι να εμφανιστούν οι επιλογές εκκίνησης. Έπειτα πατήστε Command (⌘) + D."
+            data-en="Shut down the Mac. Hold the power button until startup options appear. Then press Command (⌘) + D.">
+            Απενεργοποιήστε τον Mac. Κρατήστε πατημένο το <strong>κουμπί λειτουργίας</strong> μέχρι να εμφανιστούν οι επιλογές εκκίνησης. Έπειτα πατήστε <strong>Command (⌘) + D</strong>.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+
+      <div class="step step-mac" onclick="toggleStep(this)">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Intel Mac" data-en="Intel Mac">Intel Mac</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Απενεργοποιήστε τον Mac. Πατήστε το κουμπί λειτουργίας και αμέσως κρατήστε πατημένο το D. Αφήστε το πλήκτρο όταν εμφανιστεί η μπάρα προόδου."
+            data-en="Shut down the Mac. Press the power button and immediately hold D. Release when a progress bar or language selector appears.">
+            Απενεργοποιήστε τον Mac. Πατήστε το κουμπί λειτουργίας και αμέσως κρατήστε πατημένο το <strong>D</strong>. Αφήστε όταν εμφανιστεί η μπάρα προόδου.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+
+      <div class="step step-mac" onclick="toggleStep(this)">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title"><span class="t" data-el="Ανάγνωση αποτελεσμάτων" data-en="Reading results">Ανάγνωση αποτελεσμάτων</span></div>
+          <div class="step-body"><span class="t"
+            data-el="Κωδικοί που αρχίζουν με MEM υποδεικνύουν πρόβλημα στη μνήμη RAM. Αν δεν εμφανιστεί κωδικός σφάλματος, η μνήμη είναι εντάξει."
+            data-en="Error codes starting with MEM indicate a RAM problem. If no error code appears, your memory passed the test.">
+            Κωδικοί που αρχίζουν με <strong>MEM</strong> υποδεικνύουν πρόβλημα στη μνήμη. Αν δεν εμφανιστεί κωδικός σφάλματος, η μνήμη πέρασε τον έλεγχο.
+          </span></div>
+        </div>
+        <div class="step-arrow">▶</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="section-label" id="lblTools">🛠️ Εργαλεία — κάνε κλικ για λεπτομέρειες</div>
+  <div class="tools-grid">
+
+    <div class="tool-card" onclick="toggleCard(this)">
+      <div class="tool-card-header">
+        <span class="tool-icon">🔬</span>
+        <span class="tool-name">MemTest86</span>
+        <span class="tool-tag">Free</span>
+      </div>
+      <div class="tool-card-body"><span class="t"
+        data-el="Το πιο αξιόπιστο εργαλείο. Λειτουργεί από bootable USB, ανεξάρτητα από Windows/Mac. Ιδανικό για εις βάθος ανάλυση. Χρόνος: 1–8 ώρες. 🌐 memtest86.com"
+        data-en="The most reliable tool. Runs from a bootable USB, independent of Windows/Mac. Ideal for deep analysis. Duration: 1–8 hours. 🌐 memtest86.com">
+        Το πιο αξιόπιστο εργαλείο. Λειτουργεί από bootable USB, ανεξάρτητα από Windows/Mac. Ιδανικό για εις βάθος ανάλυση. Χρόνος: 1–8 ώρες. 🌐 memtest86.com
+      </span></div>
+    </div>
+
+    <div class="tool-card" onclick="toggleCard(this)">
+      <div class="tool-card-header">
+        <span class="tool-icon">📊</span>
+        <span class="tool-name">HWiNFO</span>
+        <span class="tool-tag">Free</span>
+      </div>
+      <div class="tool-card-body"><span class="t"
+        data-el="Εμφανίζει λεπτομέρειες για RAM, θερμοκρασία, ταχύτητα και χρήση σε πραγματικό χρόνο. Δεν χρειάζεται επανεκκίνηση. 🌐 hwinfo.com"
+        data-en="Shows detailed info about RAM speed, temperature and real-time usage. No restart needed. 🌐 hwinfo.com">
+        Εμφανίζει λεπτομέρειες για RAM, θερμοκρασία, ταχύτητα και χρήση σε πραγματικό χρόνο. Δεν χρειάζεται επανεκκίνηση. 🌐 hwinfo.com
+      </span></div>
+    </div>
+
+    <div class="tool-card" onclick="toggleCard(this)">
+      <div class="tool-card-header">
+        <span class="tool-icon">💻</span>
+        <span class="tool-name">CPU-Z</span>
+        <span class="tool-tag">Free</span>
+      </div>
+      <div class="tool-card-body"><span class="t"
+        data-el="Δείχνει τον τύπο μνήμης (DDR4/DDR5), ταχύτητα, κατασκευαστή. Ιδανικό αν σκέφτεστε αναβάθμιση RAM. 🌐 cpuid.com/softwares/cpu-z.html"
+        data-en="Shows memory type (DDR4/DDR5), speed and manufacturer. Great if you're considering a RAM upgrade. 🌐 cpuid.com/softwares/cpu-z.html">
+        Δείχνει τον τύπο μνήμης (DDR4/DDR5), ταχύτητα, κατασκευαστή. Ιδανικό αν σκέφτεστε αναβάθμιση RAM. 🌐 cpuid.com/softwares/cpu-z.html
+      </span></div>
+    </div>
+
+    <div class="tool-card" onclick="toggleCard(this)">
+      <div class="tool-card-header">
+        <span class="tool-icon">⚙️</span>
+        <span class="tool-name"><span class="t" data-el="Διαχ. Εργασιών" data-en="Task Manager">Διαχ. Εργασιών</span></span>
+        <span class="tool-tag builtin">Built-in</span>
+      </div>
+      <div class="tool-card-body"><span class="t"
+        data-el="Ήδη στα Windows! Ctrl+Shift+Esc → Επιδόσεις → Μνήμη. Βλέπετε αμέσως πόση RAM χρησιμοποιείται σε πραγματικό χρόνο."
+        data-en="Already in Windows! Ctrl+Shift+Esc → Performance → Memory. Instantly see how much RAM is being used in real time.">
+        Ήδη στα Windows! <strong>Ctrl+Shift+Esc</strong> → Επιδόσεις → Μνήμη. Βλέπετε αμέσως πόση RAM χρησιμοποιείται.
+      </span></div>
+    </div>
+
+  </div>
+
+  <!-- Quick tip -->
+  <div class="tip-box" id="tipBox">
+    ✅ <span class="t"
+      data-el="Αν ο έλεγχος βρει σφάλμα: αφαιρέστε και επανατοποθετήστε τα sticks μνήμης, δοκιμάστε κάθε ένα ξεχωριστά, και αν το πρόβλημα επιμένει, αντικαταστήστε το ελαττωματικό."
+      data-en="If errors are found: remove and reseat the RAM sticks, test each one individually, and if the problem persists, replace the faulty module.">
+      Αν ο έλεγχος βρει σφάλμα: αφαιρέστε και επανατοποθετήστε τα sticks μνήμης, δοκιμάστε κάθε ένα ξεχωριστά, και αν το πρόβλημα επιμένει, αντικαταστήστε το ελαττωματικό.
+    </span>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://www.lovefortechnology.net" target="_blank">lovefortechnology.net</a>
+  </div>
+
+</div>
+
+<script>
+  let lang = 'el';
+
+  /* ── Language toggle ── */
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    document.getElementById('langBtn').textContent = lang === 'el' ? '🌐 English' : '🌐 Ελληνικά';
+    document.getElementById('mainTitle').textContent = lang === 'el'
+      ? 'Διαγνωστικός Οδηγός Μνήμης RAM'
+      : 'RAM Memory Diagnostic Guide';
+    document.getElementById('mainSub').textContent = lang === 'el'
+      ? 'Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες'
+      : 'Click each section for details';
+    document.getElementById('lblSymptoms').textContent = lang === 'el'
+      ? '⚠️ Συμπτώματα — επέλεξε αυτό που βλέπεις'
+      : '⚠️ Symptoms — select what you\'re experiencing';
+    document.getElementById('lblOs').textContent = lang === 'el'
+      ? '💻 Βήματα ελέγχου — επέλεξε λειτουργικό σύστημα'
+      : '💻 Diagnostic steps — choose your OS';
+    document.getElementById('lblTools').textContent = lang === 'el'
+      ? '🛠️ Εργαλεία — κάνε κλικ για λεπτομέρειες'
+      : '🛠️ Tools — click for details';
+
+    document.querySelectorAll('.t').forEach(el => {
+      el.textContent = lang === 'el' ? el.dataset.el : el.dataset.en;
+    });
+
+    // refresh open symptom detail
+    const openChip = document.querySelector('.chip.active-chip');
+    if (openChip) {
+      const key = openChip.dataset.key;
+      document.getElementById('symptomDetail').innerHTML = symptoms[key][lang];
+    }
+  }
+
+  /* ── Symptoms ── */
+  const symptoms = {
+    s1: {
+      el: '🐌 <strong>Αργή απόδοση:</strong> Πιθανή αιτία η ανεπαρκής RAM ή η μεγάλη χρήση της. Ελέγξτε πρώτα τον Διαχειριστή Εργασιών (Ctrl+Shift+Esc → Μνήμη). Αν η χρήση είναι πάνω από 85%, ίσως χρειάζεστε αναβάθμιση.',
+      en: '🐌 <strong>Slow performance:</strong> Possible cause is insufficient RAM or high usage. Check Task Manager first (Ctrl+Shift+Esc → Memory). If usage is above 85%, you may need an upgrade.',
+      type: ''
+    },
+    s2: {
+      el: '🔵 <strong>Μπλε οθόνη (BSOD):</strong> Ένα από τα πιο κλασικά σημάδια προβληματικής RAM. Σημειώστε τον κωδικό σφάλματος (π.χ. MEMORY_MANAGEMENT) και εκτελέστε αμέσως διαγνωστικό.',
+      en: '🔵 <strong>Blue Screen (BSOD):</strong> One of the most classic signs of faulty RAM. Note the error code (e.g. MEMORY_MANAGEMENT) and run diagnostics immediately.',
+      type: 'warn-detail'
+    },
+    s3: {
+      el: '🔄 <strong>Τυχαία επανεκκίνηση:</strong> Κρίσιμο σύμπτωμα. Μπορεί να σχετίζεται με RAM, τροφοδοτικό ή υπερθέρμανση. Εκτελέστε MemTest86 για πλήρη ανάλυση.',
+      en: '🔄 <strong>Random restart:</strong> Critical symptom. Can be related to RAM, PSU or overheating. Run MemTest86 for a complete analysis.',
+      type: 'crit-detail'
+    },
+    s4: {
+      el: '💥 <strong>Κολλημένες εφαρμογές:</strong> Αν πολλές διαφορετικές εφαρμογές κολλάνε ή κλείνουν μόνες τους, η RAM είναι ύποπτη. Ελέγξτε αν συμβαίνει και σε ασφαλή λειτουργία (Safe Mode).',
+      en: '💥 <strong>Apps crashing:</strong> If many different apps crash or close on their own, RAM is suspect. Check if it also happens in Safe Mode.',
+      type: 'warn-detail'
+    },
+    s5: {
+      el: '🖥️ <strong>Αλλοιωμένα γραφικά:</strong> «Σκουπίδια» στην οθόνη ή παραμορφωμένα γραφικά μπορεί να υποδεικνύουν κατεστραμμένη μνήμη. Σε ορισμένες περιπτώσεις μπορεί να φταίει και η κάρτα γραφικών.',
+      en: '🖥️ <strong>Corrupted graphics:</strong> Garbled screen output or distorted graphics may indicate corrupted memory. In some cases the graphics card could also be at fault.',
+      type: 'crit-detail'
+    },
+    s6: {
+      el: '⚡ <strong>Δεν ξεκινά ο υπολογιστής:</strong> Αν ο υπολογιστής δεν ξεκινά ή σταματά στην POST οθόνη, δοκιμάστε να αφαιρέσετε ένα stick RAM κάθε φορά για να εντοπίσετε το ελαττωματικό.',
+      en: '⚡ <strong>Won\'t boot:</strong> If the computer won\'t start or stops at the POST screen, try removing one RAM stick at a time to identify the faulty one.',
+      type: ''
+    }
+  };
+
+  let activeChip = null;
+
+  function showSymptom(key, el) {
+    const detail = document.getElementById('symptomDetail');
+    if (activeChip === key) {
+      detail.className = 'symptom-detail';
+      el.classList.remove('active-chip');
+      activeChip = null;
+      return;
+    }
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active-chip'));
+    el.classList.add('active-chip');
+    detail.className = 'symptom-detail' + (symptoms[key].type ? ' ' + symptoms[key].type : '') + ' show';
+    detail.innerHTML = symptoms[key][lang];
+    activeChip = key;
+  }
+
+  /* ── OS tabs ── */
+  function switchOS(os) {
+    document.getElementById('tabWin').classList.toggle('active-tab', os === 'win');
+    document.getElementById('tabMac').classList.toggle('active-tab', os === 'mac');
+    document.getElementById('panelWin').classList.toggle('active-panel', os === 'win');
+    document.getElementById('panelMac').classList.toggle('active-panel', os === 'mac');
+  }
+
+  /* ── Step accordion ── */
+  function toggleStep(el) {
+    const wasOpen = el.classList.contains('open');
+    el.closest('.steps').querySelectorAll('.step').forEach(s => s.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+  }
+
+  /* ── Tool cards ── */
+  function toggleCard(el) {
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+  }
+</script>
+</body>
+</html>
