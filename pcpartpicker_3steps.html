@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCPartPicker – 3 Βήματα Εκκίνησης</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ffffff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .lang-btn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    background: #0f3460;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.8em;
+    cursor: pointer;
+    z-index: 100;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #e94560; }
+
+  .diagram-title {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .diagram-title h2 {
+    font-size: 1.1em;
+    color: #0f3460;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .diagram-title p {
+    font-size: 0.78em;
+    color: #888;
+  }
+
+  .steps-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .step-card {
+    flex: 1;
+    min-width: 0;
+    background: #ffffff;
+    border: 2.5px solid #0f3460;
+    border-radius: 16px;
+    padding: 20px 12px 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    box-shadow: 0 3px 12px rgba(15,52,96,0.10);
+  }
+
+  .step-card:hover, .step-card.active {
+    background: #0f3460;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 28px rgba(15,52,96,0.25);
+  }
+
+  .step-icon {
+    font-size: 2.2em;
+    line-height: 1;
+    margin-bottom: 10px;
+    transition: transform 0.25s;
+  }
+  .step-card:hover .step-icon, .step-card.active .step-icon {
+    transform: scale(1.15);
+  }
+
+  .step-badge {
+    background: #0f3460;
+    color: #ffcc00;
+    font-size: 0.68em;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    transition: background 0.25s, color 0.25s;
+  }
+  .step-card:hover .step-badge, .step-card.active .step-badge {
+    background: #ffcc00;
+    color: #0f3460;
+  }
+
+  .step-title {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #16213e;
+    line-height: 1.35;
+    margin-bottom: 6px;
+    transition: color 0.25s;
+  }
+  .step-card:hover .step-title, .step-card.active .step-title { color: #fff; }
+
+  .step-desc {
+    font-size: 0.74em;
+    color: #666;
+    line-height: 1.45;
+    transition: color 0.25s;
+  }
+  .step-card:hover .step-desc, .step-card.active .step-desc { color: #c0c8e0; }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 6px;
+    font-size: 1.6em;
+    color: #e94560;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .note {
+    text-align: center;
+    font-size: 0.75em;
+    color: #888;
+    margin-top: 18px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+  .note span { color: #e94560; font-weight: 600; }
+
+  /* tooltip detail panel */
+  .detail-panel {
+    display: none;
+    background: #f0f4ff;
+    border: 1.5px solid #c0cce8;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 18px;
+    font-size: 0.82em;
+    color: #333;
+    max-width: 480px;
+    text-align: left;
+    line-height: 1.6;
+  }
+  .detail-panel.visible { display: block; animation: fadeIn 0.2s ease; }
+  .detail-panel strong { color: #0f3460; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 540px) {
+    .steps-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    .step-card { max-width: 300px; width: 100%; }
+    .arrow { transform: rotate(90deg); padding: 4px 0; font-size: 1.4em; }
+  }
+
+  /* EN hidden by default */
+  .en { display: none; }
+  body.lang-en .el { display: none; }
+  body.lang-en .en { display: inline; }
+  body.lang-en .en-block { display: block; }
+  body.lang-en .el-block { display: none; }
+</style>
+</head>
+<body>
+<button class="lang-btn" onclick="toggleLang()">🌐 EN / ΕΛ</button>
+
+<div class="diagram-title">
+  <h2 class="el-block">🚀 Πώς να ξεκινήσεις με το PCPartPicker σε 3 βήματα</h2>
+  <h2 class="en-block" style="display:none;">🚀 How to start with PCPartPicker in 3 steps</h2>
+  <p class="el">Κάνε κλικ σε κάθε βήμα για περισσότερες λεπτομέρειες</p>
+  <p class="en" style="display:none;">Click each step for more details</p>
+</div>
+
+<div class="steps-container">
+
+  <div class="step-card" onclick="toggleDetail(0)">
+    <div class="step-icon">🌐</div>
+    <div class="step-badge el">ΒΗΜΑ 1</div>
+    <div class="step-badge en" style="display:none;">STEP 1</div>
+    <div class="step-title el">Επισκέψου το<br><strong>pcpartpicker.com</strong></div>
+    <div class="step-title en" style="display:none;">Visit<br><strong>pcpartpicker.com</strong></div>
+    <div class="step-desc el">Επίλεξε «Start a System Build»</div>
+    <div class="step-desc en" style="display:none;">Click «Start a System Build»</div>
+  </div>
+
+  <div class="arrow">&#9658;</div>
+
+  <div class="step-card" onclick="toggleDetail(1)">
+    <div class="step-icon">🌍</div>
+    <div class="step-badge el">ΒΗΜΑ 2</div>
+    <div class="step-badge en" style="display:none;">STEP 2</div>
+    <div class="step-title el">Επίλεξε<br><strong>Ευρωπαϊκή αγορά</strong></div>
+    <div class="step-title en" style="display:none;">Select a<br><strong>European market</strong></div>
+    <div class="step-desc el">π.χ. Γερμανία ή Γαλλία</div>
+    <div class="step-desc en" style="display:none;">e.g. Germany or France</div>
+  </div>
+
+  <div class="arrow">&#9658;</div>
+
+  <div class="step-card" onclick="toggleDetail(2)">
+    <div class="step-icon">🔧</div>
+    <div class="step-badge el">ΒΗΜΑ 3</div>
+    <div class="step-badge en" style="display:none;">STEP 3</div>
+    <div class="step-title el">Πρόσθεσε<br><strong>εξαρτήματα</strong></div>
+    <div class="step-title en" style="display:none;">Add your<br><strong>components</strong></div>
+    <div class="step-desc el">Ξεκίνα από CPU → Μητρική</div>
+    <div class="step-desc en" style="display:none;">Start from CPU → Motherboard</div>
+  </div>
+
+</div>
+
+<div class="detail-panel" id="detail-0">
+  <strong class="el">🌐 Επίσκεψη στο pcpartpicker.com</strong>
+  <strong class="en" style="display:none;">🌐 Visit pcpartpicker.com</strong><br>
+  <span class="el">Το PCPartPicker είναι δωρεάν και δεν χρειάζεσαι λογαριασμό για να ξεκινήσεις. Κατεύθυνσε στο menu "System Builder" ή πάτησε "Start a System Build" από την αρχική.</span>
+  <span class="en" style="display:none;">PCPartPicker is free and you don't need an account to start. Navigate to "System Builder" or click "Start a System Build" from the homepage.</span>
+</div>
+<div class="detail-panel" id="detail-1">
+  <strong class="el">🌍 Επιλογή Ευρωπαϊκής αγοράς</strong>
+  <strong class="en" style="display:none;">🌍 Choosing a European market</strong><br>
+  <span class="el">Η Ελλάδα δεν υποστηρίζεται άμεσα. Επίλεξε <strong>Γερμανία (DE)</strong>, <strong>Γαλλία (FR)</strong> ή <strong>Αυστρία (AT)</strong> για ρεαλιστικές τιμές ευρώ και καλή διαθεσιμότητα εξαρτημάτων.</span>
+  <span class="en" style="display:none;">Greece is not directly supported. Choose <strong>Germany (DE)</strong>, <strong>France (FR)</strong> or <strong>Austria (AT)</strong> for realistic euro prices and good parts availability.</span>
+</div>
+<div class="detail-panel" id="detail-2">
+  <strong class="el">🔧 Προσθήκη εξαρτημάτων με σειρά</strong>
+  <strong class="en" style="display:none;">🔧 Adding components in order</strong><br>
+  <span class="el">Ξεκίνα πάντα από τον <strong>CPU</strong>. Στη συνέχεια η πλατφόρμα φιλτράρει αυτόματα τις συμβατές μητρικές, RAM κ.λπ. Κάθε εξάρτημα ελέγχεται για συμβατότητα σε πραγματικό χρόνο.</span>
+  <span class="en" style="display:none;">Always start with the <strong>CPU</strong>. The platform then automatically filters compatible motherboards, RAM, etc. Each component is checked for compatibility in real time.</span>
+</div>
+
+<p class="note">
+  <span class="el">💡 Το PCPartPicker <span>εκτελεί αυτόματο έλεγχο συμβατότητας</span> σε κάθε βήμα — αποτρέποντας κοστοβόρα λάθη.</span>
+  <span class="en" style="display:none;">💡 PCPartPicker <span>runs automatic compatibility checks</span> at every step — preventing costly mistakes.</span>
+</p>
+
+<script>
+  var openDetail = -1;
+  function toggleDetail(idx) {
+    var panels = document.querySelectorAll('.detail-panel');
+    var cards = document.querySelectorAll('.step-card');
+    if (openDetail === idx) {
+      panels[idx].classList.remove('visible');
+      cards[idx].classList.remove('active');
+      openDetail = -1;
+    } else {
+      panels.forEach(function(p){ p.classList.remove('visible'); });
+      cards.forEach(function(c){ c.classList.remove('active'); });
+      panels[idx].classList.add('visible');
+      cards[idx].classList.add('active');
+      openDetail = idx;
+    }
+  }
+
+  function toggleLang() {
+    var body = document.body;
+    if (body.classList.contains('lang-en')) {
+      body.classList.remove('lang-en');
+      // restore el-blocks
+      document.querySelectorAll('.el-block').forEach(function(el){ el.style.display=''; });
+      document.querySelectorAll('.en-block').forEach(function(el){ el.style.display='none'; });
+      document.querySelectorAll('.el').forEach(function(el){ el.style.display=''; });
+      document.querySelectorAll('.en').forEach(function(el){ el.style.display='none'; });
+    } else {
+      body.classList.add('lang-en');
+      document.querySelectorAll('.el-block').forEach(function(el){ el.style.display='none'; });
+      document.querySelectorAll('.en-block').forEach(function(el){ el.style.display='block'; });
+      document.querySelectorAll('.el').forEach(function(el){ el.style.display='none'; });
+      document.querySelectorAll('.en').forEach(function(el){ el.style.display='inline'; });
+    }
+  }
+</script>
+</body>
+</html>
