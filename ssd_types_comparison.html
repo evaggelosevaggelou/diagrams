@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SSD Types Comparison — SATA vs NVMe Gen4 vs Gen5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #ffffff;
+    color: #1a202c;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 16px 32px;
+  }
+
+  /* ── LANG BUTTON ── */
+  .lang-btn {
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    background: #1e40af;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(30,64,175,.35);
+    transition: background .2s;
+  }
+  .lang-btn:hover { background: #1d4ed8; }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 8px;
+    max-width: 780px;
+    width: 100%;
+  }
+  .header h1 {
+    font-size: clamp(1.15rem, 3.5vw, 1.6rem);
+    font-weight: 800;
+    color: #1e40af;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 0.88rem;
+    color: #64748b;
+  }
+
+  /* ── SPEED BAR SECTION ── */
+  .speed-section {
+    width: 100%;
+    max-width: 780px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .speed-section h2 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #94a3b8;
+    margin-bottom: 14px;
+  }
+  .speed-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 11px;
+  }
+  .speed-row:last-child { margin-bottom: 0; }
+  .speed-label {
+    width: 110px;
+    font-size: 0.83rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #1a202c;
+  }
+  .speed-bar-wrap {
+    flex: 1;
+    background: #e2e8f0;
+    border-radius: 6px;
+    height: 26px;
+    overflow: hidden;
+    position: relative;
+  }
+  .speed-bar {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #fff;
+    transition: width .9s cubic-bezier(.4,0,.2,1);
+  }
+  .bar-sata  { background: linear-gradient(90deg,#64748b,#94a3b8); width: 3.7%; }
+  .bar-nvme3 { background: linear-gradient(90deg,#2563eb,#60a5fa); width: 23%; }
+  .bar-nvme4 { background: linear-gradient(90deg,#1e40af,#3b82f6); width: 49%; }
+  .bar-nvme5 { background: linear-gradient(90deg,#7c3aed,#a78bfa); width: 100%; }
+  .speed-val {
+    width: 110px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    width: 100%;
+    max-width: 780px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    border-radius: 14px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  .card.active { border-color: var(--c); box-shadow: 0 6px 24px rgba(0,0,0,.13); }
+
+  .card-header {
+    background: var(--c);
+    padding: 14px 16px 12px;
+    color: #fff;
+  }
+  .card-header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,.22);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+  }
+  .card-header h3 { font-size: 1rem; font-weight: 800; line-height: 1.2; }
+  .card-header .tagline { font-size: 0.75rem; opacity: .88; margin-top: 3px; }
+
+  .card-body { padding: 14px 15px; }
+  .stat { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 9px; font-size: 0.81rem; }
+  .stat:last-child { margin-bottom: 0; }
+  .stat-icon { font-size: 0.95rem; flex-shrink: 0; margin-top: 1px; }
+  .stat-text { color: #374151; line-height: 1.4; }
+  .stat-text strong { color: #1a202c; }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    width: 100%;
+    max-width: 780px;
+    background: #f0f9ff;
+    border: 2px solid #bae6fd;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    animation: fadeIn .25s ease;
+    display: none;
+  }
+  .detail-panel.visible { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .detail-panel h3 { font-size: 1rem; font-weight: 800; color: #0c4a6e; margin-bottom: 12px; }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .detail-item {
+    background: #fff;
+    border-radius: 9px;
+    padding: 10px 13px;
+    border-left: 3px solid var(--accent, #0ea5e9);
+  }
+  .detail-item .di-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-bottom: 3px; }
+  .detail-item .di-val { font-size: 0.84rem; font-weight: 700; color: #1e293b; line-height: 1.35; }
+  .detail-item .di-note { font-size: 0.74rem; color: #64748b; margin-top: 2px; }
+
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  @media (max-width: 480px) { .pros-cons { grid-template-columns: 1fr; } }
+  .pros, .cons { background: #fff; border-radius: 9px; padding: 10px 13px; }
+  .pros { border-left: 3px solid #22c55e; }
+  .cons { border-left: 3px solid #f87171; }
+  .pros h4, .cons h4 { font-size: 0.77rem; font-weight: 700; margin-bottom: 6px; }
+  .pros h4 { color: #15803d; }
+  .cons h4 { color: #dc2626; }
+  .pros li, .cons li { font-size: 0.78rem; color: #374151; margin-left: 14px; margin-bottom: 3px; line-height: 1.35; }
+
+  /* ── COMPARISON TABLE ── */
+  .table-wrap {
+    width: 100%;
+    max-width: 780px;
+    overflow-x: auto;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.82rem; }
+  thead tr { background: #1e40af; color: #fff; }
+  thead th { padding: 11px 13px; text-align: left; font-size: 0.8rem; font-weight: 700; }
+  thead th:first-child { border-radius: 12px 0 0 0; }
+  thead th:last-child { border-radius: 0 12px 0 0; }
+  tbody tr { border-bottom: 1px solid #f1f5f9; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody td { padding: 9px 13px; color: #374151; vertical-align: top; }
+  tbody td:first-child { font-weight: 600; color: #1a202c; white-space: nowrap; }
+  .chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; }
+  .chip-gray   { background: #f1f5f9; color: #64748b; }
+  .chip-blue   { background: #dbeafe; color: #1e40af; }
+  .chip-purple { background: #ede9fe; color: #6d28d9; }
+  .chip-green  { background: #dcfce7; color: #15803d; }
+  .chip-red    { background: #fee2e2; color: #dc2626; }
+
+  /* ── USE CASE PICKER ── */
+  .usecase-section {
+    width: 100%;
+    max-width: 780px;
+    background: #fafafa;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .usecase-section h2 { font-size: 0.95rem; font-weight: 800; color: #1a202c; margin-bottom: 12px; }
+  .usecase-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .uc-btn {
+    background: #fff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s;
+    color: #475569;
+  }
+  .uc-btn:hover { border-color: #1e40af; color: #1e40af; }
+  .uc-btn.selected { background: #1e40af; color: #fff; border-color: #1e40af; }
+  .uc-result {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 4px solid #1e40af;
+    font-size: 0.85rem;
+    color: #1a202c;
+    line-height: 1.55;
+    display: none;
+  }
+  .uc-result.visible { display: block; animation: fadeIn .2s ease; }
+  .uc-result .rec { font-size: 1rem; font-weight: 800; color: #1e40af; margin-bottom: 4px; }
+  .uc-result .why { color: #475569; font-size: 0.81rem; }
+
+  /* ── BRANDING ── */
+  .branding {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    width: 100%;
+    max-width: 780px;
+  }
+  .branding a { color: #1e40af; text-decoration: none; font-weight: 600; }
+  .branding a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 English</button>
+
+<!-- HEADER -->
+<div class="header">
+  <h1 id="h-title">💾 SATA vs NVMe Gen 4 vs Gen 5 — Ποιος SSD να Επιλέξεις;</h1>
+  <p id="h-sub">Κάνε κλικ σε κάθε κάρτα για αναλυτικές πληροφορίες • Οδηγός Αγοράς 2026</p>
+</div>
+
+<!-- SPEED BARS -->
+<div class="speed-section">
+  <h2 id="spd-title">⚡ Ταχύτητα Ανάγνωσης (Sequential Read)</h2>
+  <div class="speed-row">
+    <span class="speed-label">SATA SSD</span>
+    <div class="speed-bar-wrap"><div class="speed-bar bar-sata"><span>550</span></div></div>
+    <span class="speed-val">~550 MB/s</span>
+  </div>
+  <div class="speed-row">
+    <span class="speed-label">NVMe Gen 3</span>
+    <div class="speed-bar-wrap"><div class="speed-bar bar-nvme3"><span>3.500</span></div></div>
+    <span class="speed-val">~3.500 MB/s</span>
+  </div>
+  <div class="speed-row">
+    <span class="speed-label">NVMe Gen 4</span>
+    <div class="speed-bar-wrap"><div class="speed-bar bar-nvme4"><span>7.250</span></div></div>
+    <span class="speed-val">~7.250 MB/s</span>
+  </div>
+  <div class="speed-row">
+    <span class="speed-label">NVMe Gen 5</span>
+    <div class="speed-bar-wrap"><div class="speed-bar bar-nvme5"><span>14.900</span></div></div>
+    <span class="speed-val">~14.900 MB/s</span>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div class="cards">
+
+  <!-- SATA -->
+  <div class="card" id="card-sata" style="--c:#64748b" onclick="showDetail('sata')">
+    <div class="card-header">
+      <div class="badge">2.5" SATA</div>
+      <h3 id="c1-title">SATA SSD</h3>
+      <div class="tagline" id="c1-tag">Η οικονομική αναβάθμιση</div>
+    </div>
+    <div class="card-body">
+      <div class="stat"><span class="stat-icon">⚡</span><span class="stat-text"><strong id="c1-s1l">Ταχύτητα:</strong> <span id="c1-s1v">~550 MB/s</span></span></div>
+      <div class="stat"><span class="stat-icon">💰</span><span class="stat-text"><strong id="c1-s2l">Τιμή 1TB:</strong> <span id="c1-s2v">50–80€</span></span></div>
+      <div class="stat"><span class="stat-icon">🔌</span><span class="stat-text"><strong id="c1-s3l">Σύνδεση:</strong> <span id="c1-s3v">Καλώδιο SATA</span></span></div>
+      <div class="stat"><span class="stat-icon">✅</span><span class="stat-text" id="c1-s4">Ιδανικός για παλιούς PC με HDD</span></div>
+    </div>
+  </div>
+
+  <!-- NVMe Gen 4 -->
+  <div class="card" id="card-nvme4" style="--c:#1e40af" onclick="showDetail('nvme4')">
+    <div class="card-header">
+      <div class="badge">M.2 PCIe 4.0</div>
+      <h3 id="c2-title">NVMe Gen 4</h3>
+      <div class="tagline" id="c2-tag">Η καλύτερη επιλογή για τους περισσότερους</div>
+    </div>
+    <div class="card-body">
+      <div class="stat"><span class="stat-icon">⚡</span><span class="stat-text"><strong id="c2-s1l">Ταχύτητα:</strong> <span id="c2-s1v">3.000–7.250 MB/s</span></span></div>
+      <div class="stat"><span class="stat-icon">💰</span><span class="stat-text"><strong id="c2-s2l">Τιμή 1TB:</strong> <span id="c2-s2v">45–100€</span></span></div>
+      <div class="stat"><span class="stat-icon">🔌</span><span class="stat-text"><strong id="c2-s3l">Σύνδεση:</strong> <span id="c2-s3v">Θύρα M.2, χωρίς καλώδια</span></span></div>
+      <div class="stat"><span class="stat-icon">🎮</span><span class="stat-text" id="c2-s4">Gaming, επεξεργασία, PS5</span></div>
+    </div>
+  </div>
+
+  <!-- NVMe Gen 5 -->
+  <div class="card" id="card-nvme5" style="--c:#7c3aed" onclick="showDetail('nvme5')">
+    <div class="card-header">
+      <div class="badge">M.2 PCIe 5.0</div>
+      <h3 id="c3-title">NVMe Gen 5</h3>
+      <div class="tagline" id="c3-tag">Κορυφαία τεχνολογία 2026</div>
+    </div>
+    <div class="card-body">
+      <div class="stat"><span class="stat-icon">⚡</span><span class="stat-text"><strong id="c3-s1l">Ταχύτητα:</strong> <span id="c3-s1v">12.000–14.900 MB/s</span></span></div>
+      <div class="stat"><span class="stat-icon">💰</span><span class="stat-text"><strong id="c3-s2l">Τιμή 2TB:</strong> <span id="c3-s2v">150–300€</span></span></div>
+      <div class="stat"><span class="stat-icon">🔌</span><span class="stat-text"><strong id="c3-s3l">Σύνδεση:</strong> <span id="c3-s3v">M.2 PCIe 5.0 (AM5 / Intel 12+)</span></span></div>
+      <div class="stat"><span class="stat-icon">🏆</span><span class="stat-text" id="c3-s4">8K video, AI workloads, studios</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-sata" style="--accent:#64748b">
+  <h3 id="d1-title">📋 SATA SSD — Αναλυτικά</h3>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <div class="di-label" id="d1-l1">Μέγιστη Ταχύτητα</div>
+      <div class="di-val">~550 MB/s</div>
+      <div class="di-note" id="d1-n1">Περιορισμός της διεπαφής SATA III</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d1-l2">Μορφή</div>
+      <div class="di-val">2.5" + καλώδιο SATA</div>
+      <div class="di-note" id="d1-n2">Συμβατός με ΌΛΑ τα συστήματα</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d1-l3">Ψύκτρα;</div>
+      <div class="di-val" id="d1-v3">Δεν χρειάζεται</div>
+      <div class="di-note" id="d1-n3">Λειτουργεί δροσερά, χωρίς θέρμανση</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d1-l4">Κατανάλωση</div>
+      <div class="di-val">~2–3W</div>
+      <div class="di-note" id="d1-n4">Χαμηλή κατανάλωση ενέργειας</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d1-l5">Προτεινόμενα μοντέλα</div>
+      <div class="di-val">Crucial BX500, Kingston A400, WD Green</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d1-l6">Εγγύηση</div>
+      <div class="di-val" id="d1-v6">3 χρόνια (συνήθως)</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4 id="d1-pros-h">✅ Πλεονεκτήματα</h4>
+      <ul>
+        <li id="d1-p1">Συμβατός με παλιούς PC / laptops</li>
+        <li id="d1-p2">Πιο οικονομικός ανά GB</li>
+        <li id="d1-p3">Εύκολη εγκατάσταση</li>
+        <li id="d1-p4">Αθόρυβος, ανθεκτικός</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4 id="d1-cons-h">❌ Μειονεκτήματα</h4>
+      <ul>
+        <li id="d1-c1">~27x πιο αργός από Gen 5</li>
+        <li id="d1-c2">Χρειάζεται 2 καλώδια</li>
+        <li id="d1-c3">Δεν αξίζει για νέα συστήματα</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detail-nvme4" style="--accent:#1e40af">
+  <h3 id="d2-title">📋 NVMe Gen 4 — Αναλυτικά</h3>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <div class="di-label" id="d2-l1">Μέγιστη Ταχύτητα</div>
+      <div class="di-val">7.250 MB/s</div>
+      <div class="di-note" id="d2-n1">13x πιο γρήγορος από SATA</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d2-l2">Μορφή</div>
+      <div class="di-val">M.2 2280</div>
+      <div class="di-note" id="d2-n2">Χωρίς καλώδια — μπαίνει στη μητρική</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d2-l3">Ψύκτρα;</div>
+      <div class="di-val" id="d2-v3">Συνιστάται (5–15€)</div>
+      <div class="di-note" id="d2-n3">Για δίσκους 5.000+ MB/s αξίζει</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d2-l4">Κατανάλωση</div>
+      <div class="di-val">~4–7W</div>
+      <div class="di-note" id="d2-n4">Λίγο υψηλότερη από SATA</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d2-l5">Προτεινόμενα μοντέλα</div>
+      <div class="di-val">Samsung 990 PRO, WD Black SN850X, Crucial T500</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d2-l6">Εγγύηση</div>
+      <div class="di-val" id="d2-v6">5 χρόνια (κορυφαία μοντέλα)</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4 id="d2-pros-h">✅ Πλεονεκτήματα</h4>
+      <ul>
+        <li id="d2-p1">Εξαιρετική ταχύτητα για gaming & editing</li>
+        <li id="d2-p2">Δεν χρειάζεται κανένα καλώδιο</li>
+        <li id="d2-p3">Ιδανικό για PS5</li>
+        <li id="d2-p4">Καλύτερη αξία το 2026</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4 id="d2-cons-h">❌ Μειονεκτήματα</h4>
+      <ul>
+        <li id="d2-c1">Χρειάζεται M.2 θύρα (μετά ~2018)</li>
+        <li id="d2-c2">Θερμαίνεται περισσότερο από SATA</li>
+        <li id="d2-c3">Δεν λειτουργεί σε πολύ παλιές μητρικές</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detail-nvme5" style="--accent:#7c3aed">
+  <h3 id="d3-title">📋 NVMe Gen 5 — Αναλυτικά</h3>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <div class="di-label" id="d3-l1">Μέγιστη Ταχύτητα</div>
+      <div class="di-val">14.900 MB/s</div>
+      <div class="di-note" id="d3-n1">WD_BLACK SN8100 — 2x γρηγορότερος από Gen 4</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d3-l2">Μορφή</div>
+      <div class="di-val">M.2 PCIe 5.0</div>
+      <div class="di-note" id="d3-n2">AMD AM5 ή Intel 12ης γενιάς+</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d3-l3">Ψύκτρα;</div>
+      <div class="di-val" id="d3-v3">Απαραίτητη</div>
+      <div class="di-note" id="d3-n3">Θερμαίνεται πολύ — χωρίς ψύκτρα throttles</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d3-l4">Κατανάλωση</div>
+      <div class="di-val">~8–12W (κορυφή)</div>
+      <div class="di-note" id="d3-n4">Νέα Gen 5 είναι 2x πιο αποδοτικά από παλιά</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d3-l5">Κορυφαία μοντέλα 2026</div>
+      <div class="di-val">WD_BLACK SN8100, Samsung 9100 PRO, Crucial T705</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label" id="d3-l6">Εγγύηση</div>
+      <div class="di-val" id="d3-v6">5 χρόνια</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4 id="d3-pros-h">✅ Πλεονεκτήματα</h4>
+      <ul>
+        <li id="d3-p1">Ταχύτερη αποθήκευση στην αγορά</li>
+        <li id="d3-p2">2x πιο αποδοτικό ενεργειακά vs Gen 4</li>
+        <li id="d3-p3">Ιδανικό για 8K βίντεο, AI, servers</li>
+        <li id="d3-p4">Οι τιμές μειώνονται γρήγορα το 2026</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4 id="d3-cons-h">❌ Μειονεκτήματα</h4>
+      <ul>
+        <li id="d3-c1">Χρειάζεται νέα μητρική (AM5 / Intel 12+)</li>
+        <li id="d3-c2">Ακριβότερος από Gen 4</li>
+        <li id="d3-c3">Τα παιχνίδια δεν εκμεταλλεύονται πλήρως</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th id="th0">Χαρακτηριστικό</th>
+        <th>SATA SSD</th>
+        <th>NVMe Gen 4</th>
+        <th>NVMe Gen 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td id="tr1">Ταχύτητα</td>
+        <td><span class="chip chip-gray">~550 MB/s</span></td>
+        <td><span class="chip chip-blue">7.250 MB/s</span></td>
+        <td><span class="chip chip-purple">14.900 MB/s</span></td>
+      </tr>
+      <tr>
+        <td id="tr2">Τιμή 1TB (2026)</td>
+        <td>50–80€</td>
+        <td>45–100€</td>
+        <td>120–200€</td>
+      </tr>
+      <tr>
+        <td id="tr3">Καλώδια</td>
+        <td id="tr3-sata"><span class="chip chip-red">Ναι (×2)</span></td>
+        <td id="tr3-n4"><span class="chip chip-green">Όχι</span></td>
+        <td id="tr3-n5"><span class="chip chip-green">Όχι</span></td>
+      </tr>
+      <tr>
+        <td id="tr4">Ψύκτρα</td>
+        <td id="tr4-sata"><span class="chip chip-green">Δεν χρειάζεται</span></td>
+        <td id="tr4-n4"><span class="chip chip-gray">Συνιστάται</span></td>
+        <td id="tr4-n5"><span class="chip chip-red">Απαραίτητη</span></td>
+      </tr>
+      <tr>
+        <td id="tr5">Μητρική</td>
+        <td id="tr5-sata">Όλες</td>
+        <td id="tr5-n4">M.2 (~2018+)</td>
+        <td id="tr5-n5">AM5 / Intel 12+</td>
+      </tr>
+      <tr>
+        <td id="tr6">Κατάλληλος για</td>
+        <td id="tr6-sata">Αναβάθμιση παλιών PC</td>
+        <td id="tr6-n4">Gaming, editing, γραφείο</td>
+        <td id="tr6-n5">8K, AI, επαγγελματίες</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- USE CASE PICKER -->
+<div class="usecase-section">
+  <h2 id="uc-title">🎯 Ποιον SSD χρειάζομαι;</h2>
+  <div class="usecase-btns" id="uc-btns">
+    <button class="uc-btn" onclick="pickUC(this,'sata')" id="uc1">💻 Παλιός PC/laptop</button>
+    <button class="uc-btn" onclick="pickUC(this,'nvme4')" id="uc2">🎮 Gaming</button>
+    <button class="uc-btn" onclick="pickUC(this,'nvme4ps5')" id="uc3">🎮 PS5</button>
+    <button class="uc-btn" onclick="pickUC(this,'nvme4edit')" id="uc4">🎬 Editing βίντεο/φωτό</button>
+    <button class="uc-btn" onclick="pickUC(this,'nvme4office')" id="uc5">📁 Γραφείο / καθημερινή χρήση</button>
+    <button class="uc-btn" onclick="pickUC(this,'nvme5')" id="uc6">🤖 AI / 8K / server</button>
+    <button class="uc-btn" onclick="pickUC(this,'budget')" id="uc7">💸 Μικρός προϋπολογισμός (&lt;40€)</button>
+  </div>
+  <div class="uc-result" id="uc-result"></div>
+</div>
+
+<!-- BRANDING -->
+<div class="branding">
+  <a href="https://lovefortechnology.net" target="_blank" rel="noopener">lovefortechnology.net</a> — Οδηγός Αγοράς SSD 2026
+</div>
+
+<script>
+/* ── LANGUAGE DATA ── */
+const LANG = {
+  el: {
+    langBtn: "🌐 English",
+    hTitle: "💾 SATA vs NVMe Gen 4 vs Gen 5 — Ποιος SSD να Επιλέξεις;",
+    hSub: "Κάνε κλικ σε κάθε κάρτα για αναλυτικές πληροφορίες • Οδηγός Αγοράς 2026",
+    spdTitle: "⚡ Ταχύτητα Ανάγνωσης (Sequential Read)",
+    c1title:"SATA SSD", c1tag:"Η οικονομική αναβάθμιση",
+    c1s1l:"Ταχύτητα:", c1s1v:"~550 MB/s",
+    c1s2l:"Τιμή 1TB:", c1s2v:"50–80€",
+    c1s3l:"Σύνδεση:", c1s3v:"Καλώδιο SATA",
+    c1s4:"Ιδανικός για παλιούς PC με HDD",
+    c2title:"NVMe Gen 4", c2tag:"Η καλύτερη επιλογή για τους περισσότερους",
+    c2s1l:"Ταχύτητα:", c2s1v:"3.000–7.250 MB/s",
+    c2s2l:"Τιμή 1TB:", c2s2v:"45–100€",
+    c2s3l:"Σύνδεση:", c2s3v:"Θύρα M.2, χωρίς καλώδια",
+    c2s4:"Gaming, επεξεργασία, PS5",
+    c3title:"NVMe Gen 5", c3tag:"Κορυφαία τεχνολογία 2026",
+    c3s1l:"Ταχύτητα:", c3s1v:"12.000–14.900 MB/s",
+    c3s2l:"Τιμή 2TB:", c3s2v:"150–300€",
+    c3s3l:"Σύνδεση:", c3s3v:"M.2 PCIe 5.0 (AM5 / Intel 12+)",
+    c3s4:"8K video, AI workloads, studios",
+    d1title:"📋 SATA SSD — Αναλυτικά",
+    d1l1:"Μέγιστη Ταχύτητα", d1n1:"Περιορισμός της διεπαφής SATA III",
+    d1l2:"Μορφή", d1n2:"Συμβατός με ΌΛΑ τα συστήματα",
+    d1l3:"Ψύκτρα;", d1v3:"Δεν χρειάζεται", d1n3:"Λειτουργεί δροσερά, χωρίς θέρμανση",
+    d1l4:"Κατανάλωση", d1n4:"Χαμηλή κατανάλωση ενέργειας",
+    d1l5:"Προτεινόμενα μοντέλα", d1l6:"Εγγύηση", d1v6:"3 χρόνια (συνήθως)",
+    d1prosH:"✅ Πλεονεκτήματα", d1consH:"❌ Μειονεκτήματα",
+    d1p1:"Συμβατός με παλιούς PC / laptops", d1p2:"Πιο οικονομικός ανά GB",
+    d1p3:"Εύκολη εγκατάσταση", d1p4:"Αθόρυβος, ανθεκτικός",
+    d1c1:"~27x πιο αργός από Gen 5", d1c2:"Χρειάζεται 2 καλώδια", d1c3:"Δεν αξίζει για νέα συστήματα",
+    d2title:"📋 NVMe Gen 4 — Αναλυτικά",
+    d2l1:"Μέγιστη Ταχύτητα", d2n1:"13x πιο γρήγορος από SATA",
+    d2l2:"Μορφή", d2n2:"Χωρίς καλώδια — μπαίνει στη μητρική",
+    d2l3:"Ψύκτρα;", d2v3:"Συνιστάται (5–15€)", d2n3:"Για δίσκους 5.000+ MB/s αξίζει",
+    d2l4:"Κατανάλωση", d2n4:"Λίγο υψηλότερη από SATA",
+    d2l5:"Προτεινόμενα μοντέλα", d2l6:"Εγγύηση", d2v6:"5 χρόνια (κορυφαία μοντέλα)",
+    d2prosH:"✅ Πλεονεκτήματα", d2consH:"❌ Μειονεκτήματα",
+    d2p1:"Εξαιρετική ταχύτητα για gaming & editing", d2p2:"Δεν χρειάζεται κανένα καλώδιο",
+    d2p3:"Ιδανικό για PS5", d2p4:"Καλύτερη αξία το 2026",
+    d2c1:"Χρειάζεται M.2 θύρα (μετά ~2018)", d2c2:"Θερμαίνεται περισσότερο από SATA", d2c3:"Δεν λειτουργεί σε πολύ παλιές μητρικές",
+    d3title:"📋 NVMe Gen 5 — Αναλυτικά",
+    d3l1:"Μέγιστη Ταχύτητα", d3n1:"WD_BLACK SN8100 — 2x γρηγορότερος από Gen 4",
+    d3l2:"Μορφή", d3n2:"AMD AM5 ή Intel 12ης γενιάς+",
+    d3l3:"Ψύκτρα;", d3v3:"Απαραίτητη", d3n3:"Θερμαίνεται πολύ — χωρίς ψύκτρα throttles",
+    d3l4:"Κατανάλωση", d3n4:"Νέα Gen 5 είναι 2x πιο αποδοτικά από παλιά",
+    d3l5:"Κορυφαία μοντέλα 2026", d3l6:"Εγγύηση", d3v6:"5 χρόνια",
+    d3prosH:"✅ Πλεονεκτήματα", d3consH:"❌ Μειονεκτήματα",
+    d3p1:"Ταχύτερη αποθήκευση στην αγορά", d3p2:"2x πιο αποδοτικό ενεργειακά vs Gen 4",
+    d3p3:"Ιδανικό για 8K βίντεο, AI, servers", d3p4:"Οι τιμές μειώνονται γρήγορα το 2026",
+    d3c1:"Χρειάζεται νέα μητρική (AM5 / Intel 12+)", d3c2:"Ακριβότερος από Gen 4", d3c3:"Τα παιχνίδια δεν εκμεταλλεύονται πλήρως",
+    th0:"Χαρακτηριστικό",
+    tr1:"Ταχύτητα", tr2:"Τιμή 1TB (2026)", tr3:"Καλώδια",
+    tr3sata:"Ναι (×2)", tr3n4:"Όχι", tr3n5:"Όχι",
+    tr4:"Ψύκτρα", tr4sata:"Δεν χρειάζεται", tr4n4:"Συνιστάται", tr4n5:"Απαραίτητη",
+    tr5:"Μητρική", tr5sata:"Όλες", tr5n4:"M.2 (~2018+)", tr5n5:"AM5 / Intel 12+",
+    tr6:"Κατάλληλος για", tr6sata:"Αναβάθμιση παλιών PC", tr6n4:"Gaming, editing, γραφείο", tr6n5:"8K, AI, επαγγελματίες",
+    ucTitle:"🎯 Ποιον SSD χρειάζομαι;",
+    uc1:"💻 Παλιός PC/laptop", uc2:"🎮 Gaming", uc3:"🎮 PS5",
+    uc4:"🎬 Editing βίντεο/φωτό", uc5:"📁 Γραφείο / καθημερινή χρήση",
+    uc6:"🤖 AI / 8K / server", uc7:"💸 Μικρός προϋπολογισμός (<40€)",
+    uc: {
+      sata:     { rec:"SATA SSD", why:"Ο παλιός σου PC δεν έχει θύρα M.2 — ο SATA SSD είναι η ιδανική αναβάθμιση. Crucial BX500 ή Kingston A400 στα 500GB θα αλλάξει τελείως την εμπειρία σου." },
+      nvme4:    { rec:"NVMe Gen 4", why:"Για gaming το 2026, ένας NVMe Gen 4 (π.χ. WD Black SN850X ή Samsung 990 PRO) με 5.000+ MB/s είναι η ιδανική επιλογή. Τα παιχνίδια φορτώνουν σε 10–20 δευτερόλεπτα." },
+      nvme4ps5: { rec:"NVMe Gen 4 (ελάχ. 5.500 MB/s)", why:"Η Sony απαιτεί τουλάχιστον 5.500 MB/s. Επέλεξε WD Black SN850X ή Samsung 990 PRO. Θυμήσου να ελέγξεις αν χρειάζεσαι ψύκτρα για το slot της PS5." },
+      nvme4edit:{ rec:"NVMe Gen 4", why:"Για editing φωτογραφιών ή βίντεο 4K, ένας καλός Gen 4 (Samsung 990 PRO, Crucial T500) είναι παραπάνω από αρκετός — ακόμα και για επαγγελματίες. Gen 5 δεν αξίζει την επιπλέον δαπάνη." },
+      nvme4office:{ rec:"NVMe Gen 4 ή SATA SSD", why:"Για γραφείο και καθημερινή χρήση, ακόμα και ένας SATA SSD είναι τεράστια αναβάθμιση. Αν η μητρική έχει M.2, πάρε NVMe Gen 3/4 — π.χ. WD Blue SN580 ή Crucial P3 Plus." },
+      nvme5:    { rec:"NVMe Gen 5", why:"Εδώ αξίζει η επένδυση. WD_BLACK SN8100 (14.900 MB/s) ή Samsung 9100 PRO (14.800 MB/s). Βεβαιώσου ότι η μητρική σου υποστηρίζει PCIe 5.0 (AMD AM5 ή Intel 12ης+)." },
+      budget:   { rec:"SATA SSD 500GB", why:"Crucial BX500, Kingston A400 ή WD Green — περίπου 30–40€ για 500GB. Αν η μητρική έχει M.2, ένας NVMe Gen 3 βρίσκεται στα ίδια χρήματα και είναι 6x πιο γρήγορος." },
+    }
+  },
+  en: {
+    langBtn: "🌐 Ελληνικά",
+    hTitle: "💾 SATA vs NVMe Gen 4 vs Gen 5 — Which SSD Should You Choose?",
+    hSub: "Click each card for detailed info • Buyer's Guide 2026",
+    spdTitle: "⚡ Sequential Read Speed",
+    c1title:"SATA SSD", c1tag:"The budget upgrade",
+    c1s1l:"Speed:", c1s1v:"~550 MB/s",
+    c1s2l:"Price 1TB:", c1s2v:"€50–80",
+    c1s3l:"Interface:", c1s3v:"SATA cable",
+    c1s4:"Perfect for upgrading old HDDs",
+    c2title:"NVMe Gen 4", c2tag:"Best choice for most users",
+    c2s1l:"Speed:", c2s1v:"3,000–7,250 MB/s",
+    c2s2l:"Price 1TB:", c2s2v:"€45–100",
+    c2s3l:"Interface:", c2s3v:"M.2 slot, no cables needed",
+    c2s4:"Gaming, creative work, PS5",
+    c3title:"NVMe Gen 5", c3tag:"Top-tier technology 2026",
+    c3s1l:"Speed:", c3s1v:"12,000–14,900 MB/s",
+    c3s2l:"Price 2TB:", c3s2v:"€150–300",
+    c3s3l:"Interface:", c3s3v:"M.2 PCIe 5.0 (AM5 / Intel 12+)",
+    c3s4:"8K video, AI workloads, studios",
+    d1title:"📋 SATA SSD — Details",
+    d1l1:"Max Speed", d1n1:"Bottlenecked by SATA III interface",
+    d1l2:"Form Factor", d1n2:"Compatible with ALL systems",
+    d1l3:"Heatsink?", d1v3:"Not needed", d1n3:"Runs cool, no thermal issues",
+    d1l4:"Power Draw", d1n4:"Very low power consumption",
+    d1l5:"Recommended models", d1l6:"Warranty", d1v6:"3 years (typical)",
+    d1prosH:"✅ Pros", d1consH:"❌ Cons",
+    d1p1:"Works in all PCs / laptops (even old)", d1p2:"Best price per GB",
+    d1p3:"Easy installation, no tools needed", d1p4:"Silent and shock-resistant",
+    d1c1:"~27x slower than Gen 5", d1c2:"Needs 2 cables (data + power)", d1c3:"Not worth it for new builds",
+    d2title:"📋 NVMe Gen 4 — Details",
+    d2l1:"Max Speed", d2n1:"13x faster than SATA",
+    d2l2:"Form Factor", d2n2:"No cables — slots directly into motherboard",
+    d2l3:"Heatsink?", d2v3:"Recommended (€5–15)", d2n3:"Worth it for drives 5,000+ MB/s",
+    d2l4:"Power Draw", d2n4:"Slightly higher than SATA",
+    d2l5:"Recommended models", d2l6:"Warranty", d2v6:"5 years (top models)",
+    d2prosH:"✅ Pros", d2consH:"❌ Cons",
+    d2p1:"Outstanding speed for gaming & editing", d2p2:"No cables — clean build",
+    d2p3:"Perfect for PS5 upgrades", d2p4:"Best value in 2026",
+    d2c1:"Needs M.2 slot (most boards after ~2018)", d2c2:"Runs hotter than SATA", d2c3:"Not compatible with very old motherboards",
+    d3title:"📋 NVMe Gen 5 — Details",
+    d3l1:"Max Speed", d3n1:"WD_BLACK SN8100 — 2x faster than Gen 4",
+    d3l2:"Form Factor", d3n2:"AMD AM5 or Intel 12th gen+",
+    d3l3:"Heatsink?", d3v3:"Required", d3n3:"Throttles without cooling",
+    d3l4:"Power Draw", d3n4:"New Gen 5 drives are 2x more efficient",
+    d3l5:"Top models 2026", d3l6:"Warranty", d3v6:"5 years",
+    d3prosH:"✅ Pros", d3consH:"❌ Cons",
+    d3p1:"Fastest consumer storage available", d3p2:"2x more energy-efficient vs older Gen 4",
+    d3p3:"Ideal for 8K video, AI, servers", d3p4:"Prices dropping fast in 2026",
+    d3c1:"Requires new motherboard (AM5 / Intel 12+)", d3c2:"More expensive than Gen 4", d3c3:"Games don't yet fully utilize the speed",
+    th0:"Feature",
+    tr1:"Speed", tr2:"Price 1TB (2026)", tr3:"Cables required",
+    tr3sata:"Yes (×2)", tr3n4:"No", tr3n5:"No",
+    tr4:"Heatsink", tr4sata:"Not needed", tr4n4:"Recommended", tr4n5:"Required",
+    tr5:"Motherboard", tr5sata:"All boards", tr5n4:"M.2 (~2018+)", tr5n5:"AM5 / Intel 12+",
+    tr6:"Best for", tr6sata:"Old PC upgrades", tr6n4:"Gaming, editing, office", tr6n5:"8K, AI, professionals",
+    ucTitle:"🎯 Which SSD do I need?",
+    uc1:"💻 Old PC/laptop", uc2:"🎮 Gaming", uc3:"🎮 PS5",
+    uc4:"🎬 Video/photo editing", uc5:"📁 Office / daily use",
+    uc6:"🤖 AI / 8K / server", uc7:"💸 Tight budget (<€40)",
+    uc: {
+      sata:     { rec:"SATA SSD", why:"Your old PC doesn't have an M.2 slot — SATA SSD is the ideal upgrade. A Crucial BX500 or Kingston A400 at 500GB will transform your experience." },
+      nvme4:    { rec:"NVMe Gen 4", why:"For gaming in 2026, an NVMe Gen 4 (e.g. WD Black SN850X or Samsung 990 PRO) with 5,000+ MB/s is the ideal choice. Games load in 10–20 seconds." },
+      nvme4ps5: { rec:"NVMe Gen 4 (min. 5,500 MB/s)", why:"Sony requires at least 5,500 MB/s. Choose WD Black SN850X or Samsung 990 PRO. Remember to check if you need a heatsink for the PS5 slot." },
+      nvme4edit:{ rec:"NVMe Gen 4", why:"For photo or 4K video editing, a good Gen 4 (Samsung 990 PRO, Crucial T500) is more than enough — even for professionals. Gen 5 isn't worth the extra cost here." },
+      nvme4office:{ rec:"NVMe Gen 4 or SATA SSD", why:"For office and daily use, even a SATA SSD is a massive upgrade. If your board has M.2, grab NVMe Gen 3/4 — e.g. WD Blue SN580 or Crucial P3 Plus." },
+      nvme5:    { rec:"NVMe Gen 5", why:"Worth the investment here. WD_BLACK SN8100 (14,900 MB/s) or Samsung 9100 PRO (14,800 MB/s). Make sure your motherboard supports PCIe 5.0 (AMD AM5 or Intel 12th+)." },
+      budget:   { rec:"SATA SSD 500GB", why:"Crucial BX500, Kingston A400 or WD Green — around €30–40 for 500GB. If your board has M.2, a Gen 3 NVMe costs the same and is 6x faster." },
+    }
+  }
+};
+
+let lang = 'el';
+let activeDetail = null;
+
+function toggleLang() {
+  lang = lang === 'el' ? 'en' : 'el';
+  applyLang();
+}
+
+function applyLang() {
+  const L = LANG[lang];
+  document.getElementById('langBtn').textContent = L.langBtn;
+  document.getElementById('h-title').textContent = L.hTitle;
+  document.getElementById('h-sub').textContent = L.hSub;
+  document.getElementById('spd-title').textContent = L.spdTitle;
+  // Cards
+  ['c1','c2','c3'].forEach((p,i) => {
+    const n = i+1;
+    document.getElementById(`${p}-title`).textContent = L[`${p}title`];
+    document.getElementById(`${p}-tag`).textContent = L[`${p}tag`];
+    document.getElementById(`${p}-s1l`).textContent = L[`${p}s1l`];
+    document.getElementById(`${p}-s1v`).textContent = L[`${p}s1v`];
+    document.getElementById(`${p}-s2l`).textContent = L[`${p}s2l`];
+    document.getElementById(`${p}-s2v`).textContent = L[`${p}s2v`];
+    document.getElementById(`${p}-s3l`).textContent = L[`${p}s3l`];
+    document.getElementById(`${p}-s3v`).textContent = L[`${p}s3v`];
+    document.getElementById(`${p}-s4`).textContent = L[`${p}s4`];
+  });
+  // Details
+  ['d1','d2','d3'].forEach(p => {
+    document.getElementById(`${p}-title`).textContent = L[`${p}title`];
+    ['l1','l2','l3','l4','l5','l6'].forEach(k => {
+      const el = document.getElementById(`${p}-${k}`); if(el) el.textContent = L[`${p}${k}`];
+    });
+    ['v3','v6'].forEach(k => {
+      const el = document.getElementById(`${p}-${k}`); if(el) el.textContent = L[`${p}${k}`];
+    });
+    ['n1','n2','n3','n4'].forEach(k => {
+      const el = document.getElementById(`${p}-${k}`); if(el) el.textContent = L[`${p}${k}`];
+    });
+    document.getElementById(`${p}-pros-h`).textContent = L[`${p}prosH`];
+    document.getElementById(`${p}-cons-h`).textContent = L[`${p}consH`];
+    ['p1','p2','p3','p4'].forEach(k => {
+      const el = document.getElementById(`${p}-${k}`); if(el) el.textContent = L[`${p}${k}`];
+    });
+    ['c1','c2','c3'].forEach(k => {
+      const el = document.getElementById(`${p}-${k}`); if(el) el.textContent = L[`${p}${k}`];
+    });
+  });
+  // Table
+  ['th0','tr1','tr2','tr3','tr4','tr5','tr6'].forEach(k => {
+    const el = document.getElementById(k); if(el) el.textContent = L[k];
+  });
+  // Table chips
+  const chipMap = {
+    'tr3-sata':L.tr3sata,'tr3-n4':L.tr3n4,'tr3-n5':L.tr3n5,
+    'tr4-sata':L.tr4sata,'tr4-n4':L.tr4n4,'tr4-n5':L.tr4n5,
+    'tr5-sata':L.tr5sata,'tr5-n4':L.tr5n4,'tr5-n5':L.tr5n5,
+    'tr6-sata':L.tr6sata,'tr6-n4':L.tr6n4,'tr6-n5':L.tr6n5,
+  };
+  Object.entries(chipMap).forEach(([id,txt]) => {
+    const el = document.getElementById(id);
+    if(el) { const chip = el.querySelector('.chip'); if(chip) chip.textContent=txt; else el.textContent=txt; }
+  });
+  // Use case
+  document.getElementById('uc-title').textContent = L.ucTitle;
+  ['uc1','uc2','uc3','uc4','uc5','uc6','uc7'].forEach(k => {
+    const el = document.getElementById(k); if(el) el.textContent = L[k];
+  });
+  // Refresh active UC result
+  const activeUC = document.querySelector('.uc-btn.selected');
+  if(activeUC) {
+    const key = activeUC.getAttribute('data-key');
+    if(key) showUCResult(key);
+  }
+}
+
+function showDetail(type) {
+  const panels = ['detail-sata','detail-nvme4','detail-nvme5'];
+  const cards  = ['card-sata','card-nvme4','card-nvme5'];
+  const map    = {sata:'detail-sata', nvme4:'detail-nvme4', nvme5:'detail-nvme5'};
+  const cmap   = {sata:'card-sata', nvme4:'card-nvme4', nvme5:'card-nvme5'};
+
+  if(activeDetail === type) {
+    // toggle off
+    document.getElementById(map[type]).classList.remove('visible');
+    document.getElementById(cmap[type]).classList.remove('active');
+    activeDetail = null;
+    return;
+  }
+  panels.forEach(p => document.getElementById(p).classList.remove('visible'));
+  cards.forEach(c => document.getElementById(c).classList.remove('active'));
+  document.getElementById(map[type]).classList.add('visible');
+  document.getElementById(cmap[type]).classList.add('active');
+  activeDetail = type;
+  // scroll panel into view
+  setTimeout(() => document.getElementById(map[type]).scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
+}
+
+function pickUC(btn, key) {
+  document.querySelectorAll('.uc-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  btn.setAttribute('data-key', key);
+  showUCResult(key);
+}
+
+function showUCResult(key) {
+  const L = LANG[lang];
+  const data = L.uc[key];
+  const el = document.getElementById('uc-result');
+  el.innerHTML = `<div class="rec">🎯 ${data.rec}</div><div class="why">${data.why}</div>`;
+  el.classList.add('visible');
+}
+</script>
+</body>
+</html>
