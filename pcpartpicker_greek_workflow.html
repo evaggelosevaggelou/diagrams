@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCPartPicker – Ροή Αγοράς για Ελλάδα</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ffffff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 16px;
+  }
+
+  .lang-btn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    background: #0f3460;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.8em;
+    cursor: pointer;
+    z-index: 100;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: #e94560; }
+
+  .diagram-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .diagram-title h2 {
+    font-size: 1.05em;
+    color: #0f3460;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .diagram-title p {
+    font-size: 0.76em;
+    color: #888;
+  }
+
+  .workflow {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wf-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: #fff;
+    border: 2px solid #dde3f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(15,52,96,0.06);
+  }
+
+  .wf-step:hover {
+    border-color: #0f3460;
+    background: #f0f4ff;
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(15,52,96,0.13);
+  }
+
+  .wf-step.step-final {
+    background: #e8f5e9;
+    border-color: #81c784;
+  }
+  .wf-step.step-final:hover {
+    background: #d0ead1;
+    border-color: #2e7d32;
+  }
+
+  .wf-num {
+    min-width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #0f3460;
+    color: #ffcc00;
+    font-weight: 700;
+    font-size: 0.88em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(15,52,96,0.20);
+    transition: background 0.22s;
+    font-family: Arial, sans-serif;
+  }
+  .wf-step:hover .wf-num { background: #e94560; }
+  .wf-step.step-final .wf-num { background: #2e7d32; color: #fff; }
+  .wf-step.step-final:hover .wf-num { background: #1b5e20; }
+
+  .wf-content { flex: 1; min-width: 0; }
+  .wf-content strong {
+    display: block;
+    color: #0f3460;
+    font-size: 0.9em;
+    margin-bottom: 2px;
+    transition: color 0.22s;
+  }
+  .wf-step:hover .wf-content strong { color: #0f3460; }
+  .wf-step.step-final .wf-content strong { color: #2e7d32; }
+
+  .wf-content span {
+    display: block;
+    font-size: 0.78em;
+    color: #777;
+    line-height: 1.4;
+  }
+
+  .wf-arrow-right {
+    font-size: 1.2em;
+    color: #b0bcd0;
+    transition: color 0.22s;
+    flex-shrink: 0;
+  }
+  .wf-step:hover .wf-arrow-right { color: #0f3460; }
+  .wf-step.step-final .wf-arrow-right { color: #2e7d32; }
+
+  .wf-connector {
+    margin-left: 30px;
+    height: 22px;
+    border-left: 3px dashed #e94560;
+    opacity: 0.5;
+  }
+
+  /* expandable detail */
+  .wf-detail {
+    display: none;
+    background: #f7f9ff;
+    border-left: 3px solid #0f3460;
+    border-radius: 0 0 8px 8px;
+    padding: 10px 16px 10px 60px;
+    font-size: 0.79em;
+    color: #555;
+    line-height: 1.55;
+    margin-top: -2px;
+    animation: slideDown 0.2s ease;
+  }
+  .wf-detail.open { display: block; }
+  .wf-detail.final-detail { border-left-color: #2e7d32; background: #f1faf2; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .wf-detail strong { color: #0f3460; }
+  .wf-detail.final-detail strong { color: #2e7d32; }
+
+  .note {
+    text-align: center;
+    font-size: 0.74em;
+    color: #888;
+    margin-top: 18px;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+  .note strong { color: #e94560; }
+
+  /* EN */
+  body.lang-en .el { display: none !important; }
+  body.lang-en .en { display: block !important; }
+  .en { display: none; }
+</style>
+</head>
+<body>
+<button class="lang-btn" onclick="toggleLang()">🌐 EN / ΕΛ</button>
+
+<div class="diagram-title">
+  <h2 class="el">🗺️ Πώς χρησιμοποιούν το PCPartPicker οι χρήστες στην Ελλάδα</h2>
+  <h2 class="en">How Greek users make the most of PCPartPicker</h2>
+  <p class="el">Κάνε κλικ σε κάθε βήμα για να δεις αναλυτικές συμβουλές</p>
+  <p class="en">Click each step to see detailed tips</p>
+</div>
+
+<div class="workflow">
+
+  <!-- Step 1 -->
+  <div class="wf-step" onclick="toggleDetail(0)">
+    <div class="wf-num">1</div>
+    <div class="wf-content">
+      <strong class="el">🖥️ Δημιούργησε τη σύνθεση</strong>
+      <strong class="en">🖥️ Build your configuration</strong>
+      <span class="el">Επίλεξε εξαρτήματα, έλεγξε συμβατότητα και κατανάλωση</span>
+      <span class="en">Select components, check compatibility and power usage</span>
+    </div>
+    <div class="wf-arrow-right">›</div>
+  </div>
+  <div class="wf-detail" id="detail-0">
+    <p class="el">Πήγαινε στο <strong>pcpartpicker.com</strong> και επίλεξε ευρωπαϊκή αγορά (π.χ. Γερμανία). Ξεκίνα από CPU και πρόσθεσε εξαρτήματα με τη σειρά. Η πλατφόρμα ελέγχει αυτόματα συμβατότητα σε κάθε βήμα και υπολογίζει το συνολικό wattage.</p>
+    <p class="en">Go to <strong>pcpartpicker.com</strong> and select a European market (e.g. Germany). Start with the CPU and add components in order. The platform automatically checks compatibility at every step and calculates total wattage.</p>
+  </div>
+
+  <div class="wf-connector"></div>
+
+  <!-- Step 2 -->
+  <div class="wf-step" onclick="toggleDetail(1)">
+    <div class="wf-num">2</div>
+    <div class="wf-content">
+      <strong class="el">📋 Κατέγραψε τα μοντέλα</strong>
+      <strong class="en">📋 Note down the exact models</strong>
+      <span class="el">Σημείωσε τα ακριβή ονόματα και part numbers</span>
+      <span class="en">Write down exact names and part numbers</span>
+    </div>
+    <div class="wf-arrow-right">›</div>
+  </div>
+  <div class="wf-detail" id="detail-1">
+    <p class="el">Χρησιμοποίησε το <strong>Export / Share Build</strong> για να αποθηκεύσεις τη λίστα σου. Σημείωσε τα ακριβή model numbers (π.χ. "Corsair Vengeance DDR5 32GB 6000MHz") — αυτά θα χρειαστείς για αναζήτηση στο Skroutz.</p>
+    <p class="en">Use <strong>Export / Share Build</strong> to save your list. Note exact model numbers (e.g. "Corsair Vengeance DDR5 32GB 6000MHz") — you'll need these when searching on Greek price comparison sites.</p>
+  </div>
+
+  <div class="wf-connector"></div>
+
+  <!-- Step 3 -->
+  <div class="wf-step" onclick="toggleDetail(2)">
+    <div class="wf-num">3</div>
+    <div class="wf-content">
+      <strong class="el">🔍 Σύγκρινε τιμές στην Ελλάδα</strong>
+      <strong class="en">🔍 Compare prices in Greece</strong>
+      <span class="el">Αναζήτηση σε Skroutz και ευρωπαϊκά e-shops</span>
+      <span class="en">Search Skroutz and European e-shops that ship to Greece</span>
+    </div>
+    <div class="wf-arrow-right">›</div>
+  </div>
+  <div class="wf-detail" id="detail-2">
+    <p class="el">Αναζήτησε τα εξαρτήματα στο <strong>Skroutz.gr</strong> χρησιμοποιώντας τα ακριβή model names. Σύγκρινε επίσης με ευρωπαϊκά e-shops που αποστέλλουν στην Ελλάδα. Παρακολούθησε τιμές 3–5 μέρες πριν αγοράσεις — μπορείς να εξοικονομήσεις 30–50€.</p>
+    <p class="en">Search for components on <strong>Skroutz.gr</strong> using exact model names. Also compare with European e-shops that ship to Greece. Monitor prices for 3–5 days before buying — you could save €30–50.</p>
+  </div>
+
+  <div class="wf-connector"></div>
+
+  <!-- Step 4 Final -->
+  <div class="wf-step step-final" onclick="toggleDetail(3)">
+    <div class="wf-num">✓</div>
+    <div class="wf-content">
+      <strong class="el">🛒 Ολοκλήρωσε την αγορά</strong>
+      <strong class="en">🛒 Complete your purchase</strong>
+      <span class="el">Επίλεξε το πιο συμφέρον κατάστημα με ελεγμένη συμβατότητα</span>
+      <span class="en">Choose the best-value store with verified compatibility</span>
+    </div>
+    <div class="wf-arrow-right">›</div>
+  </div>
+  <div class="wf-detail final-detail" id="detail-3">
+    <p class="el">Αγόρασε με σιγουριά — έχεις ήδη ελέγξει τη συμβατότητα μέσω PCPartPicker. <strong>Πριν ολοκληρώσεις</strong>: επιβεβαίωσε ότι αγοράζεις ακριβώς το ίδιο model number, έλεγξε την πολιτική επιστροφών και υπολόγισε τα έξοδα αποστολής.</p>
+    <p class="en">Buy with confidence — you've already verified compatibility through PCPartPicker. <strong>Before finalizing</strong>: confirm you're buying the exact same model number, check the return policy, and factor in shipping costs.</p>
+  </div>
+
+</div>
+
+<p class="note">
+  <span class="el">💡 Το PCPartPicker λειτουργεί ιδανικά ως εργαλείο <strong>σχεδιασμού & τεχνικού ελέγχου</strong> — ακόμη κι αν αγοράζεις από Ελλάδα.</span>
+  <span class="en">💡 PCPartPicker works perfectly as a <strong>planning & compatibility tool</strong> — even when buying locally in Greece.</span>
+</p>
+
+<script>
+  var isEN = false;
+  var openDetail = -1;
+
+  function toggleDetail(idx) {
+    var details = document.querySelectorAll('.wf-detail');
+    if (openDetail === idx) {
+      details[idx].classList.remove('open');
+      openDetail = -1;
+    } else {
+      details.forEach(function(d){ d.classList.remove('open'); });
+      details[idx].classList.add('open');
+      openDetail = idx;
+    }
+  }
+
+  function toggleLang() {
+    isEN = !isEN;
+    document.body.classList.toggle('lang-en', isEN);
+  }
+</script>
+</body>
+</html>
