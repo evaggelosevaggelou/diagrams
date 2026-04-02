@@ -42,6 +42,15 @@
   .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
   .loading { text-align: center; padding: 60px; color: var(--muted); font-size: 15px; }
   .empty { text-align: center; padding: 60px; color: var(--muted); }
+
+  /* Pagination */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 0 40px 48px; flex-wrap: wrap; }
+  .page-btn { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 6px; font-size: 14px; font-weight: 500; font-family: var(--sans); cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text); transition: background 0.15s, border-color 0.15s; }
+  .page-btn:hover { background: #21262d; border-color: var(--accent2); }
+  .page-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; cursor: default; }
+  .page-btn:disabled { opacity: 0.35; cursor: default; }
+  .page-info { color: var(--muted); font-size: 13px; font-family: var(--mono); padding: 0 8px; }
+
   footer { text-align: center; padding: 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
 </style>
 </head>
@@ -58,65 +67,148 @@
 <div class="grid" id="grid">
   <div class="loading">⏳ Φόρτωση διαγραμμάτων...</div>
 </div>
+<div class="pagination" id="pagination"></div>
 <footer>lovefortechnology.net · GitHub Pages</footer>
 
 <script>
-const REPO = 'evaggelosevaggelou/diagrams';
-const BASE = 'https://evaggelosevaggelou.github.io/diagrams/';
-const API  = 'https://api.github.com/repos/' + REPO + '/contents/';
-const grid = document.getElementById('grid');
+const REPO      = 'evaggelosevaggelou/diagrams';
+const BASE      = 'https://evaggelosevaggelou.github.io/diagrams/';
+const API       = 'https://api.github.com/repos/' + REPO + '/contents/';
+const PER_PAGE  = 9;
 
-// Αποθηκεύουμε τους κώδικες εδώ — χωρίς HTML encoding
-const iframeCodes = [];
+const grid       = document.getElementById('grid');
+const pagination = document.getElementById('pagination');
+
+let allFiles   = [];
+let iframeCodes = [];
+let currentPage = 1;
 
 async function load() {
   try {
     const res = await fetch(API);
     const files = await res.json();
 
-    const htmlFiles = files.filter(f =>
-      f.type === 'file' &&
-      f.name.endsWith('.html') &&
-      f.name !== 'index.html'
-    );
+    allFiles = files.filter(function(f) {
+      return f.type === 'file' && f.name.endsWith('.html') && f.name !== 'index.html';
+    });
 
-    grid.innerHTML = '';
+    // Προ-γεμίζουμε το iframeCodes array για όλα τα files
+    allFiles.forEach(function(f, i) {
+      var url = BASE + f.name;
+      iframeCodes[i] = '<iframe src="' + url + '" width="100%" height="500" frameborder="0" scrolling="no"></iframe>';
+    });
 
-    if (htmlFiles.length === 0) {
+    if (allFiles.length === 0) {
       grid.innerHTML = '<div class="empty">Δεν βρέθηκαν διαγράμματα ακόμα.</div>';
       return;
     }
 
-    htmlFiles.forEach(function(f, i) {
-      const url = BASE + f.name;
-      const title = f.name.replace('.html', '').replace(/_/g, ' ');
-
-      // Αποθηκεύουμε τον καθαρό κώδικα στο array
-      iframeCodes[i] = '<iframe src="' + url + '" width="100%" height="500" frameborder="0" scrolling="no"></iframe>';
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML =
-        '<iframe class="preview" src="' + url + '" loading="lazy"></iframe>' +
-        '<div class="card-body">' +
-          '<div class="card-title">' + title + '</div>' +
-          '<div class="card-file">' + f.name + '</div>' +
-          '<div class="actions">' +
-            '<a class="btn btn-open" href="' + url + '" target="_blank">🔗 Άνοιγμα</a>' +
-            '<button class="btn btn-copy" id="copybtn-' + i + '" onclick="copyIframe(' + i + ')">📋 Copy iframe</button>' +
-          '</div>' +
-        '</div>';
-      grid.appendChild(card);
-    });
+    renderPage(1);
 
   } catch(e) {
-    grid.innerHTML = '<div class="empty">❌ Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
+    grid.innerHTML = '<div class="empty">&#10060; Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
   }
 }
 
+function renderPage(page) {
+  currentPage = page;
+  var totalPages = Math.ceil(allFiles.length / PER_PAGE);
+  var start = (page - 1) * PER_PAGE;
+  var end   = Math.min(start + PER_PAGE, allFiles.length);
+  var pageFiles = allFiles.slice(start, end);
+
+  grid.innerHTML = '';
+
+  pageFiles.forEach(function(f, localIdx) {
+    var globalIdx = start + localIdx;
+    var url   = BASE + f.name;
+    var title = f.name.replace('.html', '').replace(/_/g, ' ');
+
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
+      '<iframe class="preview" src="' + url + '" loading="lazy"></iframe>' +
+      '<div class="card-body">' +
+        '<div class="card-title">' + title + '</div>' +
+        '<div class="card-file">' + f.name + '</div>' +
+        '<div class="actions">' +
+          '<a class="btn btn-open" href="' + url + '" target="_blank">&#128279; &#913;&#957;&#959;&#953;&#947;&#956;&#945;</a>' +
+          '<button class="btn btn-copy" id="copybtn-' + globalIdx + '" onclick="copyIframe(' + globalIdx + ')">&#128203; Copy iframe</button>' +
+        '</div>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+
+  renderPagination(page, totalPages);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPagination(page, totalPages) {
+  pagination.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  // Prev button
+  var prev = document.createElement('button');
+  prev.className = 'page-btn';
+  prev.textContent = '←';
+  prev.disabled = (page === 1);
+  prev.onclick = function() { renderPage(page - 1); };
+  pagination.appendChild(prev);
+
+  // Page numbers with ellipsis
+  var pages = getPageNumbers(page, totalPages);
+  pages.forEach(function(p) {
+    if (p === '...') {
+      var dots = document.createElement('span');
+      dots.className = 'page-info';
+      dots.textContent = '…';
+      pagination.appendChild(dots);
+    } else {
+      var btn = document.createElement('button');
+      btn.className = 'page-btn' + (p === page ? ' active' : '');
+      btn.textContent = p;
+      btn.onclick = (function(pg) { return function() { renderPage(pg); }; })(p);
+      pagination.appendChild(btn);
+    }
+  });
+
+  // Next button
+  var next = document.createElement('button');
+  next.className = 'page-btn';
+  next.textContent = '→';
+  next.disabled = (page === totalPages);
+  next.onclick = function() { renderPage(page + 1); };
+  pagination.appendChild(next);
+
+  // Info text
+  var info = document.createElement('span');
+  info.className = 'page-info';
+  var start = (page - 1) * PER_PAGE + 1;
+  var end   = Math.min(page * PER_PAGE, allFiles.length);
+  info.textContent = start + '–' + end + ' / ' + allFiles.length;
+  pagination.appendChild(info);
+}
+
+// Δημιουργεί λίστα σελίδων με ellipsis για μεγάλο αριθμό σελίδων
+function getPageNumbers(current, total) {
+  if (total <= 7) {
+    var arr = [];
+    for (var i = 1; i <= total; i++) arr.push(i);
+    return arr;
+  }
+  var pages = [1];
+  if (current > 3) pages.push('...');
+  for (var i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+    pages.push(i);
+  }
+  if (current < total - 2) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
 function copyIframe(i) {
-  const text = iframeCodes[i];
-  const btn = document.getElementById('copybtn-' + i);
+  var text = iframeCodes[i];
+  var btn  = document.getElementById('copybtn-' + i);
 
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(text).then(function() { flash(btn); }).catch(function() { fallback(text, btn); });
@@ -126,7 +218,7 @@ function copyIframe(i) {
 }
 
 function fallback(text, btn) {
-  const ta = document.createElement('textarea');
+  var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.position = 'fixed';
   ta.style.opacity = '0';
@@ -139,9 +231,9 @@ function fallback(text, btn) {
 }
 
 function flash(btn) {
-  btn.textContent = '✅ Αντιγράφηκε!';
+  btn.textContent = '&#10003; Αντιγράφηκε!';
   btn.classList.add('copied');
-  setTimeout(function() { btn.textContent = '📋 Copy iframe'; btn.classList.remove('copied'); }, 2000);
+  setTimeout(function() { btn.textContent = '&#128203; Copy iframe'; btn.classList.remove('copied'); }, 2000);
 }
 
 load();
