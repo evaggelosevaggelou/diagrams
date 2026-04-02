@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firefox Extensions Check</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .ff-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 10px;
+    display: block;
+  }
+
+  .header h1 {
+    font-size: 1.22rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+  }
+  .header p {
+    font-size: 0.82rem;
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3ec;
+    border: 1.5px solid #ffc8a0;
+    color: #e06820;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 13px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 8px auto 0;
+    transition: all 0.2s;
+  }
+  .lang-btn:hover { background: #ffe8d6; }
+
+  .section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .methods-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .method-card {
+    background: #fff8f3;
+    border: 1.5px solid #ffd9bc;
+    border-radius: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .method-card:hover { border-color: #e06820; box-shadow: 0 3px 14px rgba(224,104,32,0.13); }
+  .method-card.active { border-color: #e06820; background: #fff0e6; }
+
+  .method-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #e06820;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+  }
+  .method-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+  }
+  .method-sub { font-size: 0.76rem; color: #777; }
+
+  .method-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+  }
+  .method-detail.open { max-height: 220px; }
+  .method-detail-inner {
+    margin-top: 9px;
+    padding-top: 9px;
+    border-top: 1px dashed #ffc8a0;
+  }
+
+  .method-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 5px;
+  }
+  .method-step-num {
+    background: #e06820;
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .method-step-txt {
+    font-size: 0.76rem;
+    color: #444;
+    line-height: 1.4;
+  }
+
+  code.inline {
+    background: #ffe8d6;
+    color: #c0521a;
+    font-size: 0.73rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+  }
+
+  .checks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-bottom: 14px;
+  }
+
+  .check-card {
+    background: #fff;
+    border: 1.5px solid #ffe0cc;
+    border-radius: 10px;
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .check-card:hover { border-color: #e06820; box-shadow: 0 2px 10px rgba(224,104,32,0.1); }
+  .check-card.active { border-color: #e06820; background: #fff5ee; }
+
+  .check-icon { font-size: 1.2rem; margin-bottom: 4px; }
+  .check-label { font-size: 0.82rem; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+  .check-sub { font-size: 0.72rem; color: #888; line-height: 1.4; }
+
+  .check-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+  }
+  .check-detail.open { max-height: 180px; }
+  .check-detail-inner {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #ffd9bc;
+    font-size: 0.74rem;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .tip-box {
+    background: #f0f9ff;
+    border: 1.5px solid #b3deff;
+    border-radius: 10px;
+    padding: 13px 15px;
+    font-size: 0.78rem;
+    color: #444;
+    line-height: 1.6;
+  }
+  .tip-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1a7ec8;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .click-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <!-- Firefox icon SVG -->
+    <svg class="ff-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="20" fill="#FF6611"/>
+      <circle cx="24" cy="24" r="12" fill="#FFBB33"/>
+      <circle cx="24" cy="24" r="7" fill="#4169e1"/>
+      <path d="M24 4 C14 4 6 12 6 22 C6 18 10 14 16 13 C12 17 11 22 13 26 C15 22 19 20 24 20 C20 24 18 28 20 33 C22 36 26 38 30 37 C34 36 38 32 38 27 C40 22 38 17 34 14 C32 20 27 22 24 20 C28 18 31 14 30 10 C28 7 26 5 24 4 Z" fill="#FF3300" opacity="0.7"/>
+    </svg>
+    <h1 id="main-title">🦊 Έλεγχος Επεκτάσεων στο Mozilla Firefox</h1>
+    <p id="main-sub">Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες</p>
+    <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">English</span></button>
+  </div>
+
+  <!-- Step 1: Access -->
+  <div class="section-title"><span>1️⃣</span> <span id="s1-title">Πώς να ανοίξεις τις Επεκτάσεις</span></div>
+  <div class="methods-row">
+    <div class="method-card" onclick="toggleCard(this)">
+      <div class="method-label" id="ma-label">Τρόπος Α</div>
+      <div class="method-title" id="ma-title">Μενού Firefox</div>
+      <div class="method-sub" id="ma-sub">Μέσω του κεντρικού μενού</div>
+      <div class="method-detail">
+        <div class="method-detail-inner">
+          <div class="method-step"><div class="method-step-num">1</div><div class="method-step-txt" id="ma-1">Πάτησε ☰ επάνω δεξιά στο Firefox</div></div>
+          <div class="method-step"><div class="method-step-num">2</div><div class="method-step-txt" id="ma-2">Επίλεξε «Πρόσθετα και θέματα»</div></div>
+          <div class="method-step"><div class="method-step-num">3</div><div class="method-step-txt" id="ma-3">Μετάβαση στην ενότητα «Επεκτάσεις»</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="method-card" onclick="toggleCard(this)">
+      <div class="method-label" id="mb-label">Τρόπος Β</div>
+      <div class="method-title" id="mb-title">Συντόμευση / URL</div>
+      <div class="method-sub" id="mb-sub">Ο πιο γρήγορος τρόπος</div>
+      <div class="method-detail">
+        <div class="method-detail-inner">
+          <div class="method-step"><div class="method-step-num">1</div><div class="method-step-txt" id="mb-1">Πάτησε Ctrl+Shift+A (Win) ή Cmd+Shift+A (Mac)</div></div>
+          <div class="method-step"><div class="method-step-num">2</div><div class="method-step-txt" id="mb-2">Ή γράψε στη γραμμή διευθύνσεων:</div></div>
+          <div class="method-step"><div class="method-step-num">3</div><div class="method-step-txt"><code class="inline">about:addons</code> + Enter</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: What to check -->
+  <div class="section-title"><span>2️⃣</span> <span id="s2-title">Τι να ελέγξεις σε κάθε Επέκταση</span></div>
+  <div class="checks-grid">
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">🔵</div>
+      <div class="check-label" id="c1-label">Ενεργές Επεκτάσεις</div>
+      <div class="check-sub" id="c1-sub">Ποιες τρέχουν τώρα;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c1-detail">Οι ενεργές εμφανίζονται με μπλε διακόπτη. Απενεργοποίησε όσες δεν χρησιμοποιείς αντί να τις αφήνεις ενεργές.</div></div>
+    </div>
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">🔑</div>
+      <div class="check-label" id="c2-label">Δικαιώματα</div>
+      <div class="check-sub" id="c2-sub">Τι πρόσβαση έχει;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c2-detail">Έλεγξε αν η πρόσβαση που ζητά είναι λογική για αυτό που υποτίθεται ότι κάνει η επέκταση.</div></div>
+    </div>
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">📅</div>
+      <div class="check-label" id="c3-label">Ημερομηνία</div>
+      <div class="check-sub" id="c3-sub">Πότε εγκαταστάθηκε;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c3-detail">Οι πρόσφατες εγκαταστάσεις που δεν θυμάσαι είναι συχνά ύποπτες. Έλεγξε τη λίστα ταξινομημένη κατά ημερομηνία.</div></div>
+    </div>
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">🔄</div>
+      <div class="check-label" id="c4-label">Ενημερώσεις</div>
+      <div class="check-sub" id="c4-sub">Ενημερώνεται τακτικά;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c4-detail">Εγκαταλελειμμένες επεκτάσεις (χωρίς ενημερώσεις χρόνια) είναι επικίνδυνες γιατί έχουν κενά ασφαλείας.</div></div>
+    </div>
+  </div>
+
+  <!-- Tip -->
+  <div class="tip-box">
+    <div class="tip-title">💡 <span id="tip-title">Συμβουλή για το Firefox</span></div>
+    <span id="tip-text">Το Firefox διαθέτει «Προτεινόμενες Επεκτάσεις» που έχουν ελεγχθεί για βασική ασφάλεια. Παρόλα αυτά, ακόμα και αυτές καλό είναι να τις ελέγχεις περιοδικά και να κρατάς μόνο όσες πραγματικά χρειάζεσαι.</span>
+  </div>
+
+  <div class="click-hint" id="click-hint">👆 Κάνε κλικ σε κάθε κάρτα για να δεις λεπτομέρειες</div>
+
+</div>
+
+<script>
+  let lang = 'el';
+
+  const translations = {
+    el: {
+      'main-title': '🦊 Έλεγχος Επεκτάσεων στο Mozilla Firefox',
+      'main-sub': 'Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες',
+      'lang-label': 'English',
+      's1-title': 'Πώς να ανοίξεις τις Επεκτάσεις',
+      'ma-label': 'Τρόπος Α', 'ma-title': 'Μενού Firefox', 'ma-sub': 'Μέσω του κεντρικού μενού',
+      'ma-1': 'Πάτησε ☰ επάνω δεξιά στο Firefox',
+      'ma-2': 'Επίλεξε «Πρόσθετα και θέματα»',
+      'ma-3': 'Μετάβαση στην ενότητα «Επεκτάσεις»',
+      'mb-label': 'Τρόπος Β', 'mb-title': 'Συντόμευση / URL', 'mb-sub': 'Ο πιο γρήγορος τρόπος',
+      'mb-1': 'Πάτησε Ctrl+Shift+A (Win) ή Cmd+Shift+A (Mac)',
+      'mb-2': 'Ή γράψε στη γραμμή διευθύνσεων:',
+      's2-title': 'Τι να ελέγξεις σε κάθε Επέκταση',
+      'c1-label': 'Ενεργές Επεκτάσεις', 'c1-sub': 'Ποιες τρέχουν τώρα;',
+      'c1-detail': 'Οι ενεργές εμφανίζονται με μπλε διακόπτη. Απενεργοποίησε όσες δεν χρησιμοποιείς αντί να τις αφήνεις ενεργές.',
+      'c2-label': 'Δικαιώματα', 'c2-sub': 'Τι πρόσβαση έχει;',
+      'c2-detail': 'Έλεγξε αν η πρόσβαση που ζητά είναι λογική για αυτό που υποτίθεται ότι κάνει η επέκταση.',
+      'c3-label': 'Ημερομηνία', 'c3-sub': 'Πότε εγκαταστάθηκε;',
+      'c3-detail': 'Οι πρόσφατες εγκαταστάσεις που δεν θυμάσαι είναι συχνά ύποπτες. Έλεγξε τη λίστα ταξινομημένη κατά ημερομηνία.',
+      'c4-label': 'Ενημερώσεις', 'c4-sub': 'Ενημερώνεται τακτικά;',
+      'c4-detail': 'Εγκαταλελειμμένες επεκτάσεις (χωρίς ενημερώσεις χρόνια) είναι επικίνδυνες γιατί έχουν κενά ασφαλείας.',
+      'tip-title': 'Συμβουλή για το Firefox',
+      'tip-text': 'Το Firefox διαθέτει «Προτεινόμενες Επεκτάσεις» που έχουν ελεγχθεί για βασική ασφάλεια. Παρόλα αυτά, ακόμα και αυτές καλό είναι να τις ελέγχεις περιοδικά και να κρατάς μόνο όσες πραγματικά χρειάζεσαι.',
+      'click-hint': '👆 Κάνε κλικ σε κάθε κάρτα για να δεις λεπτομέρειες'
+    },
+    en: {
+      'main-title': '🦊 Checking Extensions in Mozilla Firefox',
+      'main-sub': 'Click on each section to see details',
+      'lang-label': 'Ελληνικά',
+      's1-title': 'How to Open the Extensions List',
+      'ma-label': 'Method A', 'ma-title': 'Firefox Menu', 'ma-sub': 'Via the main menu',
+      'ma-1': 'Click ☰ at the top right of Firefox',
+      'ma-2': 'Select "Add-ons and Themes"',
+      'ma-3': 'Go to the "Extensions" section',
+      'mb-label': 'Method B', 'mb-title': 'Shortcut / URL', 'mb-sub': 'The fastest way',
+      'mb-1': 'Press Ctrl+Shift+A (Win) or Cmd+Shift+A (Mac)',
+      'mb-2': 'Or type in the address bar:',
+      's2-title': 'What to Check in Each Extension',
+      'c1-label': 'Active Extensions', 'c1-sub': 'Which ones are running?',
+      'c1-detail': 'Active ones show a blue toggle. Disable any you\'re not using rather than leaving them active.',
+      'c2-label': 'Permissions', 'c2-sub': 'What access does it have?',
+      'c2-detail': 'Check if the access it requests makes sense for what the extension is supposed to do.',
+      'c3-label': 'Install Date', 'c3-sub': 'When was it installed?',
+      'c3-detail': 'Recent installs you don\'t remember are often suspicious. Check the list sorted by installation date.',
+      'c4-label': 'Updates', 'c4-sub': 'Is it regularly updated?',
+      'c4-detail': 'Abandoned extensions (no updates for years) are dangerous because they have security vulnerabilities.',
+      'tip-title': 'Firefox Tip',
+      'tip-text': 'Firefox has "Recommended Extensions" that have been checked for basic safety. Still, it\'s good to review even these periodically and keep only the ones you really need.',
+      'click-hint': '👆 Click on each card to see details'
+    }
+  };
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    const t = translations[lang];
+    for (const [id, text] of Object.entries(t)) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+    document.documentElement.lang = lang;
+  }
+
+  function toggleCard(card) {
+    const detail = card.querySelector('.method-detail, .check-detail');
+    if (!detail) return;
+    const isOpen = detail.classList.contains('open');
+    detail.classList.toggle('open', !isOpen);
+    card.classList.toggle('active', !isOpen);
+  }
+</script>
+</body>
+</html>
