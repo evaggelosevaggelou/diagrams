@@ -19,19 +19,49 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
   header { border-bottom: 1px solid var(--border); padding: 20px 40px; display: flex; align-items: center; gap: 16px; }
   .logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
   header h1 { font-size: 18px; font-weight: 600; }
   header span { color: var(--muted); font-size: 14px; margin-left: auto; font-family: var(--mono); }
-  .hero { padding: 48px 40px 32px; max-width: 1200px; margin: 0 auto; }
+
+  .hero { padding: 48px 40px 24px; max-width: 1200px; margin: 0 auto; }
   .hero h2 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
-  .hero p { color: var(--muted); font-size: 15px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px; padding: 0 40px 60px; max-width: 1200px; margin: 0 auto; }
+  .hero p { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
+
+  .search-wrap { position: relative; max-width: 480px; }
+  .search-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; opacity: 0.5; }
+  #searchInput {
+    width: 100%;
+    padding: 10px 40px 10px 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--sans);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #searchInput:focus { border-color: var(--accent2); }
+  #searchInput::placeholder { color: var(--muted); }
+  .clear-btn {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 16px; line-height: 1; display: none; padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .clear-btn:hover { color: var(--text); background: #21262d; }
+  .search-meta { color: var(--muted); font-size: 13px; font-family: var(--mono); margin-top: 10px; min-height: 20px; }
+  .search-meta mark { background: none; color: var(--accent2); font-weight: 600; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px; padding: 0 40px 40px; max-width: 1200px; margin: 0 auto; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
   .card:hover { border-color: var(--accent2); transform: translateY(-2px); }
   .preview { width: 100%; height: 220px; border: none; background: #fff; display: block; pointer-events: none; }
   .card-body { padding: 16px 20px 20px; border-top: 1px solid var(--border); }
   .card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .card-title mark { background: none; color: var(--accent2); font-weight: 700; }
   .card-file { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 16px; }
   .actions { display: flex; gap: 8px; }
   .btn { flex: 1; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; font-family: var(--sans); cursor: pointer; border: 1px solid var(--border); text-decoration: none; text-align: center; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -40,100 +70,155 @@
   .btn-copy { background: transparent; color: var(--text); }
   .btn-copy:hover { background: #21262d; border-color: var(--accent2); }
   .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
-  .loading { text-align: center; padding: 60px; color: var(--muted); font-size: 15px; }
-  .empty { text-align: center; padding: 60px; color: var(--muted); }
 
-  /* Pagination */
+  .loading { text-align: center; padding: 60px; color: var(--muted); font-size: 15px; }
+  .empty { text-align: center; padding: 60px; color: var(--muted); font-size: 15px; }
+  .empty span { font-size: 32px; display: block; margin-bottom: 12px; }
+
   .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 0 40px 48px; flex-wrap: wrap; }
   .page-btn { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 6px; font-size: 14px; font-weight: 500; font-family: var(--sans); cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text); transition: background 0.15s, border-color 0.15s; }
-  .page-btn:hover { background: #21262d; border-color: var(--accent2); }
+  .page-btn:hover:not(:disabled):not(.active) { background: #21262d; border-color: var(--accent2); }
   .page-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; cursor: default; }
-  .page-btn:disabled { opacity: 0.35; cursor: default; }
+  .page-btn:disabled { opacity: 0.3; cursor: default; }
   .page-info { color: var(--muted); font-size: 13px; font-family: var(--mono); padding: 0 8px; }
 
   footer { text-align: center; padding: 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 20px; }
+    header span { display: none; }
+    .hero { padding: 32px 20px 20px; }
+    .grid { padding: 0 20px 40px; }
+    .pagination { padding: 0 20px 40px; }
+  }
 </style>
 </head>
 <body>
+
 <header>
   <div class="logo">📊</div>
   <h1>Diagrams</h1>
   <span>evaggelosevaggelou / diagrams</span>
 </header>
+
 <div class="hero">
   <h2>Διαδραστικά Διαγράμματα</h2>
   <p>Όλα τα διαγράμματα για το lovefortechnology.net — ενημερώνεται αυτόματα!</p>
+  <div class="search-wrap">
+    <span class="icon">🔍</span>
+    <input id="searchInput" type="text" placeholder="Αναζήτηση διαγράμματος…" autocomplete="off" spellcheck="false" />
+    <button class="clear-btn" id="clearBtn" title="Καθαρισμός">✕</button>
+  </div>
+  <div class="search-meta" id="searchMeta"></div>
 </div>
+
 <div class="grid" id="grid">
   <div class="loading">⏳ Φόρτωση διαγραμμάτων...</div>
 </div>
 <div class="pagination" id="pagination"></div>
+
 <footer>lovefortechnology.net · GitHub Pages</footer>
 
 <script>
-const REPO      = 'evaggelosevaggelou/diagrams';
-const BASE      = 'https://evaggelosevaggelou.github.io/diagrams/';
-const API       = 'https://api.github.com/repos/' + REPO + '/contents/';
-const PER_PAGE  = 9;
+const REPO     = 'evaggelosevaggelou/diagrams';
+const BASE     = 'https://evaggelosevaggelou.github.io/diagrams/';
+const API      = 'https://api.github.com/repos/' + REPO + '/contents/';
+const PER_PAGE = 9;
 
-const grid       = document.getElementById('grid');
-const pagination = document.getElementById('pagination');
+const grid        = document.getElementById('grid');
+const pagination  = document.getElementById('pagination');
+const searchInput = document.getElementById('searchInput');
+const clearBtn    = document.getElementById('clearBtn');
+const searchMeta  = document.getElementById('searchMeta');
 
-let allFiles   = [];
+let allFiles    = [];
 let iframeCodes = [];
+let filtered    = [];
 let currentPage = 1;
+let query       = '';
 
 async function load() {
   try {
-    const res = await fetch(API);
+    const res   = await fetch(API);
     const files = await res.json();
-
     allFiles = files.filter(function(f) {
       return f.type === 'file' && f.name.endsWith('.html') && f.name !== 'index.html';
     });
-
-    // Προ-γεμίζουμε το iframeCodes array για όλα τα files
     allFiles.forEach(function(f, i) {
       var url = BASE + f.name;
       iframeCodes[i] = '<iframe src="' + url + '" width="100%" height="500" frameborder="0" scrolling="no"></iframe>';
     });
-
     if (allFiles.length === 0) {
-      grid.innerHTML = '<div class="empty">Δεν βρέθηκαν διαγράμματα ακόμα.</div>';
+      grid.innerHTML = '<div class="empty"><span>📭</span>Δεν βρέθηκαν διαγράμματα ακόμα.</div>';
       return;
     }
-
+    filtered = allFiles.slice();
     renderPage(1);
-
   } catch(e) {
-    grid.innerHTML = '<div class="empty">&#10060; Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
+    grid.innerHTML = '<div class="empty"><span>❌</span>Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
   }
 }
 
+searchInput.addEventListener('input', function() {
+  query = searchInput.value.trim().toLowerCase();
+  clearBtn.style.display = query ? 'block' : 'none';
+  filtered = allFiles.filter(function(f) {
+    var title = f.name.replace('.html','').replace(/_/g,' ').toLowerCase();
+    return title.includes(query) || f.name.toLowerCase().includes(query);
+  });
+  renderPage(1);
+});
+
+clearBtn.addEventListener('click', function() {
+  searchInput.value = '';
+  query = '';
+  clearBtn.style.display = 'none';
+  filtered = allFiles.slice();
+  renderPage(1);
+  searchInput.focus();
+});
+
 function renderPage(page) {
   currentPage = page;
-  var totalPages = Math.ceil(allFiles.length / PER_PAGE);
+  var totalPages = Math.ceil(filtered.length / PER_PAGE);
   var start = (page - 1) * PER_PAGE;
-  var end   = Math.min(start + PER_PAGE, allFiles.length);
-  var pageFiles = allFiles.slice(start, end);
+  var end   = Math.min(start + PER_PAGE, filtered.length);
+  var pageFiles = filtered.slice(start, end);
 
   grid.innerHTML = '';
 
-  pageFiles.forEach(function(f, localIdx) {
-    var globalIdx = start + localIdx;
-    var url   = BASE + f.name;
-    var title = f.name.replace('.html', '').replace(/_/g, ' ');
+  if (query) {
+    if (filtered.length === 0) {
+      searchMeta.innerHTML = 'Δεν βρέθηκαν αποτελέσματα για "<mark>' + escHtml(query) + '</mark>"';
+    } else {
+      searchMeta.innerHTML = filtered.length + (filtered.length !== 1 ? ' αποτελέσματα' : ' αποτέλεσμα') + ' για "<mark>' + escHtml(query) + '</mark>"';
+    }
+  } else {
+    searchMeta.textContent = '';
+  }
+
+  if (pageFiles.length === 0) {
+    grid.innerHTML = '<div class="empty"><span>🔍</span>Δεν βρέθηκαν διαγράμματα για αυτή την αναζήτηση.</div>';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  pageFiles.forEach(function(f) {
+    var globalIdx = allFiles.indexOf(f);
+    var url = BASE + f.name;
+    var rawTitle = f.name.replace('.html', '').replace(/_/g, ' ');
+    var displayTitle = query ? highlight(rawTitle, query) : escHtml(rawTitle);
 
     var card = document.createElement('div');
     card.className = 'card';
     card.innerHTML =
       '<iframe class="preview" src="' + url + '" loading="lazy"></iframe>' +
       '<div class="card-body">' +
-        '<div class="card-title">' + title + '</div>' +
-        '<div class="card-file">' + f.name + '</div>' +
+        '<div class="card-title">' + displayTitle + '</div>' +
+        '<div class="card-file">' + escHtml(f.name) + '</div>' +
         '<div class="actions">' +
-          '<a class="btn btn-open" href="' + url + '" target="_blank">&#128279; &#913;&#957;&#959;&#953;&#947;&#956;&#945;</a>' +
-          '<button class="btn btn-copy" id="copybtn-' + globalIdx + '" onclick="copyIframe(' + globalIdx + ')">&#128203; Copy iframe</button>' +
+          '<a class="btn btn-open" href="' + url + '" target="_blank">🔗 Άνοιγμα</a>' +
+          '<button class="btn btn-copy" id="copybtn-' + globalIdx + '" onclick="copyIframe(' + globalIdx + ')">📋 Copy iframe</button>' +
         '</div>' +
       '</div>';
     grid.appendChild(card);
@@ -147,7 +232,6 @@ function renderPagination(page, totalPages) {
   pagination.innerHTML = '';
   if (totalPages <= 1) return;
 
-  // Prev button
   var prev = document.createElement('button');
   prev.className = 'page-btn';
   prev.textContent = '←';
@@ -155,9 +239,7 @@ function renderPagination(page, totalPages) {
   prev.onclick = function() { renderPage(page - 1); };
   pagination.appendChild(prev);
 
-  // Page numbers with ellipsis
-  var pages = getPageNumbers(page, totalPages);
-  pages.forEach(function(p) {
+  getPageNumbers(page, totalPages).forEach(function(p) {
     if (p === '...') {
       var dots = document.createElement('span');
       dots.className = 'page-info';
@@ -172,7 +254,6 @@ function renderPagination(page, totalPages) {
     }
   });
 
-  // Next button
   var next = document.createElement('button');
   next.className = 'page-btn';
   next.textContent = '→';
@@ -180,16 +261,14 @@ function renderPagination(page, totalPages) {
   next.onclick = function() { renderPage(page + 1); };
   pagination.appendChild(next);
 
-  // Info text
   var info = document.createElement('span');
   info.className = 'page-info';
-  var start = (page - 1) * PER_PAGE + 1;
-  var end   = Math.min(page * PER_PAGE, allFiles.length);
-  info.textContent = start + '–' + end + ' / ' + allFiles.length;
+  var s = (page - 1) * PER_PAGE + 1;
+  var e = Math.min(page * PER_PAGE, filtered.length);
+  info.textContent = s + '–' + e + ' / ' + filtered.length;
   pagination.appendChild(info);
 }
 
-// Δημιουργεί λίστα σελίδων με ellipsis για μεγάλο αριθμό σελίδων
 function getPageNumbers(current, total) {
   if (total <= 7) {
     var arr = [];
@@ -198,18 +277,25 @@ function getPageNumbers(current, total) {
   }
   var pages = [1];
   if (current > 3) pages.push('...');
-  for (var i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
-    pages.push(i);
-  }
+  for (var i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
   if (current < total - 2) pages.push('...');
   pages.push(total);
   return pages;
 }
 
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function highlight(text, q) {
+  var escaped  = escHtml(text);
+  var escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escaped.replace(new RegExp('(' + escapedQ + ')', 'gi'), '<mark>$1</mark>');
+}
+
 function copyIframe(i) {
   var text = iframeCodes[i];
   var btn  = document.getElementById('copybtn-' + i);
-
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(text).then(function() { flash(btn); }).catch(function() { fallback(text, btn); });
   } else {
@@ -231,9 +317,9 @@ function fallback(text, btn) {
 }
 
 function flash(btn) {
-  btn.textContent = '&#10003; Αντιγράφηκε!';
+  btn.textContent = '✅ Αντιγράφηκε!';
   btn.classList.add('copied');
-  setTimeout(function() { btn.textContent = '&#128203; Copy iframe'; btn.classList.remove('copied'); }, 2000);
+  setTimeout(function() { btn.textContent = '📋 Copy iframe'; btn.classList.remove('copied'); }, 2000);
 }
 
 load();
