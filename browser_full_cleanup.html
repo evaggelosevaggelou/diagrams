@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browser Full Cleanup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .clean-icon {
+    font-size: 2.6rem;
+    display: block;
+    margin: 0 auto 8px;
+    line-height: 1;
+  }
+
+  .header h1 {
+    font-size: 1.22rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+  }
+  .header p {
+    font-size: 0.82rem;
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f0faf4;
+    border: 1.5px solid #a8dfc0;
+    color: #1c7c48;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 13px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 8px auto 0;
+    transition: all 0.2s;
+  }
+  .lang-btn:hover { background: #d4f5e2; }
+
+  .section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Phase tabs */
+  .phase-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .phase-tab {
+    background: #f8fffe;
+    border: 1.5px solid #b8e8d0;
+    border-radius: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .phase-tab:hover { border-color: #1c7c48; box-shadow: 0 3px 14px rgba(28,124,72,0.12); }
+  .phase-tab.active { border-color: #1c7c48; background: #edfaf4; }
+
+  .phase-num {
+    width: 24px;
+    height: 24px;
+    background: #1c7c48;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 7px;
+  }
+  .phase-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+  }
+  .phase-sub {
+    font-size: 0.74rem;
+    color: #777;
+    line-height: 1.4;
+  }
+
+  .phase-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease;
+  }
+  .phase-detail.open { max-height: 300px; }
+  .phase-detail-inner {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #b8e8d0;
+  }
+
+  .browser-block { margin-bottom: 10px; }
+  .browser-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #1c7c48;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .mini-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 4px;
+  }
+  .mini-arrow {
+    color: #1c7c48;
+    font-size: 0.7rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .mini-txt {
+    font-size: 0.75rem;
+    color: #444;
+    line-height: 1.4;
+  }
+
+  code.inline {
+    background: #e0f5ea;
+    color: #1c6040;
+    font-size: 0.72rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+  }
+
+  /* Warning box */
+  .warn-box {
+    background: #fffbf0;
+    border: 1.5px solid #f5d76e;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .warn-box:hover { border-color: #e0a800; background: #fff8e0; }
+  .warn-box.active { border-color: #e0a800; }
+
+  .warn-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .warn-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #8a6500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .warn-toggle {
+    font-size: 0.72rem;
+    color: #aaa;
+    transition: transform 0.2s;
+  }
+  .warn-box.active .warn-toggle { transform: rotate(180deg); }
+
+  .warn-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+  }
+  .warn-detail.open { max-height: 120px; }
+  .warn-detail-inner {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* Quick actions */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .quick-card {
+    background: #fff;
+    border: 1.5px solid #dce6ff;
+    border-radius: 9px;
+    padding: 10px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quick-card:hover { border-color: #1c7c48; background: #f0faf4; }
+  .quick-card.active { border-color: #1c7c48; background: #edfaf4; }
+
+  .quick-icon { font-size: 1.3rem; margin-bottom: 4px; }
+  .quick-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.3;
+  }
+
+  .quick-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s;
+  }
+  .quick-detail.open { max-height: 100px; }
+  .quick-detail-inner {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed #b8e8d0;
+    font-size: 0.7rem;
+    color: #555;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  .click-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="clean-icon">🧹</span>
+    <h1 id="main-title">Πλήρης Καθαρισμός του Browser</h1>
+    <p id="main-sub">Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες</p>
+    <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">English</span></button>
+  </div>
+
+  <!-- Phase 1 + 2 -->
+  <div class="section-title"><span>🔧</span> <span id="s1-title">Βήματα Καθαρισμού</span></div>
+  <div class="phase-tabs">
+
+    <div class="phase-tab" onclick="toggleCard(this)">
+      <div class="phase-num">1</div>
+      <div class="phase-title" id="p1-title">Cookies & Προσωρινά</div>
+      <div class="phase-sub" id="p1-sub">Διαγραφή δεδομένων περιήγησης</div>
+      <div class="phase-detail">
+        <div class="phase-detail-inner">
+          <div class="browser-block">
+            <div class="browser-label">🔵 <span id="p1-chrome-lbl">Chrome</span></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p1c1">⋮ → Ρυθμίσεις → Απόρρητο και ασφάλεια</div></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p1c2">«Διαγραφή δεδομένων περιήγησης» → Προηγμένες</div></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p1c3">Επίλεξε όλα + «Όλη η χρονική περίοδος»</div></div>
+          </div>
+          <div class="browser-block">
+            <div class="browser-label">🦊 <span id="p1-ff-lbl">Firefox</span></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p1f1">☰ → Ιστορικό → Απαλοιφή πρόσφατου ιστορικού</div></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p1f2">Εύρος χρόνου: «Όλα» + τσεκ όλα τα πεδία</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-tab" onclick="toggleCard(this)">
+      <div class="phase-num">2</div>
+      <div class="phase-title" id="p2-title">Επαναφορά Ρυθμίσεων</div>
+      <div class="phase-sub" id="p2-sub">Για επίμονα προβλήματα</div>
+      <div class="phase-detail">
+        <div class="phase-detail-inner">
+          <div class="browser-block">
+            <div class="browser-label">🔵 <span id="p2-chrome-lbl">Chrome</span></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p2c1">Ρυθμίσεις → «Επαναφορά ρυθμίσεων»</div></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p2c2">«Επαναφορά στις αρχικές προεπιλογές» → Επιβεβαίωση</div></div>
+          </div>
+          <div class="browser-block">
+            <div class="browser-label">🦊 <span id="p2-ff-lbl">Firefox</span></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p2f1">Βοήθεια → Πληροφορίες αντιμετώπισης προβλημάτων</div></div>
+            <div class="mini-step"><div class="mini-arrow">▸</div><div class="mini-txt" id="p2f2">«Ανανέωση του Firefox» → Επιβεβαίωση</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Warning box -->
+  <div class="warn-box" onclick="toggleCard(this)">
+    <div class="warn-header">
+      <div class="warn-title">⚠️ <span id="warn-title">Τι χάνεται με την Επαναφορά;</span></div>
+      <div class="warn-toggle">▼</div>
+    </div>
+    <div class="warn-detail">
+      <div class="warn-detail-inner">
+        <span id="warn-text-lose">❌ Χάνεις: </span><span id="warn-lose">Όλες τις επεκτάσεις, προσωπικές ρυθμίσεις, αποθηκευμένες φόρμες</span><br><br>
+        <span id="warn-text-keep">✅ Κρατάς: </span><span id="warn-keep">Σελιδοδείκτες, αποθηκευμένους κωδικούς πρόσβασης</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick tips -->
+  <div class="section-title"><span>⚡</span> <span id="s2-title">Γρήγορες Ενέργειες μετά τον Καθαρισμό</span></div>
+  <div class="quick-grid">
+    <div class="quick-card" onclick="toggleCard(this)">
+      <div class="quick-icon">🔄</div>
+      <div class="quick-label" id="q1-label">Επανεκκίνηση Browser</div>
+      <div class="quick-detail"><div class="quick-detail-inner" id="q1-detail">Κλείσε και άνοιξε ξανά τον browser μετά κάθε αλλαγή για σωστή εφαρμογή ρυθμίσεων.</div></div>
+    </div>
+    <div class="quick-card" onclick="toggleCard(this)">
+      <div class="quick-icon">🔒</div>
+      <div class="quick-label" id="q2-label">Άλλαξε Κωδικούς</div>
+      <div class="quick-detail"><div class="quick-detail-inner" id="q2-detail">Email, τράπεζα, κοινωνικά δίκτυα. Ενεργοποίησε 2-factor authentication παντού.</div></div>
+    </div>
+    <div class="quick-card" onclick="toggleCard(this)">
+      <div class="quick-icon">🛡️</div>
+      <div class="quick-label" id="q3-label">Σάρωση Antivirus</div>
+      <div class="quick-detail"><div class="quick-detail-inner" id="q3-detail">Εκτέλεσε πλήρη σάρωση με Windows Defender, Malwarebytes ή Avast Free.</div></div>
+    </div>
+    <div class="quick-card" onclick="toggleCard(this)">
+      <div class="quick-icon">📦</div>
+      <div class="quick-label" id="q4-label">Έλεγξε Προγράμματα</div>
+      <div class="quick-detail"><div class="quick-detail-inner" id="q4-detail">Πίνακας Ελέγχου → Προγράμματα. Ταξινόμησε κατά ημερομηνία και διέγραψε ύποπτα.</div></div>
+    </div>
+    <div class="quick-card" onclick="toggleCard(this)">
+      <div class="quick-icon">⬆️</div>
+      <div class="quick-label" id="q5-label">Ενημέρωσε Browser</div>
+      <div class="quick-detail"><div class="quick-detail-inner" id="q5-detail">Βεβαιώσου ότι ο browser σου είναι στην τελευταία έκδοση για μέγιστη ασφάλεια.</div></div>
+    </div>
+    <div class="quick-card" onclick="toggleCard(this)">
+      <div class="quick-icon">📅</div>
+      <div class="quick-label" id="q6-label">Τακτικός Έλεγχος</div>
+      <div class="quick-detail"><div class="quick-detail-inner" id="q6-detail">Ένας έλεγχος επεκτάσεων τον μήνα είναι αρκετός για να διατηρείς καθαρό browser.</div></div>
+    </div>
+  </div>
+
+  <div class="click-hint" id="click-hint">👆 Κάνε κλικ σε κάθε κάρτα για να δεις λεπτομέρειες</div>
+
+</div>
+
+<script>
+  let lang = 'el';
+
+  const translations = {
+    el: {
+      'main-title': 'Πλήρης Καθαρισμός του Browser',
+      'main-sub': 'Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες',
+      'lang-label': 'English',
+      's1-title': 'Βήματα Καθαρισμού',
+      'p1-title': 'Cookies & Προσωρινά', 'p1-sub': 'Διαγραφή δεδομένων περιήγησης',
+      'p1-chrome-lbl': 'Chrome', 'p1-ff-lbl': 'Firefox',
+      'p1c1': '⋮ → Ρυθμίσεις → Απόρρητο και ασφάλεια',
+      'p1c2': '«Διαγραφή δεδομένων περιήγησης» → Προηγμένες',
+      'p1c3': 'Επίλεξε όλα + «Όλη η χρονική περίοδος»',
+      'p1f1': '☰ → Ιστορικό → Απαλοιφή πρόσφατου ιστορικού',
+      'p1f2': 'Εύρος χρόνου: «Όλα» + τσεκ όλα τα πεδία',
+      'p2-title': 'Επαναφορά Ρυθμίσεων', 'p2-sub': 'Για επίμονα προβλήματα',
+      'p2-chrome-lbl': 'Chrome', 'p2-ff-lbl': 'Firefox',
+      'p2c1': 'Ρυθμίσεις → «Επαναφορά ρυθμίσεων»',
+      'p2c2': '«Επαναφορά στις αρχικές προεπιλογές» → Επιβεβαίωση',
+      'p2f1': 'Βοήθεια → Πληροφορίες αντιμετώπισης προβλημάτων',
+      'p2f2': '«Ανανέωση του Firefox» → Επιβεβαίωση',
+      'warn-title': 'Τι χάνεται με την Επαναφορά;',
+      'warn-text-lose': '❌ Χάνεις: ', 'warn-lose': 'Όλες τις επεκτάσεις, προσωπικές ρυθμίσεις, αποθηκευμένες φόρμες',
+      'warn-text-keep': '✅ Κρατάς: ', 'warn-keep': 'Σελιδοδείκτες, αποθηκευμένους κωδικούς πρόσβασης',
+      's2-title': 'Γρήγορες Ενέργειες μετά τον Καθαρισμό',
+      'q1-label': 'Επανεκκίνηση Browser',
+      'q1-detail': 'Κλείσε και άνοιξε ξανά τον browser μετά κάθε αλλαγή για σωστή εφαρμογή ρυθμίσεων.',
+      'q2-label': 'Άλλαξε Κωδικούς',
+      'q2-detail': 'Email, τράπεζα, κοινωνικά δίκτυα. Ενεργοποίησε 2-factor authentication παντού.',
+      'q3-label': 'Σάρωση Antivirus',
+      'q3-detail': 'Εκτέλεσε πλήρη σάρωση με Windows Defender, Malwarebytes ή Avast Free.',
+      'q4-label': 'Έλεγξε Προγράμματα',
+      'q4-detail': 'Πίνακας Ελέγχου → Προγράμματα. Ταξινόμησε κατά ημερομηνία και διέγραψε ύποπτα.',
+      'q5-label': 'Ενημέρωσε Browser',
+      'q5-detail': 'Βεβαιώσου ότι ο browser σου είναι στην τελευταία έκδοση για μέγιστη ασφάλεια.',
+      'q6-label': 'Τακτικός Έλεγχος',
+      'q6-detail': 'Ένας έλεγχος επεκτάσεων τον μήνα είναι αρκετός για να διατηρείς καθαρό browser.',
+      'click-hint': '👆 Κάνε κλικ σε κάθε κάρτα για να δεις λεπτομέρειες'
+    },
+    en: {
+      'main-title': 'Complete Browser Cleanup',
+      'main-sub': 'Click on each section to see details',
+      'lang-label': 'Ελληνικά',
+      's1-title': 'Cleanup Steps',
+      'p1-title': 'Cookies & Cache', 'p1-sub': 'Clear browsing data',
+      'p1-chrome-lbl': 'Chrome', 'p1-ff-lbl': 'Firefox',
+      'p1c1': '⋮ → Settings → Privacy and security',
+      'p1c2': '"Clear browsing data" → Advanced',
+      'p1c3': 'Check all + "All time" as time range',
+      'p1f1': '☰ → History → Clear Recent History',
+      'p1f2': 'Time range: "Everything" + check all fields',
+      'p2-title': 'Reset Settings', 'p2-sub': 'For persistent issues',
+      'p2-chrome-lbl': 'Chrome', 'p2-ff-lbl': 'Firefox',
+      'p2c1': 'Settings → "Reset settings"',
+      'p2c2': '"Restore settings to defaults" → Confirm',
+      'p2f1': 'Help → Troubleshooting Information',
+      'p2f2': '"Refresh Firefox" → Confirm',
+      'warn-title': 'What gets lost with Reset?',
+      'warn-text-lose': '❌ You lose: ', 'warn-lose': 'All extensions, personal settings, saved forms',
+      'warn-text-keep': '✅ You keep: ', 'warn-keep': 'Bookmarks, saved passwords',
+      's2-title': 'Quick Actions After Cleanup',
+      'q1-label': 'Restart Browser',
+      'q1-detail': 'Close and reopen the browser after any change to properly apply settings.',
+      'q2-label': 'Change Passwords',
+      'q2-detail': 'Email, bank, social networks. Enable 2-factor authentication everywhere.',
+      'q3-label': 'Antivirus Scan',
+      'q3-detail': 'Run a full scan with Windows Defender, Malwarebytes or Avast Free.',
+      'q4-label': 'Check Programs',
+      'q4-detail': 'Control Panel → Programs. Sort by date and remove anything suspicious.',
+      'q5-label': 'Update Browser',
+      'q5-detail': 'Make sure your browser is on the latest version for maximum security.',
+      'q6-label': 'Monthly Check',
+      'q6-detail': 'One extension review per month is enough to keep a clean browser.',
+      'click-hint': '👆 Click on each card to see details'
+    }
+  };
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    const t = translations[lang];
+    for (const [id, text] of Object.entries(t)) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+    document.documentElement.lang = lang;
+  }
+
+  function toggleCard(card) {
+    const detail = card.querySelector('.phase-detail, .warn-detail, .quick-detail');
+    if (!detail) return;
+    const isOpen = detail.classList.contains('open');
+    detail.classList.toggle('open', !isOpen);
+    card.classList.toggle('active', !isOpen);
+  }
+</script>
+</body>
+</html>
