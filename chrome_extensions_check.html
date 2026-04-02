@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chrome Extensions Check</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .chrome-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 10px;
+    display: block;
+  }
+
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f0f4ff;
+    border: 1.5px solid #c7d4f5;
+    color: #3a5bd9;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 13px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 8px auto 0;
+    transition: all 0.2s;
+  }
+  .lang-btn:hover { background: #dce6ff; }
+
+  .methods-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .method-card {
+    background: #f8faff;
+    border: 1.5px solid #dce6ff;
+    border-radius: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: all 0.22s;
+    position: relative;
+  }
+  .method-card:hover { border-color: #4a7aff; box-shadow: 0 3px 14px rgba(74,122,255,0.13); }
+  .method-card.active { border-color: #4a7aff; background: #eef3ff; }
+
+  .method-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4a7aff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+  }
+  .method-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+  }
+  .method-sub {
+    font-size: 0.76rem;
+    color: #777;
+  }
+
+  .method-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+  }
+  .method-detail.open { max-height: 200px; }
+
+  .method-detail-inner {
+    margin-top: 9px;
+    padding-top: 9px;
+    border-top: 1px dashed #c7d4f5;
+  }
+
+  .method-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 5px;
+  }
+  .method-step-num {
+    background: #4a7aff;
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .method-step-txt {
+    font-size: 0.76rem;
+    color: #444;
+    line-height: 1.4;
+  }
+
+  code.inline {
+    background: #e8edff;
+    color: #3a5bd9;
+    font-size: 0.73rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+  }
+
+  .section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .checks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-bottom: 14px;
+  }
+
+  .check-card {
+    background: #fff;
+    border: 1.5px solid #e8edff;
+    border-radius: 10px;
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .check-card:hover { border-color: #4a7aff; box-shadow: 0 2px 10px rgba(74,122,255,0.1); }
+  .check-card.active { border-color: #4a7aff; background: #f4f7ff; }
+
+  .check-icon { font-size: 1.2rem; margin-bottom: 4px; }
+  .check-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+  }
+  .check-sub {
+    font-size: 0.72rem;
+    color: #888;
+    line-height: 1.4;
+  }
+
+  .check-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+  }
+  .check-detail.open { max-height: 160px; }
+  .check-detail-inner {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #dce6ff;
+    font-size: 0.74rem;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .flags-list {
+    background: #fff5f5;
+    border: 1.5px solid #ffc8c8;
+    border-radius: 10px;
+    padding: 13px 15px;
+  }
+  .flags-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #d93a3a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .flag-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 5px;
+    font-size: 0.75rem;
+    color: #555;
+    line-height: 1.4;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .flag-item:hover { background: #ffeaea; }
+  .flag-dot { width: 6px; height: 6px; background: #d93a3a; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+  .click-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <!-- Chrome icon SVG -->
+    <svg class="chrome-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="20" fill="#4285F4"/>
+      <circle cx="24" cy="24" r="9" fill="white"/>
+      <circle cx="24" cy="24" r="6" fill="#4285F4"/>
+      <path d="M24 15 L40 15 A16 16 0 0 1 46 24" fill="none" stroke="#EA4335" stroke-width="6"/>
+      <path d="M24 15 L8 15 A16 16 0 0 0 2 24" fill="none" stroke="#FBBC04" stroke-width="6"/>
+      <path d="M8 15 A16 16 0 0 0 8 33 L16 27" fill="none" stroke="#34A853" stroke-width="6"/>
+      <circle cx="24" cy="24" r="6" fill="white"/>
+    </svg>
+    <h1 id="main-title">🔍 Έλεγχος Επεκτάσεων στο Google Chrome</h1>
+    <p id="main-sub">Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες</p>
+    <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">English</span></button>
+  </div>
+
+  <!-- Step 1: Access -->
+  <div class="section-title"><span>1️⃣</span> <span id="s1-title">Πώς να ανοίξεις τις Επεκτάσεις</span></div>
+  <div class="methods-row">
+    <div class="method-card" onclick="toggleCard(this)">
+      <div class="method-label" id="ma-label">Τρόπος Α</div>
+      <div class="method-title" id="ma-title">Μενού Chrome</div>
+      <div class="method-sub" id="ma-sub">Μέσω του κεντρικού μενού ρυθμίσεων</div>
+      <div class="method-detail">
+        <div class="method-detail-inner">
+          <div class="method-step"><div class="method-step-num">1</div><div class="method-step-txt" id="ma-1">Πάτησε ⋮ επάνω δεξιά στον Chrome</div></div>
+          <div class="method-step"><div class="method-step-num">2</div><div class="method-step-txt" id="ma-2">Επίλεξε «Επεκτάσεις»</div></div>
+          <div class="method-step"><div class="method-step-num">3</div><div class="method-step-txt" id="ma-3">Πάτησε «Διαχείριση επεκτάσεων»</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="method-card" onclick="toggleCard(this)">
+      <div class="method-label" id="mb-label">Τρόπος Β</div>
+      <div class="method-title" id="mb-title">Γραμμή Διευθύνσεων</div>
+      <div class="method-sub" id="mb-sub">Ο πιο γρήγορος τρόπος</div>
+      <div class="method-detail">
+        <div class="method-detail-inner">
+          <div class="method-step"><div class="method-step-num">1</div><div class="method-step-txt" id="mb-1">Πληκτρολόγησε στη γραμμή διευθύνσεων:</div></div>
+          <div class="method-step"><div class="method-step-num">2</div><div class="method-step-txt"><code class="inline">chrome://extensions</code></div></div>
+          <div class="method-step"><div class="method-step-num">3</div><div class="method-step-txt" id="mb-3">Πάτησε Enter ✓</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: What to check -->
+  <div class="section-title"><span>2️⃣</span> <span id="s2-title">Τι να ελέγξεις σε κάθε Επέκταση</span></div>
+  <div class="checks-grid">
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">🏷️</div>
+      <div class="check-label" id="c1-label">Όνομα</div>
+      <div class="check-sub" id="c1-sub">Το αναγνωρίζεις;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c1-detail">Αν δεν θυμάσαι να την εγκατέστησες, υπάρχει λόγος ανησυχίας. Αναζήτησέ το στο Google.</div></div>
+    </div>
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">📋</div>
+      <div class="check-label" id="c2-label">Λειτουργία</div>
+      <div class="check-sub" id="c2-sub">Τη χρειάζεσαι πραγματικά;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c2-detail">Διάβασε την περιγραφή. Αν δεν εξυπηρετεί κάποιο συγκεκριμένο σκοπό για σένα, καλύτερα να τη διαγράψεις.</div></div>
+    </div>
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">🔑</div>
+      <div class="check-label" id="c3-label">Δικαιώματα</div>
+      <div class="check-sub" id="c3-sub">Τι πρόσβαση ζητά;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c3-detail">Από τις «Λεπτομέρειες» δες σε τι έχει πρόσβαση. Μια απλή επέκταση δεν χρειάζεται πρόσβαση σε ΟΛΑ τα δεδομένα.</div></div>
+    </div>
+    <div class="check-card" onclick="toggleCard(this)">
+      <div class="check-icon">⭐</div>
+      <div class="check-label" id="c4-label">Αξιολογήσεις</div>
+      <div class="check-sub" id="c4-sub">Τι λένε οι άλλοι;</div>
+      <div class="check-detail"><div class="check-detail-inner" id="c4-detail">Πολλά αρνητικά σχόλια ή χαμηλή βαθμολογία στο Chrome Web Store είναι σαφές κακό σημάδι.</div></div>
+    </div>
+  </div>
+
+  <!-- Red flags -->
+  <div class="flags-list">
+    <div class="flags-title">🚩 <span id="flags-title">Προσοχή — Σημεία Κινδύνου</span></div>
+    <div class="flag-item"><div class="flag-dot"></div><span id="f1">Άγνωστο ή περίεργο όνομα επέκτασης</span></div>
+    <div class="flag-item"><div class="flag-dot"></div><span id="f2">Ζητά πρόσβαση σε ΟΛΑ τα δεδομένα σου σε κάθε ιστοσελίδα</span></div>
+    <div class="flag-item"><div class="flag-dot"></div><span id="f3">Δεν έχει αξιολογήσεις ή έχει πολλές αρνητικές κριτικές</span></div>
+    <div class="flag-item"><div class="flag-dot"></div><span id="f4">Μοιάζει με γνωστή επέκταση αλλά με παραλλαγή στο όνομα</span></div>
+    <div class="flag-item"><div class="flag-dot"></div><span id="f5">Υπόσχεται «δωρεάν προστασία» ή «επιτάχυνση browser»</span></div>
+  </div>
+
+  <div class="click-hint" id="click-hint">👆 Κάνε κλικ σε κάθε κάρτα για να δεις λεπτομέρειες</div>
+
+</div>
+
+<script>
+  let lang = 'el';
+
+  const translations = {
+    el: {
+      'main-title': '🔍 Έλεγχος Επεκτάσεων στο Google Chrome',
+      'main-sub': 'Κάνε κλικ σε κάθε ενότητα για λεπτομέρειες',
+      'lang-label': 'English',
+      's1-title': 'Πώς να ανοίξεις τις Επεκτάσεις',
+      'ma-label': 'Τρόπος Α',
+      'ma-title': 'Μενού Chrome',
+      'ma-sub': 'Μέσω του κεντρικού μενού ρυθμίσεων',
+      'ma-1': 'Πάτησε ⋮ επάνω δεξιά στον Chrome',
+      'ma-2': 'Επίλεξε «Επεκτάσεις»',
+      'ma-3': 'Πάτησε «Διαχείριση επεκτάσεων»',
+      'mb-label': 'Τρόπος Β',
+      'mb-title': 'Γραμμή Διευθύνσεων',
+      'mb-sub': 'Ο πιο γρήγορος τρόπος',
+      'mb-1': 'Πληκτρολόγησε στη γραμμή διευθύνσεων:',
+      'mb-3': 'Πάτησε Enter ✓',
+      's2-title': 'Τι να ελέγξεις σε κάθε Επέκταση',
+      'c1-label': 'Όνομα', 'c1-sub': 'Το αναγνωρίζεις;',
+      'c1-detail': 'Αν δεν θυμάσαι να την εγκατέστησες, υπάρχει λόγος ανησυχίας. Αναζήτησέ το στο Google.',
+      'c2-label': 'Λειτουργία', 'c2-sub': 'Τη χρειάζεσαι πραγματικά;',
+      'c2-detail': 'Διάβασε την περιγραφή. Αν δεν εξυπηρετεί κάποιο συγκεκριμένο σκοπό για σένα, καλύτερα να τη διαγράψεις.',
+      'c3-label': 'Δικαιώματα', 'c3-sub': 'Τι πρόσβαση ζητά;',
+      'c3-detail': 'Από τις «Λεπτομέρειες» δες σε τι έχει πρόσβαση. Μια απλή επέκταση δεν χρειάζεται πρόσβαση σε ΟΛΑ τα δεδομένα.',
+      'c4-label': 'Αξιολογήσεις', 'c4-sub': 'Τι λένε οι άλλοι;',
+      'c4-detail': 'Πολλά αρνητικά σχόλια ή χαμηλή βαθμολογία στο Chrome Web Store είναι σαφές κακό σημάδι.',
+      'flags-title': 'Προσοχή — Σημεία Κινδύνου',
+      'f1': 'Άγνωστο ή περίεργο όνομα επέκτασης',
+      'f2': 'Ζητά πρόσβαση σε ΟΛΑ τα δεδομένα σου σε κάθε ιστοσελίδα',
+      'f3': 'Δεν έχει αξιολογήσεις ή έχει πολλές αρνητικές κριτικές',
+      'f4': 'Μοιάζει με γνωστή επέκταση αλλά με παραλλαγή στο όνομα',
+      'f5': 'Υπόσχεται «δωρεάν προστασία» ή «επιτάχυνση browser»',
+      'click-hint': '👆 Κάνε κλικ σε κάθε κάρτα για να δεις λεπτομέρειες'
+    },
+    en: {
+      'main-title': '🔍 Checking Extensions in Google Chrome',
+      'main-sub': 'Click on each section to see details',
+      'lang-label': 'Ελληνικά',
+      's1-title': 'How to Open the Extensions List',
+      'ma-label': 'Method A',
+      'ma-title': 'Chrome Menu',
+      'ma-sub': 'Via the main settings menu',
+      'ma-1': 'Click ⋮ at the top right of Chrome',
+      'ma-2': 'Select "Extensions"',
+      'ma-3': 'Click "Manage extensions"',
+      'mb-label': 'Method B',
+      'mb-title': 'Address Bar',
+      'mb-sub': 'The fastest way',
+      'mb-1': 'Type in the address bar:',
+      'mb-3': 'Press Enter ✓',
+      's2-title': 'What to Check in Each Extension',
+      'c1-label': 'Name', 'c1-sub': 'Do you recognize it?',
+      'c1-detail': 'If you don\'t remember installing it, that\'s a red flag. Search for it on Google.',
+      'c2-label': 'Function', 'c2-sub': 'Do you really need it?',
+      'c2-detail': 'Read the description. If it doesn\'t serve a specific purpose for you, it\'s better to delete it.',
+      'c3-label': 'Permissions', 'c3-sub': 'What access does it request?',
+      'c3-detail': 'In "Details" see what it has access to. A simple extension doesn\'t need access to ALL your data on every site.',
+      'c4-label': 'Ratings', 'c4-sub': 'What do others say?',
+      'c4-detail': 'Many negative reviews or low rating on the Chrome Web Store is a clear warning sign.',
+      'flags-title': 'Watch Out — Red Flags',
+      'f1': 'Unknown or strange extension name',
+      'f2': 'Requests access to ALL your data on every website',
+      'f3': 'Has no reviews or many negative ratings',
+      'f4': 'Looks like a known extension but with a slight name variation',
+      'f5': 'Promises "free protection" or "browser speed boost"',
+      'click-hint': '👆 Click on each card to see details'
+    }
+  };
+
+  function toggleLang() {
+    lang = lang === 'el' ? 'en' : 'el';
+    const t = translations[lang];
+    for (const [id, text] of Object.entries(t)) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+    document.documentElement.lang = lang;
+  }
+
+  function toggleCard(card) {
+    const detail = card.querySelector('.method-detail, .check-detail');
+    if (!detail) return;
+    const isOpen = detail.classList.contains('open');
+    detail.classList.toggle('open', !isOpen);
+    card.classList.toggle('active', !isOpen);
+  }
+</script>
+</body>
+</html>
