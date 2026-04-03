@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Αλλαγή DNS στα Windows 11 — Βήμα προς Βήμα</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f7fa;
+    --surface2: #eef1f6;
+    --border: #dde3ed;
+    --accent: #0078d4;
+    --accent2: #106ebe;
+    --accent-light: #e8f1fb;
+    --success: #107c10;
+    --success-light: #e6f4e6;
+    --text: #1a1d23;
+    --text2: #4a5568;
+    --text3: #8a9bb0;
+    --win-blue: #0067b8;
+    --win-bar: #f3f3f3;
+    --shadow: 0 2px 16px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 32px rgba(0,120,212,0.18);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    background: var(--bg);
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ─── LAYOUT ─── */
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 20px 48px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    position: relative;
+  }
+  .header-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #0078d4, #106ebe);
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 20px rgba(0,120,212,0.3);
+  }
+  .header-icon svg { width: 34px; height: 34px; fill: #fff; }
+  .header h1 {
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 0.98rem;
+    color: var(--text2);
+    max-width: 540px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+  }
+
+  /* ─── LANG TOGGLE ─── */
+  .lang-toggle {
+    display: inline-flex;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 30px;
+    padding: 4px;
+    gap: 2px;
+  }
+  .lang-btn {
+    padding: 7px 18px;
+    border-radius: 24px;
+    border: none;
+    background: transparent;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.22s ease;
+    letter-spacing: 0.01em;
+  }
+  .lang-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0,120,212,0.3);
+  }
+  .lang-btn:not(.active):hover { background: var(--surface); color: var(--text); }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 6px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0078d4, #00bcf2);
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 0.82rem;
+    color: var(--text3);
+    text-align: right;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  /* ─── STEP CARD ─── */
+  .step-card {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .step-card:hover { border-color: #b3d4f5; box-shadow: var(--shadow); }
+  .step-card.open { border-color: var(--accent); box-shadow: var(--shadow-hover); }
+  .step-card.completed { border-color: #5db05d; }
+  .step-card.completed .step-num { background: var(--success); }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--bg);
+    transition: background 0.2s;
+  }
+  .step-card.open .step-header { background: var(--accent-light); }
+  .step-card.completed .step-header { background: var(--success-light); }
+
+  .step-num {
+    width: 36px; height: 36px; min-width: 36px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.95rem;
+    transition: background 0.25s;
+  }
+  .step-check {
+    width: 36px; height: 36px; min-width: 36px;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .step-card.completed .step-num { display: none; }
+  .step-card.completed .step-check { display: flex; }
+
+  .step-title-wrap { flex: 1; }
+  .step-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .step-subtitle {
+    font-size: 0.82rem;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .step-chevron {
+    color: var(--text3);
+    transition: transform 0.3s ease;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .step-card.open .step-chevron { transform: rotate(180deg); color: var(--accent); }
+
+  /* ─── STEP BODY ─── */
+  .step-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .step-card.open .step-body { max-height: 800px; }
+
+  .step-body-inner {
+    padding: 0 20px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .step-desc p {
+    font-size: 0.95rem;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+  .step-desc p:last-child { margin-bottom: 0; }
+  .step-desc strong { color: var(--text); font-weight: 600; }
+  .step-desc code {
+    background: var(--surface2);
+    color: var(--accent2);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    font-weight: 600;
+    border: 1px solid var(--border);
+  }
+  .step-desc .tip {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.88rem;
+    color: var(--accent2);
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+
+  /* ─── MARK DONE BUTTON ─── */
+  .mark-done-btn {
+    margin-top: 12px;
+    padding: 7px 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .mark-done-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .step-card.completed .mark-done-btn { background: var(--success); }
+
+  /* ════════════════════════════════
+     WINDOWS 11 MOCKUPS
+  ════════════════════════════════ */
+  .win-mockup {
+    background: #f3f3f3;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid #c9c9c9;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    font-family: 'Segoe UI', 'Outfit', sans-serif;
+    font-size: 11px;
+  }
+
+  /* Title bar */
+  .win-titlebar {
+    background: #f3f3f3;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  .win-titlebar-icon { font-size: 13px; }
+  .win-titlebar-title { flex: 1; font-size: 11px; color: #333; font-weight: 500; }
+  .win-titlebar-btns { display: flex; gap: 2px; }
+  .win-titlebar-btn {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #555;
+    cursor: default;
+  }
+  .win-titlebar-btn:hover { background: #e5e5e5; }
+  .win-titlebar-btn.close:hover { background: #c42b1c; color: #fff; }
+
+  /* Sidebar + content layout */
+  .win-body { display: flex; min-height: 160px; }
+  .win-sidebar {
+    width: 52px;
+    background: #f3f3f3;
+    border-right: 1px solid #e0e0e0;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .win-sidebar-icon {
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    color: #555;
+    cursor: default;
+  }
+  .win-sidebar-icon.active { background: #dce9f5; color: #0067b8; }
+
+  .win-content { flex: 1; padding: 12px; background: #fff; }
+  .win-content-title {
+    font-size: 14px; font-weight: 600; color: #1a1a1a;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* Settings item */
+  .win-setting-item {
+    display: flex; align-items: center;
+    padding: 7px 8px;
+    border-radius: 6px;
+    margin-bottom: 3px;
+    gap: 8px;
+  }
+  .win-setting-item.highlight { background: #dce9f5; border: 1.5px solid #0078d4; }
+  .win-setting-item.normal { background: #f5f5f5; }
+  .win-setting-item-icon { font-size: 14px; width: 22px; text-align: center; }
+  .win-setting-item-text { flex: 1; }
+  .win-setting-item-label { font-size: 11px; font-weight: 500; color: #1a1a1a; }
+  .win-setting-item-sub { font-size: 9px; color: #666; }
+  .win-setting-item-arrow { color: #888; font-size: 9px; }
+
+  /* Toggle switch */
+  .win-toggle {
+    width: 34px; height: 18px;
+    border-radius: 9px;
+    display: flex; align-items: center;
+    padding: 2px;
+    transition: background 0.2s;
+  }
+  .win-toggle.on { background: #0078d4; justify-content: flex-end; }
+  .win-toggle.off { background: #ccc; justify-content: flex-start; }
+  .win-toggle-knob {
+    width: 14px; height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* Input field */
+  .win-input {
+    border: 1.5px solid #0078d4;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    color: #1a1a1a;
+    background: #fff;
+    width: 100%;
+    margin-bottom: 5px;
+    font-family: 'Courier New', monospace;
+  }
+  .win-input-label { font-size: 9px; color: #555; margin-bottom: 3px; }
+
+  /* Button */
+  .win-btn {
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: default;
+    display: inline-block;
+  }
+  .win-btn.primary { background: #0078d4; color: #fff; border-color: #0067b8; }
+  .win-btn.secondary { background: #f3f3f3; color: #1a1a1a; border-color: #ccc; margin-left: 5px; }
+  .win-btn.highlight-btn { background: #0078d4; color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0078d4; }
+
+  /* Dropdown */
+  .win-dropdown {
+    border: 1.5px solid #0078d4;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    color: #1a1a1a;
+    background: #fff;
+    width: 100%;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .win-dropdown-arrow { color: #555; font-size: 8px; }
+
+  /* Keyboard shortcut display */
+  .kbd-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: #1a1d23;
+    border-radius: 10px;
+  }
+  .kbd-key {
+    background: #2d3748;
+    color: #e2e8f0;
+    border: 1.5px solid #4a5568;
+    border-bottom: 3px solid #4a5568;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .kbd-key svg { width: 16px; height: 16px; fill: #90caf9; }
+  .kbd-plus { color: #718096; font-size: 14px; font-weight: 700; }
+
+  /* IP address display */
+  .ip-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    background: #f8fafd;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+  }
+  .ip-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .ip-label { font-size: 0.75rem; color: var(--text3); font-weight: 500; width: 90px; flex-shrink: 0; }
+  .ip-value {
+    font-family: 'Courier New', monospace;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── SUMMARY ─── */
+  .summary-card {
+    background: linear-gradient(135deg, #0078d4, #00bcf2);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    color: #fff;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .summary-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+  .summary-card p { font-size: 0.9rem; opacity: 0.9; line-height: 1.6; }
+  .summary-dns-list {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .summary-dns-pill {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 30px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 620px) {
+    .step-body-inner { grid-template-columns: 1fr; }
+    .page-wrap { padding: 24px 14px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+    </div>
+    <h1 data-el="page-title">⚙️ Αλλαγή DNS στα Windows 11</h1>
+    <p data-el="page-subtitle">Βήμα προς βήμα, με οπτικές οδηγίες για κάθε βήμα. Κάντε κλικ σε κάθε βήμα για λεπτομέρειες.</p>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('el')">🇬🇷 Ελληνικά</button>
+      <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-label" id="progressLabel">0 / 10 βήματα ολοκληρωμένα</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+
+  <!-- STEPS -->
+  <div id="steps-container"></div>
+
+  <!-- SUMMARY -->
+  <div class="summary-card">
+    <h3 data-el="summary-title">🎉 Έτοιμοι για ταχύτερο διαδίκτυο;</h3>
+    <p data-el="summary-desc">Μόλις αποθηκεύσετε, τα νέα DNS θα ισχύουν αμέσως. Επανεκκινήστε τον περιηγητή σας για βέλτιστα αποτελέσματα.</p>
+    <div class="summary-dns-list">
+      <div class="summary-dns-pill">☁️ 1.1.1.1</div>
+      <div class="summary-dns-pill">🔵 8.8.8.8</div>
+      <div class="summary-dns-pill">🛡️ 9.9.9.9</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DATA
+════════════════════════════════════════ */
+const steps = [
+  {
+    el: "step1",
+    titles: {
+      el: "Ανοίξτε τις Ρυθμίσεις",
+      en: "Open Settings"
+    },
+    subtitles: {
+      el: "Πληκτρολόγιο: Windows + I",
+      en: "Keyboard: Windows + I"
+    },
+    descs: {
+      el: `<p>Πατήστε ταυτόχρονα τα πλήκτρα <strong>Windows + I</strong> στο πληκτρολόγιό σας. Θα ανοίξει αμέσως το παράθυρο <strong>Ρυθμίσεις</strong> των Windows 11.</p><p class="tip">💡 Εναλλακτικά: κάντε δεξί κλικ στο κουμπί Έναρξη (⊞) και επιλέξτε «Ρυθμίσεις».</p>`,
+      en: `<p>Press <strong>Windows + I</strong> simultaneously on your keyboard. The Windows 11 <strong>Settings</strong> window will open immediately.</p><p class="tip">💡 Alternative: right-click the Start button (⊞) and select "Settings".</p>`
+    },
+    mockup: "kbd"
+  },
+  {
+    el: "step2",
+    titles: { el: "Δίκτυο και Διαδίκτυο", en: "Network & Internet" },
+    subtitles: { el: "Αριστερό μενού Ρυθμίσεων", en: "Settings left sidebar" },
+    descs: {
+      el: `<p>Στο παράθυρο Ρυθμίσεων, κάντε κλικ στην επιλογή <strong>«Δίκτυο και Διαδίκτυο»</strong> στο αριστερό μενού.</p>`,
+      en: `<p>In the Settings window, click on <strong>"Network & Internet"</strong> in the left sidebar menu.</p>`
+    },
+    mockup: "sidebar_network"
+  },
+  {
+    el: "step3",
+    titles: { el: "Επιλέξτε τη σύνδεσή σας", en: "Select your connection" },
+    subtitles: { el: "Wi-Fi ή Ethernet", en: "Wi-Fi or Ethernet" },
+    descs: {
+      el: `<p>Κάντε κλικ στο <strong>«Wi-Fi»</strong> αν συνδέεστε ασύρματα, ή στο <strong>«Ethernet»</strong> αν χρησιμοποιείτε καλώδιο δικτύου.</p><p class="tip">💡 Δεν είστε σίγουροι; Κοιτάξτε κάτω δεξιά στη γραμμή εργασιών — αν βλέπετε εικονίδιο Wi-Fi (📶) επιλέξτε Wi-Fi, αν βλέπετε οθόνη (🖥) επιλέξτε Ethernet.</p>`,
+      en: `<p>Click on <strong>"Wi-Fi"</strong> if you use wireless, or <strong>"Ethernet"</strong> if you use a network cable.</p><p class="tip">💡 Not sure? Check the taskbar bottom-right — Wi-Fi icon (📶) = select Wi-Fi, monitor icon (🖥) = select Ethernet.</p>`
+    },
+    mockup: "wifi_eth"
+  },
+  {
+    el: "step4",
+    titles: { el: "Ανοίξτε τις Ιδιότητες", en: "Open Properties" },
+    subtitles: { el: "Κλικ στο όνομα δικτύου", en: "Click on network name" },
+    descs: {
+      el: `<p>Κάντε κλικ στο <strong>όνομα της σύνδεσής σας</strong> (π.χ. «COSMOTE-123456» για Wi-Fi, ή «Ethernet» για καλώδιο) και μετά στο κουμπί <strong>«Ιδιότητες»</strong>.</p>`,
+      en: `<p>Click on the <strong>name of your connection</strong> (e.g. "MyNetwork-5G" for Wi-Fi, or "Ethernet" for cable) and then click the <strong>"Properties"</strong> button.</p>`
+    },
+    mockup: "properties"
+  },
+  {
+    el: "step5",
+    titles: { el: "Βρείτε τις ρυθμίσεις DNS", en: "Find DNS settings" },
+    subtitles: { el: "DNS server assignment", en: "DNS server assignment" },
+    descs: {
+      el: `<p>Κάντε κύλιση (scroll) προς τα κάτω στη σελίδα μέχρι να βρείτε την ενότητα <strong>«Ανάθεση διακομιστή DNS»</strong> (DNS server assignment).</p>`,
+      en: `<p>Scroll down the page until you find the section labeled <strong>"DNS server assignment"</strong>.</p>`
+    },
+    mockup: "dns_section"
+  },
+  {
+    el: "step6",
+    titles: { el: "Κάντε κλικ στο «Επεξεργασία»", en: "Click 'Edit'" },
+    subtitles: { el: "Επεξεργασία διευθύνσεων DNS", en: "Edit DNS addresses" },
+    descs: {
+      el: `<p>Δίπλα στο <strong>«DNS server assignment»</strong> υπάρχει ένα κουμπί <strong>«Edit»</strong> (Επεξεργασία). Κάντε κλικ εκεί για να ανοίξει το παράθυρο αλλαγής.</p>`,
+      en: `<p>Next to <strong>"DNS server assignment"</strong> there is an <strong>"Edit"</strong> button. Click it to open the DNS editing window.</p>`
+    },
+    mockup: "edit_btn"
+  },
+  {
+    el: "step7",
+    titles: { el: "Επιλέξτε «Χειροκίνητο»", en: "Select 'Manual'" },
+    subtitles: { el: "Αναπτυσσόμενο μενού", en: "Dropdown menu" },
+    descs: {
+      el: `<p>Στο παράθυρο που ανοίγει, κάντε κλικ στο αναπτυσσόμενο μενού και επιλέξτε <strong>«Manual»</strong> (Χειροκίνητο) αντί για «Automatic».</p>`,
+      en: `<p>In the dialog that opens, click the dropdown menu and select <strong>"Manual"</strong> instead of "Automatic (DHCP)".</p>`
+    },
+    mockup: "manual_dropdown"
+  },
+  {
+    el: "step8",
+    titles: { el: "Ενεργοποιήστε το IPv4", en: "Enable IPv4" },
+    subtitles: { el: "Διακόπτης On/Off", en: "Toggle switch" },
+    descs: {
+      el: `<p>Κάντε κλικ στον διακόπτη δίπλα στο <strong>«IPv4»</strong> για να τον ενεργοποιήσετε (γίνεται μπλε). Θα εμφανιστούν τα πεδία εισαγωγής DNS.</p><p class="tip">💡 Το IPv4 είναι το πρότυπο που χρησιμοποιούν οι περισσότεροι DNS. Δεν χρειάζεται να αλλάξετε το IPv6 εκτός αν γνωρίζετε τι κάνετε.</p>`,
+      en: `<p>Click the toggle next to <strong>"IPv4"</strong> to enable it (turns blue). The DNS input fields will appear below.</p><p class="tip">💡 IPv4 is the standard used by most DNS servers. You don't need to change IPv6 unless you know what you're doing.</p>`
+    },
+    mockup: "ipv4_toggle"
+  },
+  {
+    el: "step9",
+    titles: { el: "Εισάγετε τις διευθύνσεις DNS", en: "Enter DNS addresses" },
+    subtitles: { el: "Πληκτρολογήστε τις IP", en: "Type the IP addresses" },
+    descs: {
+      el: `<p>Συμπληρώστε τα δύο πεδία με τις διευθύνσεις DNS που επιλέξατε:</p><p>• <strong>Preferred DNS:</strong> η πρώτη IP (π.χ. <code>1.1.1.1</code>)<br>• <strong>Alternate DNS:</strong> η δεύτερη IP (π.χ. <code>1.0.0.1</code>)</p>`,
+      en: `<p>Fill in the two fields with your chosen DNS addresses:</p><p>• <strong>Preferred DNS:</strong> the first IP (e.g. <code>1.1.1.1</code>)<br>• <strong>Alternate DNS:</strong> the second IP (e.g. <code>1.0.0.1</code>)</p>`
+    },
+    mockup: "dns_inputs"
+  },
+  {
+    el: "step10",
+    titles: { el: "Αποθηκεύστε και τελειώσατε!", en: "Save and done!" },
+    subtitles: { el: "Κλικ στο «Save»", en: "Click 'Save'" },
+    descs: {
+      el: `<p>Κάντε κλικ στο κουμπί <strong>«Save»</strong> (Αποθήκευση). Τα νέα DNS ισχύουν <strong>αμέσως</strong>!</p><p class="tip">✅ Συνιστάται να επανεκκινήσετε τον περιηγητή σας (Chrome, Firefox κ.λπ.) για να εφαρμοστούν πλήρως οι αλλαγές.</p>`,
+      en: `<p>Click the <strong>"Save"</strong> button. Your new DNS settings take effect <strong>immediately</strong>!</p><p class="tip">✅ It is recommended to restart your browser (Chrome, Firefox, etc.) to fully apply the changes.</p>`
+    },
+    mockup: "save_btn"
+  }
+];
+
+/* ════════════════════════════════════════
+   MOCKUP HTML GENERATORS
+════════════════════════════════════════ */
+function getMockup(type, lang) {
+  const lbl = {
+    settings: { el:"Ρυθμίσεις", en:"Settings" },
+    network: { el:"Δίκτυο και Διαδίκτυο", en:"Network & Internet" },
+    wifi: { el:"Wi-Fi", en:"Wi-Fi" },
+    ethernet: { el:"Ethernet", en:"Ethernet" },
+    properties: { el:"Ιδιότητες", en:"Properties" },
+    dns_assign: { el:"Ανάθεση DNS", en:"DNS server assignment" },
+    edit: { el:"Επεξεργασία", en:"Edit" },
+    manual: { el:"Χειροκίνητο", en:"Manual" },
+    save: { el:"Αποθήκευση", en:"Save" },
+    cancel: { el:"Άκυρο", en:"Cancel" },
+    preferred: { el:"Προτιμώμενος DNS", en:"Preferred DNS" },
+    alternate: { el:"Εναλλακτικός DNS", en:"Alternate DNS" },
+    ipv4: { el:"IPv4", en:"IPv4" },
+    automatic: { el:"Αυτόματο (DHCP)", en:"Automatic (DHCP)" },
+    network_title: { el:"Δίκτυο", en:"Network" },
+  };
+  const t = k => lbl[k][lang] || lbl[k]['el'];
+
+  switch(type) {
+
+    case "kbd":
+      return `<div class="kbd-display">
+        <div class="kbd-key">
+          <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM11 6H8v3H6v2h2v3h3v-3h2v-2h-2V6zm7 4h-4v2h4v-2z"/></svg>
+          Win
+        </div>
+        <span class="kbd-plus">+</span>
+        <div class="kbd-key">I</div>
+      </div>`;
+
+    case "sidebar_network":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">⚙️</span>
+          <span class="win-titlebar-title">${t('settings')}</span>
+          <div class="win-titlebar-btns">
+            <div class="win-titlebar-btn">─</div>
+            <div class="win-titlebar-btn">□</div>
+            <div class="win-titlebar-btn close">✕</div>
+          </div>
+        </div>
+        <div class="win-body">
+          <div class="win-sidebar">
+            <div class="win-sidebar-icon">🏠</div>
+            <div class="win-sidebar-icon">👤</div>
+            <div class="win-sidebar-icon active">🌐</div>
+            <div class="win-sidebar-icon">🔵</div>
+            <div class="win-sidebar-icon">🎨</div>
+          </div>
+          <div class="win-content">
+            <div class="win-content-title">${t('network')}</div>
+            <div class="win-setting-item highlight">
+              <span class="win-setting-item-icon">🌐</span>
+              <div class="win-setting-item-text">
+                <div class="win-setting-item-label">${t('network')}</div>
+                <div class="win-setting-item-sub">Wi-Fi, Ethernet, VPN</div>
+              </div>
+              <span class="win-setting-item-arrow">›</span>
+            </div>
+            <div class="win-setting-item normal">
+              <span class="win-setting-item-icon">🔵</span>
+              <div class="win-setting-item-text"><div class="win-setting-item-label">Bluetooth</div></div>
+              <span class="win-setting-item-arrow">›</span>
+            </div>
+            <div class="win-setting-item normal">
+              <span class="win-setting-item-icon">🎨</span>
+              <div class="win-setting-item-text"><div class="win-setting-item-label">${lang === 'el' ? 'Εξατομίκευση' : 'Personalization'}</div></div>
+              <span class="win-setting-item-arrow">›</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    case "wifi_eth":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">🌐</span>
+          <span class="win-titlebar-title">${t('network')}</span>
+          <div class="win-titlebar-btns">
+            <div class="win-titlebar-btn">─</div><div class="win-titlebar-btn">□</div><div class="win-titlebar-btn close">✕</div>
+          </div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-content-title">${t('network')}</div>
+          <div class="win-setting-item highlight" style="margin-bottom:6px">
+            <span class="win-setting-item-icon">📶</span>
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label">${t('wifi')}</div>
+              <div class="win-setting-item-sub">${lang==='el'?'Συνδεδεμένο':'Connected'}</div>
+            </div>
+            <div class="win-toggle on"><div class="win-toggle-knob"></div></div>
+          </div>
+          <div class="win-setting-item normal">
+            <span class="win-setting-item-icon">🖥️</span>
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label">${t('ethernet')}</div>
+              <div class="win-setting-item-sub">${lang==='el'?'Αποσυνδεδεμένο':'Disconnected'}</div>
+            </div>
+            <div class="win-toggle off"><div class="win-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>`;
+
+    case "properties":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">📶</span>
+          <span class="win-titlebar-title">Wi-Fi › COSMOTE-A1B2C3</span>
+          <div class="win-titlebar-btns">
+            <div class="win-titlebar-btn">─</div><div class="win-titlebar-btn">□</div><div class="win-titlebar-btn close">✕</div>
+          </div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-setting-item normal" style="margin-bottom:8px">
+            <span class="win-setting-item-icon">📶</span>
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label" style="font-size:12px;font-weight:700">COSMOTE-A1B2C3</div>
+              <div class="win-setting-item-sub">${lang==='el'?'Συνδεδεμένο, ασφαλές':'Connected, Secured'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:5px;margin-bottom:6px">
+            <div class="win-btn highlight-btn">${t('properties')}</div>
+            <div class="win-btn secondary">${lang==='el'?'Αποσύνδεση':'Disconnect'}</div>
+          </div>
+        </div>
+      </div>`;
+
+    case "dns_section":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">📶</span>
+          <span class="win-titlebar-title">${t('properties')}</span>
+          <div class="win-titlebar-btns">
+            <div class="win-titlebar-btn">─</div><div class="win-titlebar-btn">□</div><div class="win-titlebar-btn close">✕</div>
+          </div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-setting-item normal" style="margin-bottom:5px;opacity:0.4">
+            <div class="win-setting-item-text"><div class="win-setting-item-label">IP ${lang==='el'?'ανάθεση':'assignment'}</div><div class="win-setting-item-sub">Automatic (DHCP)</div></div>
+          </div>
+          <div class="win-setting-item highlight">
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label" style="color:#0067b8">${t('dns_assign')}</div>
+              <div class="win-setting-item-sub">Automatic (DHCP)</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    case "edit_btn":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">📶</span>
+          <span class="win-titlebar-title">${t('properties')}</span>
+          <div class="win-titlebar-btns">
+            <div class="win-titlebar-btn">─</div><div class="win-titlebar-btn">□</div><div class="win-titlebar-btn close">✕</div>
+          </div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-setting-item highlight" style="margin-bottom:8px">
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label">${t('dns_assign')}</div>
+              <div class="win-setting-item-sub">Automatic (DHCP)</div>
+            </div>
+            <div class="win-btn highlight-btn" style="font-size:9px">${t('edit')}</div>
+          </div>
+        </div>
+      </div>`;
+
+    case "manual_dropdown":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">✏️</span>
+          <span class="win-titlebar-title">${lang==='el'?'Επεξεργασία DNS':'Edit DNS servers'}</span>
+          <div class="win-titlebar-btns">
+            <div class="win-titlebar-btn close">✕</div>
+          </div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-input-label">${lang==='el'?'Ρύθμιση διακομιστών DNS':'DNS server settings'}</div>
+          <div class="win-dropdown">
+            <span style="color:#0067b8;font-weight:600">${t('manual')}</span>
+            <span class="win-dropdown-arrow">▼</span>
+          </div>
+          <div style="font-size:9px;color:#666;margin-top:4px">${lang==='el'?'Χειροκίνητη εισαγωγή διευθύνσεων DNS':'Manual entry of DNS addresses'}</div>
+        </div>
+      </div>`;
+
+    case "ipv4_toggle":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">✏️</span>
+          <span class="win-titlebar-title">${lang==='el'?'Επεξεργασία DNS':'Edit DNS servers'}</span>
+          <div class="win-titlebar-btns"><div class="win-titlebar-btn close">✕</div></div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-setting-item highlight" style="margin-bottom:6px">
+            <span class="win-setting-item-icon" style="font-size:12px">4️⃣</span>
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label" style="color:#0067b8">${t('ipv4')} — ${lang==='el'?'Ενεργό':'On'}</div>
+              <div class="win-setting-item-sub">${lang==='el'?'Εισάγετε τις διευθύνσεις DNS':'Enter DNS addresses below'}</div>
+            </div>
+            <div class="win-toggle on"><div class="win-toggle-knob"></div></div>
+          </div>
+          <div class="win-setting-item normal">
+            <span class="win-setting-item-icon" style="font-size:12px">6️⃣</span>
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label">IPv6 — ${lang==='el'?'Ανενεργό':'Off'}</div>
+            </div>
+            <div class="win-toggle off"><div class="win-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>`;
+
+    case "dns_inputs":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">✏️</span>
+          <span class="win-titlebar-title">${t('ipv4')} DNS</span>
+          <div class="win-titlebar-btns"><div class="win-titlebar-btn close">✕</div></div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-input-label">${t('preferred')}:</div>
+          <input class="win-input" value="1.1.1.1" readonly>
+          <div class="win-input-label">${t('alternate')}:</div>
+          <input class="win-input" value="1.0.0.1" readonly>
+          <div class="win-input-label" style="font-size:8px;color:#888;margin-top:4px">${lang==='el'?'Παράδειγμα: Cloudflare DNS':'Example: Cloudflare DNS'}</div>
+        </div>
+      </div>`;
+
+    case "save_btn":
+      return `<div class="win-mockup">
+        <div class="win-titlebar">
+          <span class="win-titlebar-icon">✏️</span>
+          <span class="win-titlebar-title">${lang==='el'?'Αποθήκευση αλλαγών':'Save changes'}</span>
+          <div class="win-titlebar-btns"><div class="win-titlebar-btn close">✕</div></div>
+        </div>
+        <div class="win-content" style="padding:12px">
+          <div class="win-setting-item normal" style="margin-bottom:8px;background:#f0fff0;border:1px solid #5db05d">
+            <span class="win-setting-item-icon">✅</span>
+            <div class="win-setting-item-text">
+              <div class="win-setting-item-label" style="color:#107c10">${lang==='el'?'Έτοιμο για αποθήκευση!':'Ready to save!'}</div>
+              <div class="win-setting-item-sub">DNS: 1.1.1.1 / 1.0.0.1</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <div class="win-btn highlight-btn">${t('save')}</div>
+            <div class="win-btn secondary">${t('cancel')}</div>
+          </div>
+        </div>
+      </div>`;
+
+    default: return "";
+  }
+}
+
+/* ════════════════════════════════════════
+   STATE & RENDER
+════════════════════════════════════════ */
+let lang = 'el';
+let openIdx = null;
+let completed = new Set();
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && l === 'el') || (i === 1 && l === 'en'));
+  });
+  render();
+}
+
+function toggleStep(idx) {
+  openIdx = openIdx === idx ? null : idx;
+  render();
+}
+
+function markDone(idx, e) {
+  e.stopPropagation();
+  if (completed.has(idx)) {
+    completed.delete(idx);
+  } else {
+    completed.add(idx);
+    openIdx = idx < steps.length - 1 ? idx + 1 : null;
+  }
+  updateProgress();
+  render();
+}
+
+function updateProgress() {
+  const pct = (completed.size / steps.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  const label = lang === 'el'
+    ? `${completed.size} / ${steps.length} βήματα ολοκληρωμένα`
+    : `${completed.size} / ${steps.length} steps completed`;
+  document.getElementById('progressLabel').textContent = label;
+}
+
+function render() {
+  const container = document.getElementById('steps-container');
+  container.innerHTML = steps.map((s, i) => {
+    const isOpen = openIdx === i;
+    const isDone = completed.has(i);
+    const cls = `step-card${isOpen ? ' open' : ''}${isDone ? ' completed' : ''}`;
+    const btnLabel = lang === 'el'
+      ? (isDone ? '↩ Αναίρεση' : '✓ Ολοκληρώθηκε')
+      : (isDone ? '↩ Undo' : '✓ Mark Done');
+
+    return `<div class="${cls}" id="card-${i}">
+      <div class="step-header" onclick="toggleStep(${i})">
+        <div class="step-num">${i + 1}</div>
+        <div class="step-check">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#107c10"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <div class="step-title-wrap">
+          <div class="step-title">${s.titles[lang]}</div>
+          <div class="step-subtitle">${s.subtitles[lang]}</div>
+        </div>
+        <div class="step-chevron">⌄</div>
+      </div>
+      <div class="step-body">
+        <div class="step-body-inner">
+          <div class="step-desc">
+            ${s.descs[lang]}
+            <button class="mark-done-btn" onclick="markDone(${i}, event)">${btnLabel}</button>
+          </div>
+          <div>${getMockup(s.mockup, lang)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // update texts
+  const titles = { el:"⚙️ Αλλαγή DNS στα Windows 11", en:"⚙️ Change DNS on Windows 11" };
+  const subs = {
+    el:"Βήμα προς βήμα, με οπτικές οδηγίες για κάθε βήμα. Κάντε κλικ σε κάθε βήμα για λεπτομέρειες.",
+    en:"Step by step, with visual guides for each step. Click any step to expand details."
+  };
+  const sumT = { el:"🎉 Έτοιμοι για ταχύτερο διαδίκτυο;", en:"🎉 Ready for faster internet?" };
+  const sumD = {
+    el:"Μόλις αποθηκεύσετε, τα νέα DNS θα ισχύουν αμέσως. Επανεκκινήστε τον περιηγητή σας για βέλτιστα αποτελέσματα.",
+    en:"Once saved, your new DNS settings take effect immediately. Restart your browser for best results."
+  };
+
+  document.querySelector('[data-el="page-title"]').textContent = titles[lang];
+  document.querySelector('[data-el="page-subtitle"]').textContent = subs[lang];
+  document.querySelector('[data-el="summary-title"]').textContent = sumT[lang];
+  document.querySelector('[data-el="summary-desc"]').textContent = sumD[lang];
+  updateProgress();
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
