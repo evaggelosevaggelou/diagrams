@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dual-Band vs Tri-Band Router Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --border: #e0e0e0;
+    --text: #1a1a1a;
+    --sub: #555;
+    --c24: #2563eb;
+    --c5: #7c3aed;
+    --c6: #0891b2;
+    --dual: #16a34a;
+    --tri: #ea580c;
+    --accent: #f0f0f0;
+    --shadow: 0 2px 12px rgba(0,0,0,0.09);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .wrap { width: 100%; max-width: 820px; }
+
+  .main-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 4vw, 30px);
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .sub-title {
+    text-align: center;
+    color: var(--sub);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .routers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media(max-width: 540px){ .routers { grid-template-columns: 1fr; } }
+
+  .router-card {
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    padding: 18px 16px 14px;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    position: relative;
+    background: #fff;
+  }
+  .router-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .router-card.active-dual { border-color: var(--dual); background: #f0fdf4; }
+  .router-card.active-tri  { border-color: var(--tri);  background: #fff7ed; }
+
+  .router-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px; font-weight: 800;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot-dual { background: var(--dual); }
+  .dot-tri  { background: var(--tri); }
+
+  .bands-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+  .band-pill { padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+  .pill-24 { background: var(--c24); }
+  .pill-5  { background: var(--c5); }
+  .pill-6  { background: var(--c6); }
+
+  .router-desc { font-size: 13px; color: var(--sub); line-height: 1.5; }
+  .click-hint {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 11px; color: #aaa;
+    background: var(--accent); border-radius: 8px; padding: 2px 7px;
+  }
+
+  .detail-panel {
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: #fafafa;
+    overflow: hidden;
+    margin-bottom: 24px;
+    max-height: 0;
+    transition: max-height 0.4s ease, opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .detail-panel.open { max-height: 600px; opacity: 1; pointer-events: all; }
+  .detail-inner { padding: 18px 20px; }
+  .detail-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 14px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media(max-width: 500px){ .detail-grid { grid-template-columns: 1fr; } }
+  .detail-box { background: #fff; border-radius: 10px; padding: 12px 14px; border: 1px solid var(--border); }
+  .detail-box h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .detail-box ul { list-style: none; padding: 0; font-size: 12.5px; color: var(--sub); line-height: 1.7; }
+  .detail-box ul li::before { content: "▸ "; color: #999; }
+
+  .section-label { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+
+  .bands-visual { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .band-row { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .band-name { width: 72px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .band-bar-track { flex: 1; height: 26px; background: #f0f0f0; border-radius: 13px; overflow: hidden; }
+  .band-bar-fill { height: 100%; border-radius: 13px; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 600; color: #fff; }
+  .fill-24 { background: var(--c24); width: 55%; }
+  .fill-5  { background: var(--c5);  width: 78%; }
+  .fill-6  { background: var(--c6);  width: 95%; }
+
+  .band-tags { display: flex; gap: 5px; flex-wrap: wrap; width: 180px; flex-shrink: 0; }
+  @media(max-width:600px){ .band-tags { display: none; } }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #f0f0f0; color: var(--sub); font-weight: 500; }
+
+  .band-detail {
+    background: #fff; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-top: 4px; margin-bottom: 6px;
+    font-size: 13px; color: var(--sub); line-height: 1.6;
+    display: none; margin-left: 84px;
+  }
+  .band-detail.open { display: block; }
+  .band-detail strong { color: var(--text); }
+
+  .device-section { margin-bottom: 24px; }
+  .device-label { font-size: 13px; color: var(--sub); margin-bottom: 10px; }
+  .device-count { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; }
+  .device-slider { width: 100%; margin-bottom: 12px; accent-color: var(--tri); }
+  .device-result { display: flex; gap: 10px; flex-wrap: wrap; }
+  .verdict-box { flex: 1; min-width: 140px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border); text-align: center; }
+  .verdict-box .v-label { font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+  .verdict-box .v-score { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .verdict-box.good { border-color: var(--dual); background: #f0fdf4; }
+  .verdict-box.ok   { border-color: #ca8a04;      background: #fefce8; }
+  .verdict-box.bad  { border-color: #dc2626;      background: #fef2f2; }
+  .verdict-msg { font-size: 13px; color: var(--sub); margin-top: 8px; line-height: 1.5; }
+
+  .footer-note { text-align: center; font-size: 12px; color: #bbb; padding-top: 12px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="main-title">Dual-Band vs Tri-Band Routers</div>
+  <div class="sub-title">Click on a router card to explore details · Click on a frequency band to learn more</div>
+
+  <div class="routers">
+    <div class="router-card" id="card-dual" onclick="toggleCard('dual')">
+      <span class="click-hint">click ▾</span>
+      <div class="router-label"><span class="dot dot-dual"></span>Dual-Band</div>
+      <div class="bands-row">
+        <span class="band-pill pill-24">2.4 GHz</span>
+        <span class="band-pill pill-5">5 GHz</span>
+      </div>
+      <div class="router-desc">2 frequency lanes — good coverage &amp; reliable speed for everyday home use.</div>
+    </div>
+    <div class="router-card" id="card-tri" onclick="toggleCard('tri')">
+      <span class="click-hint">click ▾</span>
+      <div class="router-label"><span class="dot dot-tri"></span>Tri-Band</div>
+      <div class="bands-row">
+        <span class="band-pill pill-24">2.4 GHz</span>
+        <span class="band-pill pill-5">5 GHz</span>
+        <span class="band-pill pill-6">5/6 GHz</span>
+      </div>
+      <div class="router-desc">3 frequency lanes — built for busy households with many devices running simultaneously.</div>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="panel-dual">
+    <div class="detail-inner">
+      <div class="detail-title">🏠 Dual-Band — Best For</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <h4>✅ Ideal Scenarios</h4>
+          <ul><li>Small apartments (up to 100 m²)</li><li>Families of 2–4 people</li><li>Up to ~15 connected devices</li><li>Browsing, email, HD streaming</li><li>Limited budget</li></ul>
+        </div>
+        <div class="detail-box">
+          <h4>💰 Cost &amp; Models</h4>
+          <ul><li>Price range: $50 – $150</li><li>TP-Link Archer AX55 (Wi-Fi 6)</li><li>ASUS RT-AX58U (Wi-Fi 6)</li><li>Fritz!Box 7530 AX</li><li>Plug &amp; play setup</li></ul>
+        </div>
+        <div class="detail-box">
+          <h4>⚡ Performance</h4>
+          <ul><li>1–2 simultaneous 4K streams</li><li>Casual gaming — smooth</li><li>Zoom/Teams — reliable</li><li>May slow down under heavy load</li></ul>
+        </div>
+        <div class="detail-box">
+          <h4>⚠️ Limitations</h4>
+          <ul><li>Congestion with 15+ devices</li><li>Less future-proof</li><li>Single 5 GHz channel shared</li><li>Not ideal for smart home hubs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="panel-tri">
+    <div class="detail-inner">
+      <div class="detail-title">🚀 Tri-Band — Best For</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <h4>✅ Ideal Scenarios</h4>
+          <ul><li>Large homes (150+ m²)</li><li>Families of 4–6+ people</li><li>20+ connected devices</li><li>Gamers &amp; 4K streamers</li><li>Smart homes with many IoT devices</li></ul>
+        </div>
+        <div class="detail-box">
+          <h4>💰 Cost &amp; Models</h4>
+          <ul><li>Price range: $150 – $500+</li><li>TP-Link Archer AX95 (Wi-Fi 6)</li><li>ASUS RT-AX86U Pro + AiMesh</li><li>Netgear Nighthawk RAXE300 (6E)</li><li>Wi-Fi 6E/7 models available</li></ul>
+        </div>
+        <div class="detail-box">
+          <h4>⚡ Performance</h4>
+          <ul><li>3–5+ simultaneous 4K streams</li><li>Competitive gaming — low ping</li><li>Separate backhaul for mesh nodes</li><li>Traffic distributed across bands</li></ul>
+        </div>
+        <div class="detail-box">
+          <h4>⚠️ Considerations</h4>
+          <ul><li>Higher upfront cost</li><li>Slight setup complexity</li><li>Overkill for basic use</li><li>Requires compatible devices for 6E</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">📡 Frequency Bands — Speed vs Range</div>
+  <div class="bands-visual">
+    <div class="band-row" onclick="toggleBand('b24')">
+      <div class="band-name">2.4 GHz</div>
+      <div class="band-bar-track"><div class="band-bar-fill fill-24">Range ✔✔✔</div></div>
+      <div class="band-tags"><span class="tag">Wide range</span><span class="tag">All devices</span><span class="tag">Slower</span></div>
+    </div>
+    <div class="band-detail" id="b24">
+      <strong>2.4 GHz — The Long-Distance Band</strong><br>
+      Best range and wall penetration. Slower speeds but works with every device. Ideal for: smart home sensors, IoT gadgets, devices far from the router. Both Dual-Band and Tri-Band routers include this band.
+    </div>
+
+    <div class="band-row" onclick="toggleBand('b5')">
+      <div class="band-name">5 GHz</div>
+      <div class="band-bar-track"><div class="band-bar-fill fill-5">Speed ✔✔✔✔</div></div>
+      <div class="band-tags"><span class="tag">Fast speed</span><span class="tag">Less interference</span><span class="tag">Shorter range</span></div>
+    </div>
+    <div class="band-detail" id="b5">
+      <strong>5 GHz — The Speed Band</strong><br>
+      Much faster than 2.4 GHz with less interference from neighbors. Ideal for: HD/4K streaming, gaming, video calls. Range is shorter — works best in the same or adjacent room. Dual-Band routers have one 5 GHz channel; Tri-Band routers have two.
+    </div>
+
+    <div class="band-row" onclick="toggleBand('b6')">
+      <div class="band-name">6 GHz</div>
+      <div class="band-bar-track"><div class="band-bar-fill fill-6">Ultra speed ✔✔✔✔✔</div></div>
+      <div class="band-tags"><span class="tag">Ultra fast</span><span class="tag">No congestion</span><span class="tag">Wi-Fi 6E/7 only</span></div>
+    </div>
+    <div class="band-detail" id="b6">
+      <strong>6 GHz — The Future Band (Wi-Fi 6E / Wi-Fi 7)</strong><br>
+      The cleanest and fastest band available. Zero congestion from older devices. Perfect for: cloud gaming, 8K streaming, VR/AR. Short range — works best close to the router. Requires both router AND device to support Wi-Fi 6E or Wi-Fi 7.
+    </div>
+  </div>
+
+  <div class="device-section">
+    <div class="section-label">🔢 How Many Devices Do You Have?</div>
+    <div class="device-label">Drag to set your device count: <span class="device-count" id="deviceNum">10</span></div>
+    <input type="range" class="device-slider" min="1" max="40" value="10" oninput="updateDevices(this.value)">
+    <div class="device-result" id="deviceResult"></div>
+    <div class="verdict-msg" id="verdictMsg"></div>
+  </div>
+
+  <div class="footer-note">Interactive diagram · lovefortechnology.net</div>
+</div>
+
+<script>
+  let openCard = null;
+  function toggleCard(type) {
+    const panel = document.getElementById('panel-' + type);
+    const card  = document.getElementById('card-'  + type);
+    if (openCard && openCard !== type) {
+      document.getElementById('panel-' + openCard).classList.remove('open');
+      document.getElementById('card-'  + openCard).classList.remove('active-' + openCard);
+    }
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    card.classList.toggle('active-' + type, !isOpen);
+    openCard = isOpen ? null : type;
+  }
+
+  let openBand = null;
+  function toggleBand(id) {
+    if (openBand && openBand !== id) document.getElementById(openBand).classList.remove('open');
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+    openBand = el.classList.contains('open') ? id : null;
+  }
+
+  function updateDevices(val) {
+    const n = parseInt(val);
+    document.getElementById('deviceNum').textContent = n;
+    const rows = [
+      [8,  'good','ok',  '✅','🔄','A basic Dual-Band router (Wi-Fi 5/6) handles this comfortably. No need to spend more.'],
+      [15, 'good','ok',  '✅','✅','A modern Dual-Band Wi-Fi 6 router is the sweet spot — solid performance at a great price.'],
+      [25, 'ok',  'good','⚠️','✅',"You're in the transition zone. A Tri-Band router will future-proof your setup."],
+      [99, 'bad', 'good','❌','✅','A Tri-Band Wi-Fi 6/6E router is the right choice — you need the extra bandwidth.']
+    ];
+    const [,dC,tC,dS,tS,msg] = rows.find(([lim]) => n <= lim);
+    document.getElementById('deviceResult').innerHTML =
+      `<div class="verdict-box ${dC}"><div class="v-label">Dual-Band</div><div class="v-score">${dS}</div></div>
+       <div class="verdict-box ${tC}"><div class="v-label">Tri-Band</div><div class="v-score">${tS}</div></div>`;
+    document.getElementById('verdictMsg').textContent = msg;
+  }
+
+  updateDevices(10);
+</script>
+</body>
+</html>
