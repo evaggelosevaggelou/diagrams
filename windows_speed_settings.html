@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 Windows Settings to Disable for Maximum Speed</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:    #1a56db;
+    --blue-lt: #e8f0fe;
+    --green:   #0a8a4e;
+    --green-lt:#e6f5ee;
+    --orange:  #c2410c;
+    --orange-lt:#fff0e6;
+    --purple:  #6d28d9;
+    --purple-lt:#f0ebff;
+    --teal:    #0e7490;
+    --teal-lt: #e0f5f8;
+    --red:     #be123c;
+    --red-lt:  #fce7ee;
+    --yellow:  #92400e;
+    --yellow-lt:#fef9e7;
+    --bg:      #ffffff;
+    --surface: #f8f9fa;
+    --border:  #e5e7eb;
+    --text:    #111827;
+    --muted:   #6b7280;
+    --radius:  12px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 36px 16px 40px;
+    min-height: 100%;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    max-width: 660px;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blue-lt);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: clamp(1.35rem, 3.5vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .header p {
+    font-size: .95rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .header .hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 14px;
+    font-size: .82rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow .2s, border-color .2s, transform .15s;
+    background: #fff;
+  }
+  .card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,.09);
+    transform: translateY(-2px);
+  }
+  .card.open {
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 28px rgba(0,0,0,.1);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 16px 18px;
+    background: #fff;
+    position: relative;
+  }
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    background: var(--accent-lt);
+  }
+  .card-title-wrap {
+    flex: 1;
+  }
+  .card-num {
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .card-title {
+    font-size: .98rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .card-chevron {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .25s, background .2s;
+    flex-shrink: 0;
+    color: var(--muted);
+    font-size: .7rem;
+  }
+  .card.open .card-chevron {
+    transform: rotate(180deg);
+    background: var(--accent-lt);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+  }
+
+  /* ── BODY (collapsible) ── */
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card.open .card-body {
+    max-height: 600px;
+  }
+  .card-body-inner {
+    padding: 0 18px 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .card-desc {
+    font-size: .88rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+
+  /* Steps */
+  .steps-label {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    color: var(--accent-color);
+    margin-bottom: 8px;
+  }
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: .85rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .step-num {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Tip box */
+  .tip {
+    margin-top: 13px;
+    background: var(--accent-lt);
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: .82rem;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .tip strong { color: var(--accent-color); }
+
+  /* Impact badge */
+  .impact {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-top: 12px;
+    background: var(--accent-lt);
+    color: var(--accent-color);
+  }
+
+  /* Code pill */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: .8rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--orange);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 28px;
+    text-align: center;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+  .footer a {
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .footer a:hover { text-decoration: underline; }
+
+  /* Color themes per card */
+  .c1 { --accent-color: #1a56db; --accent-lt: #e8f0fe; }
+  .c2 { --accent-color: #0a8a4e; --accent-lt: #e6f5ee; }
+  .c3 { --accent-color: #6d28d9; --accent-lt: #f0ebff; }
+  .c4 { --accent-color: #c2410c; --accent-lt: #fff0e6; }
+  .c5 { --accent-color: #0e7490; --accent-lt: #e0f5f8; }
+  .c6 { --accent-color: #be123c; --accent-lt: #fce7ee; }
+  .c7 { --accent-color: #92400e; --accent-lt: #fef9e7; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">⚡ Performance Guide</div>
+  <h1>7 Windows Settings to Disable<br>for Maximum Speed</h1>
+  <p>Your PC feels slow? These default Windows settings may be the reason.<br>Disable them in minutes — no extra software needed.</p>
+  <div class="hint">👆 Click any card to see step-by-step instructions</div>
+</div>
+
+<!-- GRID -->
+<div class="grid">
+
+  <!-- 1 -->
+  <div class="card c1" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">🚀</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 01</div>
+        <div class="card-title">Startup Apps</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">Programs like Discord, Spotify, and Adobe apps launch silently at every boot, consuming RAM and CPU before you even open anything.</p>
+        <div class="steps-label">How to disable</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Press <code>Ctrl + Shift + Esc</code> to open Task Manager</span></div>
+          <div class="step"><div class="step-num">2</div><span>Go to the <strong>Startup apps</strong> tab</span></div>
+          <div class="step"><div class="step-num">3</div><span>Sort by <strong>Startup impact</strong> — focus on "High" ones</span></div>
+          <div class="step"><div class="step-num">4</div><span>Right-click anything unnecessary → <strong>Disable</strong></span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> Keep only security tools and drivers. Everything else can be opened manually when needed.</div>
+        <div class="impact">🏆 High impact on boot time</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card c2" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">🔄</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 02</div>
+        <div class="card-title">Background Apps</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">Many apps keep running after you close them, silently using RAM and battery. On Windows 11 there's no single master toggle — you control this per app.</p>
+        <div class="steps-label">Windows 11</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Settings → <strong>Apps → Installed apps</strong></span></div>
+          <div class="step"><div class="step-num">2</div><span>Click <strong>⋯</strong> next to the app → <strong>Advanced options</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Under Background apps permissions → set to <strong>Never</strong></span></div>
+        </div>
+        <div class="steps-label" style="margin-top:12px">Windows 10</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Settings → <strong>Privacy → Background apps</strong></span></div>
+          <div class="step"><div class="step-num">2</div><span>Toggle off individual apps you don't need</span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> Especially useful on laptops — significant battery savings.</div>
+        <div class="impact">🔋 High impact on battery life</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card c3" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">🎨</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 03</div>
+        <div class="card-title">Visual Effects & Animations</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">Shadows, transparency, fade-in animations — they look polished but load the GPU and RAM unnecessarily, especially on older machines.</p>
+        <div class="steps-label">How to disable</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Press <code>Win + R</code>, type <code>sysdm.cpl</code>, press Enter</span></div>
+          <div class="step"><div class="step-num">2</div><span>Go to <strong>Advanced</strong> tab → Performance → <strong>Settings</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Select <strong>"Adjust for best performance"</strong></span></div>
+          <div class="step"><div class="step-num">4</div><span>Or manually uncheck specific effects you don't want</span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> Keep "Show thumbnails instead of icons" checked — it's useful and lightweight.</div>
+        <div class="impact">⚡ Noticeable on older PCs &amp; HDD systems</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card c4" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">🔔</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 04</div>
+        <div class="card-title">Notifications & Tips</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">Windows constantly pushes tips, suggestions, subscription prompts, and welcome screens. They're distracting and use background resources to run.</p>
+        <div class="steps-label">How to disable</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Settings → <strong>System → Notifications</strong></span></div>
+          <div class="step"><div class="step-num">2</div><span>Turn off <strong>"Get tips and suggestions when using Windows"</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Turn off <strong>"Show me the Windows welcome experience"</strong></span></div>
+          <div class="step"><div class="step-num">4</div><span>Scroll down and disable notifications for apps you don't need</span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> You can mute all notifications during focus hours using <strong>Focus Assist</strong> (Win 10) or <strong>Do Not Disturb</strong> (Win 11).</div>
+        <div class="impact">🧘 High impact on focus &amp; distraction</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card c5" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">☁️</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 05</div>
+        <div class="card-title">OneDrive Auto-Sync</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">OneDrive constantly syncs files to the cloud, consuming CPU, disk I/O, and your internet bandwidth — even when you're trying to do something else.</p>
+        <div class="steps-label">Pause or disable</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Right-click the OneDrive icon in the system tray</span></div>
+          <div class="step"><div class="step-num">2</div><span>Click <strong>Settings</strong> → <strong>Account</strong> tab</span></div>
+          <div class="step"><div class="step-num">3</div><span>Click <strong>"Unlink this PC"</strong> to stop syncing</span></div>
+        </div>
+        <div class="steps-label" style="margin-top:12px">Full removal (optional)</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Settings → Apps → search <strong>OneDrive</strong> → Uninstall</span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> Already using Google Drive or Dropbox? You don't need OneDrive at all.</div>
+        <div class="impact">📶 High impact on internet &amp; disk speed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card c6" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">🔍</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 06</div>
+        <div class="card-title">Search Indexing</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">Windows continuously indexes your files so search is fast. Helpful, but on HDDs (or when indexing huge folders) it creates heavy background disk activity.</p>
+        <div class="steps-label">How to reduce indexing</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Search for <strong>"Indexing Options"</strong> in the Start menu → Open</span></div>
+          <div class="step"><div class="step-num">2</div><span>Click <strong>Modify</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Remove folders you never search (e.g. Program Files)</span></div>
+          <div class="step"><div class="step-num">4</div><span>Keep only Documents, Desktop, and what you actually use</span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> On SSDs the impact is minimal. This setting matters most for HDD users.</div>
+        <div class="impact">💽 High impact on HDD systems</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card c7" onclick="toggle(this)">
+    <div class="card-head">
+      <div class="card-icon">📡</div>
+      <div class="card-title-wrap">
+        <div class="card-num">Setting 07</div>
+        <div class="card-title">Delivery Optimization</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p class="card-desc">Windows silently uses your internet connection to upload updates to other users on the internet — acting as a peer-to-peer distribution node without asking you.</p>
+        <div class="steps-label">How to disable</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><span>Settings → <strong>Windows Update → Advanced options</strong></span></div>
+          <div class="step"><div class="step-num">2</div><span>Click <strong>Delivery Optimization</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Turn off <strong>"Allow downloads from other PCs"</strong></span></div>
+        </div>
+        <div class="tip">💡 <strong>Tip:</strong> Critical if you have a metered connection or limited monthly data — this can silently eat through your bandwidth.</div>
+        <div class="impact">📶 High impact on network speed</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>Interactive guide by <a href="https://lovefortechnology.net" target="_blank">lovefortechnology.net</a></p>
+</div>
+
+<script>
+  function toggle(card) {
+    const isOpen = card.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('open'));
+    // Open clicked if it wasn't already open
+    if (!isOpen) card.classList.add('open');
+  }
+</script>
+
+</body>
+</html>
