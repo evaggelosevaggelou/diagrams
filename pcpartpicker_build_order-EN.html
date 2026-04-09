@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCPartPicker – Component Selection Order</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ffffff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 14px;
+  }
+
+  .diagram-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .diagram-title h2 {
+    font-size: 1.05em;
+    color: #0f3460;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .diagram-title p {
+    font-size: 0.76em;
+    color: #888;
+  }
+
+  .chain-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    row-gap: 8px;
+    max-width: 760px;
+    width: 100%;
+  }
+
+  .chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0f3460;
+    color: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    min-width: 76px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    box-shadow: 0 2px 10px rgba(15,52,96,0.18);
+    position: relative;
+  }
+
+  .chip.chip-start { background: #e94560; }
+
+  .chip:hover, .chip.active {
+    transform: translateY(-6px) scale(1.08);
+    box-shadow: 0 10px 24px rgba(15,52,96,0.30);
+    z-index: 2;
+  }
+
+  .chip.chip-start:hover, .chip.chip-start.active {
+    box-shadow: 0 10px 24px rgba(233,69,96,0.35);
+  }
+
+  .chip-icon { font-size: 1.6em; line-height: 1; }
+
+  .chip-label {
+    font-size: 0.67em;
+    margin-top: 5px;
+    color: #c0c8e0;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .chip.chip-start .chip-label { color: #ffe0e6; }
+
+  .chain-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    flex-shrink: 0;
+    font-size: 1.25em;
+    color: #b0bcd0;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .tooltip-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .tooltip-overlay.visible { display: flex; }
+
+  .tooltip-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 24px;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+    animation: popIn 0.2s ease;
+    position: relative;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .tooltip-box .t-icon { font-size: 2.2em; margin-bottom: 8px; }
+  .tooltip-box h3 { color: #0f3460; font-size: 1em; margin-bottom: 8px; }
+  .tooltip-box p { font-size: 0.84em; color: #555; line-height: 1.6; }
+  .tooltip-close {
+    position: absolute;
+    top: 10px; right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.3em;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+  }
+  .tooltip-close:hover { color: #e94560; }
+
+  .note {
+    text-align: center;
+    font-size: 0.74em;
+    color: #888;
+    margin-top: 18px;
+    max-width: 560px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .note strong { color: #e94560; font-style: normal; }
+</style>
+</head>
+<body>
+
+<div class="diagram-title">
+  <h2>🔢 Recommended Component Selection Order in PCPartPicker</h2>
+  <p>Click each component for technical details</p>
+</div>
+
+<div class="chain-wrapper">
+
+  <div class="chip chip-start" onclick="showTip(0)">
+    <span class="chip-icon">🧠</span>
+    <span class="chip-label">CPU</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(1)">
+    <span class="chip-icon">🔌</span>
+    <span class="chip-label">Motherboard</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(2)">
+    <span class="chip-icon">💾</span>
+    <span class="chip-label">RAM</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(3)">
+    <span class="chip-icon">💿</span>
+    <span class="chip-label">SSD/HDD</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(4)">
+    <span class="chip-icon">🎮</span>
+    <span class="chip-label">GPU</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(5)">
+    <span class="chip-icon">📦</span>
+    <span class="chip-label">Case</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(6)">
+    <span class="chip-icon">⚡</span>
+    <span class="chip-label">PSU</span>
+  </div>
+  <div class="chain-arrow">&#9658;</div>
+
+  <div class="chip" onclick="showTip(7)">
+    <span class="chip-icon">❄️</span>
+    <span class="chip-label">Cooler</span>
+  </div>
+
+</div>
+
+<p class="note">
+  🔴 Always start with the <strong>CPU</strong> — all other components depend on it.
+</p>
+
+<div class="tooltip-overlay" id="tip-overlay" onclick="closeTip(event)">
+  <div class="tooltip-box">
+    <button class="tooltip-close" onclick="closeTip()">✕</button>
+    <div class="t-icon" id="tip-icon"></div>
+    <h3 id="tip-title"></h3>
+    <p id="tip-body"></p>
+  </div>
+</div>
+
+<script>
+var tips = [
+  {
+    icon: '🧠',
+    title: 'Processor (CPU)',
+    body: 'The brain of your computer. Always start here — it determines the socket and chipset, which define compatible motherboards. For 2026: Intel Core i5 14th gen or AMD Ryzen 5 7000+ for excellent value for money.'
+  },
+  {
+    icon: '🔌',
+    title: 'Motherboard',
+    body: 'Connects all components. PCPartPicker automatically shows only motherboards compatible with your chosen CPU. Check DDR4/DDR5 support, number of M.2 slots, and PCIe lanes.'
+  },
+  {
+    icon: '💾',
+    title: 'RAM Memory',
+    body: '16GB for gaming & everyday use · 32GB for video editing. Modern 2026 builds use DDR5 for higher bandwidth. PCPartPicker automatically checks type, frequency, and XMP/EXPO compatibility.'
+  },
+  {
+    icon: '💿',
+    title: 'Storage Drive',
+    body: 'NVMe SSD (M.2) for the operating system — noticeably faster than SATA SSD or HDD. Common combo: NVMe for OS + HDD or second SSD for file storage.'
+  },
+  {
+    icon: '🎮',
+    title: 'Graphics Card (GPU)',
+    body: 'Critical for gaming, 3D, and video editing. PCPartPicker checks if it fits your case (GPU clearance) and if your PSU covers power requirements. Modern GPUs are larger and more power-hungry than ever.'
+  },
+  {
+    icon: '📦',
+    title: 'Computer Case',
+    body: 'Houses all components. Must support your motherboard form factor (ATX/mATX/ITX) and have enough room for your GPU and cooler. Good airflow = lower temperatures.'
+  },
+  {
+    icon: '⚡',
+    title: 'Power Supply (PSU)',
+    body: 'PCPartPicker calculates the required wattage. Add +150–200W headroom. Choose an 80+ Gold or higher rated unit for reliability. Don\'t cheap out here — a bad PSU can damage your entire system.'
+  },
+  {
+    icon: '❄️',
+    title: 'CPU Cooler',
+    body: 'Prevents thermal throttling. Options: air cooling (affordable & reliable) or AIO liquid cooling (better temps). Many modern CPUs don\'t include a stock cooler — check before buying.'
+  }
+];
+
+function showTip(idx) {
+  var t = tips[idx];
+  document.getElementById('tip-icon').textContent = t.icon;
+  document.getElementById('tip-title').textContent = t.title;
+  document.getElementById('tip-body').textContent = t.body;
+  document.getElementById('tip-overlay').classList.add('visible');
+}
+
+function closeTip(e) {
+  if (!e || e.target === document.getElementById('tip-overlay')) {
+    document.getElementById('tip-overlay').classList.remove('visible');
+  }
+}
+</script>
+</body>
+</html>
