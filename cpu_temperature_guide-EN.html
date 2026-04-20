@@ -1,0 +1,76 @@
+
+<h2 class="sr-only">CPU Temperature Guide — interactive breakdown of safe and dangerous CPU temperature ranges</h2>
+
+<style>
+.cpu-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 6px; padding-top: 1rem; }
+.cpu-h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; line-height: 1.2; }
+.cpu-sub { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+.thermo-wrap { margin-bottom: 1.5rem; }
+.thermo-bar { height: 8px; border-radius: 100px; background: linear-gradient(to right, #378ADD 0%, #639922 25%, #BA7517 50%, #D85A30 72%, #E24B4A 88%, #791F1F 100%); margin-bottom: 6px; }
+.thermo-ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-secondary); }
+.row { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+.row:hover { border-color: var(--color-border-secondary); }
+.row.open { border-color: var(--row-accent); }
+.row-summary { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--color-background-primary); }
+.row.open .row-summary { background: var(--color-background-secondary); }
+.badge { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: var(--border-radius-md); white-space: nowrap; min-width: 100px; text-align: center; }
+.row-label { flex: 1; font-size: 14px; color: var(--color-text-primary); }
+.row-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.chevron { flex-shrink: 0; width: 16px; height: 16px; color: var(--color-text-secondary); transition: transform 0.3s ease; }
+.row.open .chevron { transform: rotate(180deg); }
+.detail { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1); }
+.row.open .detail { max-height: 200px; }
+.detail-inner { padding: 13px 14px; border-top: 0.5px solid var(--color-border-tertiary); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dblock { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 9px 11px; }
+.dblock-lbl { font-size: 10px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 3px; }
+.dblock-val { font-size: 13px; color: var(--color-text-primary); line-height: 1.4; }
+.dtip { grid-column: 1 / -1; border-radius: var(--border-radius-md); padding: 9px 11px; font-size: 13px; color: var(--color-text-primary); line-height: 1.5; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+.footer { margin-top: 1.5rem; padding: 12px 14px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; display: flex; gap: 10px; }
+@media (max-width: 480px) { .detail-inner { grid-template-columns: 1fr; } .dtip { grid-column: 1; } }
+</style>
+
+<div class="cpu-eyebrow">Temperature guide</div>
+<div class="cpu-h1">CPU temperature — what's normal?</div>
+<div class="cpu-sub">Click each range for details</div>
+
+<div class="thermo-wrap">
+  <div class="thermo-bar"></div>
+  <div class="thermo-ticks"><span>30°C</span><span>45°C</span><span>70°C</span><span>85°C</span><span>95°C+</span></div>
+</div>
+
+<div id="list"></div>
+
+<div class="footer">
+  <span style="font-size:14px;flex-shrink:0;">&#9432;</span>
+  <span>Use free tools like <strong>Core Temp</strong> or <strong>HWiNFO64</strong> to monitor temperatures in real time.</span>
+</div>
+
+<script>
+const rows = [
+  { range:"30°C – 45°C", accent:"#185FA5", dotBg:"#B5D4F4", label:"Idle — resting state", scenario:"PC is on but not running demanding tasks", risk:"None", tip:"Perfectly normal. The cooling system is working flawlessly at idle." },
+  { range:"45°C – 70°C", accent:"#3B6D11", dotBg:"#C0DD97", label:"Ideal — everyday use", scenario:"Web browsing, office apps, streaming video", risk:"None", tip:"Ideal zone. CPU performs best here with full boost capability available." },
+  { range:"70°C – 85°C", accent:"#854F0B", dotBg:"#FAC775", label:"Acceptable — heavy load", scenario:"Gaming, photo or video editing, rendering", risk:"Low — normal for demanding tasks", tip:"Acceptable range. Normal under heavy load. Watch if it stays above 80°C consistently." },
+  { range:"85°C – 95°C", accent:"#993C1D", dotBg:"#F5C4B3", label:"High — thermal throttling", scenario:"CPU automatically reduces speed to protect itself", risk:"Moderate — likely performance drop", tip:"Check your cooling. Clean dust buildup and consider replacing thermal paste." },
+  { range:"95°C+",        accent:"#A32D2D", dotBg:"#F7C1C1", label:"Critical — damage risk",    scenario:"System may shut down automatically to prevent permanent damage", risk:"High — risk of permanent hardware damage", tip:"Immediate action needed. Stop use and check cooler, thermal paste, and case airflow." }
+];
+
+const list = document.getElementById('list');
+list.innerHTML = rows.map((r,i) => `
+<div class="row" id="r${i}" style="--row-accent:${r.accent}" onclick="toggle(${i})">
+  <div class="row-summary">
+    <div class="badge" style="background:${r.dotBg}20;border:1px solid ${r.dotBg};color:${r.accent}">${r.range}</div>
+    <div class="row-label">${r.label}</div>
+    <div class="row-dot" style="background:${r.dotBg};border:1.5px solid ${r.accent}"></div>
+    <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+  </div>
+  <div class="detail">
+    <div class="detail-inner">
+      <div class="dblock"><div class="dblock-lbl">Scenario</div><div class="dblock-val">${r.scenario}</div></div>
+      <div class="dblock"><div class="dblock-lbl">Risk</div><div class="dblock-val">${r.risk}</div></div>
+      <div class="dtip">${r.tip}</div>
+    </div>
+  </div>
+</div>`).join('');
+
+function toggle(i){ document.getElementById('r'+i).classList.toggle('open'); }
+</script>
