@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Εύρος Ζώνης Internet — Οδηγός</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f8fc;
+    --border: #e4e7f0;
+    --accent: #2563eb;
+    --accent2: #0ea5e9;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #1a1d2e;
+    --muted: #6b7280;
+    --card-bg: #ffffff;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: 'Sora', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 900px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 100px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .header h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 300;
+  }
+
+  /* ANALOGY HIGHWAY */
+  .highway-section {
+    background: linear-gradient(135deg, #0f172a, #1e3a5f);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .highway-section::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(14,165,233,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .highway-title {
+    color: #38bdf8;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .highway-road {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+  }
+  .lanes-label {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+  }
+  .lanes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .lane {
+    height: 22px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent2), transparent);
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .lane:hover { opacity: 0.85; }
+  .lane .car {
+    width: 28px; height: 14px;
+    background: white;
+    border-radius: 3px;
+    position: absolute;
+    animation: drive linear infinite;
+  }
+  .lane:nth-child(1) .car { animation-duration: 2s; top: 4px; }
+  .lane:nth-child(2) .car { animation-duration: 2.8s; top: 4px; }
+  .lane:nth-child(3) .car { animation-duration: 3.5s; top: 4px; }
+  @keyframes drive {
+    from { left: -30px; }
+    to   { left: 100%; }
+  }
+  .highway-desc {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .highway-desc strong { color: #38bdf8; }
+
+  /* GRID CARDS */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(37,99,235,0.12);
+    border-color: var(--accent);
+  }
+  .card.active {
+    border-color: var(--accent);
+    background: #eff6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(37,99,235,0.15);
+  }
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .card-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .card-detail {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.8rem;
+    color: #374151;
+    line-height: 1.7;
+    animation: fadeIn 0.25s ease;
+  }
+  .card.active .card-detail { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card-tag {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+
+  /* SPEED METER */
+  .speed-section {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  .speed-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .speed-rows { display: flex; flex-direction: column; gap: 14px; }
+  .speed-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 90px;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .speed-row:hover .bar-fill { filter: brightness(1.1); }
+  .speed-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .bar-track {
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 100px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 0;
+  }
+  .speed-mbps {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .speed-tooltip {
+    display: none;
+    grid-column: 1 / -1;
+    background: #1a1d2e;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    line-height: 1.6;
+    margin-top: 2px;
+    animation: fadeIn 0.2s ease;
+  }
+  .speed-row.open .speed-tooltip { display: block; }
+
+  /* FACTORS */
+  .factors-section {
+    margin-bottom: 24px;
+  }
+  .factors-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .factors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .factor-card {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+  }
+  .factor-card:hover {
+    border-color: var(--accent2);
+    background: #f0f9ff;
+  }
+  .factor-card.active {
+    border-color: var(--accent3);
+    background: #f0fdf4;
+  }
+  .factor-emoji { font-size: 1.5rem; margin-bottom: 8px; }
+  .factor-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+  .factor-short { font-size: 0.75rem; color: var(--muted); }
+  .factor-detail {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 0.77rem;
+    color: #374151;
+    line-height: 1.65;
+    animation: fadeIn 0.2s ease;
+  }
+  .factor-card.active .factor-detail { display: block; }
+
+  /* MISTAKES */
+  .mistakes-section {
+    background: #fff7ed;
+    border: 1.5px solid #fed7aa;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .mistakes-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #9a3412;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mistakes-list { display: flex; flex-direction: column; gap: 8px; }
+  .mistake-item {
+    background: white;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .mistake-item:hover { border-color: var(--danger); background: #fef2f2; }
+  .mistake-item.active { border-color: var(--danger); background: #fef2f2; }
+  .mistake-x { color: var(--danger); font-weight: 800; font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+  .mistake-text { font-size: 0.83rem; font-weight: 600; color: var(--text); }
+  .mistake-fix {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.77rem;
+    color: var(--accent3);
+    font-weight: 600;
+    line-height: 1.5;
+    animation: fadeIn 0.2s ease;
+  }
+  .mistake-item.active .mistake-fix { display: block; }
+  .fix-prefix { color: #059669; }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding-top: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 600px) {
+    .speed-row { grid-template-columns: 100px 1fr 70px; }
+    .highway-section { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">📡 Διαδραστικός Οδηγός</div>
+    <h1>Εύρος Ζώνης <span>Internet</span></h1>
+    <p>Κάντε κλικ σε κάθε στοιχείο για λεπτομέρειες</p>
+  </div>
+
+  <!-- HIGHWAY ANALOGY -->
+  <div class="highway-section">
+    <div class="highway-title">🛣️ Αναλογία: Αυτοκινητόδρομος Δεδομένων</div>
+    <div class="highway-road">
+      <div class="lanes-label">Λωρίδες κυκλοφορίας δεδομένων (κάθε λωρίδα = περισσότερα Mbps)</div>
+      <div class="lanes">
+        <div class="lane" style="width:40%; background:linear-gradient(90deg,#0ea5e9,transparent);">
+          <div class="car"></div>
+        </div>
+        <div class="lane" style="width:70%; background:linear-gradient(90deg,#2563eb,transparent);">
+          <div class="car"></div>
+        </div>
+        <div class="lane" style="width:100%; background:linear-gradient(90deg,#10b981,transparent);">
+          <div class="car"></div>
+        </div>
+      </div>
+      <div class="highway-desc">
+        Όπως ένας δρόμος με <strong>περισσότερες λωρίδες</strong> επιτρέπει περισσότερα αυτοκίνητα ταυτόχρονα, έτσι και μεγαλύτερο εύρος ζώνης επιτρέπει <strong>περισσότερα δεδομένα ανά δευτερόλεπτο</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- USE CASES CARDS -->
+  <div class="grid">
+
+    <div class="card" onclick="toggleCard(this)">
+      <span class="card-icon">📩</span>
+      <div class="card-title">Email & Μηνύματα</div>
+      <div class="card-sub">Ελάχιστη κατανάλωση bandwidth</div>
+      <div class="card-detail">
+        Τα email και τα γραπτά μηνύματα απαιτούν ελάχιστο εύρος ζώνης — συνήθως μόλις <strong>1 Mbps ή λιγότερο</strong>. Λειτουργούν άψογα ακόμα και με αργές συνδέσεις.
+        <span class="card-tag">~1 Mbps</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <span class="card-icon">🎥</span>
+      <div class="card-title">Streaming HD / 4K</div>
+      <div class="card-sub">Απαιτεί σημαντικό bandwidth</div>
+      <div class="card-detail">
+        Το HD streaming χρειάζεται <strong>5–8 Mbps</strong> ανά συσκευή. Για 4K χρειάζεστε <strong>25+ Mbps</strong> ανά ροή. Με πολλές συσκευές ταυτόχρονα, το άθροισμα αυξάνεται γρήγορα.
+        <span class="card-tag">HD: 8 Mbps | 4K: 25+ Mbps</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <span class="card-icon">🎮</span>
+      <div class="card-title">Online Gaming</div>
+      <div class="card-sub">Χρειάζεται σταθερότητα & χαμηλό ping</div>
+      <div class="card-detail">
+        Το gaming δεν καταναλώνει τεράστιο bandwidth (3–10 Mbps), αλλά χρειάζεται <strong>χαμηλή καθυστέρηση (ping &lt;50ms)</strong> και σταθερή σύνδεση χωρίς διακοπές.
+        <span class="card-tag">3–10 Mbps + χαμηλό ping</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <span class="card-icon">💼</span>
+      <div class="card-title">Τηλεργασία & Video Calls</div>
+      <div class="card-sub">Ανάγκη για σταθερή σύνδεση</div>
+      <div class="card-detail">
+        Zoom, Teams, Google Meet χρειάζονται <strong>3–5 Mbps upload & download</strong> για καλή ποιότητα. Για HD βιντεοκλήσεις συνιστώνται <strong>10+ Mbps</strong>. Η σταθερότητα έχει μεγαλύτερη σημασία από την απόλυτη ταχύτητα.
+        <span class="card-tag">5–10 Mbps bidirectional</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <span class="card-icon">☁️</span>
+      <div class="card-title">Cloud Backup & Downloads</div>
+      <div class="card-sub">Εντατική χρήση bandwidth</div>
+      <div class="card-detail">
+        Μεγάλα αρχεία, cloud backups και system updates καταναλώνουν σημαντικό εύρος ζώνης. Ιδανικά προγραμματίστε τα <strong>τη νύχτα</strong> ή σε ώρες χαμηλής χρήσης ώστε να μη χαλούν τις άλλες δραστηριότητες.
+        <span class="card-tag">50–100+ Mbps</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="toggleCard(this)">
+      <span class="card-icon">🏠</span>
+      <div class="card-title">Smart Home & IoT</div>
+      <div class="card-sub">Πολλές συσκευές, μικρή κατανάλωση</div>
+      <div class="card-detail">
+        Έξυπνοι λαμπτήρες, θερμοστάτες, κάμερες και βοηθοί φωνής καταναλώνουν λίγο ανά συσκευή, αλλά <strong>ο συνολικός αριθμός συσκευών</strong> αθροίζεται. Μια κάμερα ασφαλείας 1080p χρειάζεται ~1–4 Mbps.
+        <span class="card-tag">1–4 Mbps ανά κάμερα</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SPEED METER -->
+  <div class="speed-section">
+    <div class="speed-title">📊 Πόσα Mbps χρειάζομαι; <span style="font-size:0.75rem;color:var(--muted);font-weight:400;">(κλικ για λεπτομέρειες)</span></div>
+    <div class="speed-rows" id="speedRows">
+
+      <div class="speed-row" onclick="toggleSpeed(this)" data-info="Καλύπτει βασική περιήγηση, social media, email και ελαφρύ streaming σε 1–2 συσκευές. Ιδανικό για μεμονωμένους χρήστες με απλές ανάγκες.">
+        <div class="speed-label">🏠 Βασική Χρήση</div>
+        <div class="bar-track"><div class="bar-fill" style="background:linear-gradient(90deg,#10b981,#34d399);width:0" data-w="12%"></div></div>
+        <div class="speed-mbps">25–50 Mbps</div>
+        <div class="speed-tooltip"></div>
+      </div>
+
+      <div class="speed-row" onclick="toggleSpeed(this)" data-info="Ιδανικό για οικογένεια 3–4 ατόμων. Καλύπτει τηλεργασία, HD/4K streaming και πολλαπλές συσκευές ταυτόχρονα χωρίς πρόβλημα.">
+        <div class="speed-label">📺 Πολλαπλές Συσκευές</div>
+        <div class="bar-track"><div class="bar-fill" style="background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0" data-w="30%"></div></div>
+        <div class="speed-mbps">100 Mbps</div>
+        <div class="speed-tooltip"></div>
+      </div>
+
+      <div class="speed-row" onclick="toggleSpeed(this)" data-info="Για gaming, μεγάλα downloads, 4K σε πολλές οθόνες ταυτόχρονα και αρκετά μέλη οικογένειας. Σχεδόν για κάθε σπίτι αρκεί.">
+        <div class="speed-label">🎮 Gaming & 4K</div>
+        <div class="bar-track"><div class="bar-fill" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa);width:0" data-w="52%"></div></div>
+        <div class="speed-mbps">200+ Mbps</div>
+        <div class="speed-tooltip"></div>
+      </div>
+
+      <div class="speed-row" onclick="toggleSpeed(this)" data-info="Για smart homes με πολλές κάμερες, επαγγελματική χρήση, μεγάλα cloud uploads/downloads, streaming 4K σε 4+ συσκευές ταυτόχρονα.">
+        <div class="speed-label">🚀 Επαγγελματική</div>
+        <div class="bar-track"><div class="bar-fill" style="background:linear-gradient(90deg,#f59e0b,#fbbf24);width:0" data-w="75%"></div></div>
+        <div class="speed-mbps">500 Mbps</div>
+        <div class="speed-tooltip"></div>
+      </div>
+
+      <div class="speed-row" onclick="toggleSpeed(this)" data-info="Οπτική ίνα Gigabit για μέγιστες απαιτήσεις. Server hosting, 4K streaming σε πάνω από 6 συσκευές, εξαιρετικά γρήγορα downloads. Για τους περισσότερους υπερβολικό — αλλά future-proof.">
+        <div class="speed-label">⚡ Gigabit / Fiber</div>
+        <div class="bar-track"><div class="bar-fill" style="background:linear-gradient(90deg,#ef4444,#f87171);width:0" data-w="100%"></div></div>
+        <div class="speed-mbps">1 Gbps</div>
+        <div class="speed-tooltip"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FACTORS -->
+  <div class="factors-section">
+    <div class="factors-title">⚙️ Τι επηρεάζει το πραγματικό εύρος ζώνης;</div>
+    <div class="factors-grid">
+
+      <div class="factor-card" onclick="toggleFactor(this)">
+        <div class="factor-emoji">📦</div>
+        <div class="factor-name">Πακέτο Παρόχου</div>
+        <div class="factor-short">ADSL / VDSL / Fiber</div>
+        <div class="factor-detail">Το συμβόλαιό σας ορίζει το θεωρητικό μέγιστο. Η οπτική ίνα δίνει τις πιο σταθερές και υψηλές ταχύτητες. Το ADSL είναι πιο περιορισμένο — ειδικά σε μεγάλη απόσταση από τον κόμβο.</div>
+      </div>
+
+      <div class="factor-card" onclick="toggleFactor(this)">
+        <div class="factor-emoji">📡</div>
+        <div class="factor-name">Router & Wi-Fi</div>
+        <div class="factor-short">Εξοπλισμός και θέση</div>
+        <div class="factor-detail">Παλαιός router μπορεί να «πνίγει» ακόμα και γρήγορη σύνδεση. Η θέση του — κεντρική, μακριά από τοίχους — κάνει μεγάλη διαφορά. Wi-Fi 6 προσφέρει καλύτερη απόδοση σε πολυσύχναστα δίκτυα.</div>
+      </div>
+
+      <div class="factor-card" onclick="toggleFactor(this)">
+        <div class="factor-emoji">👥</div>
+        <div class="factor-name">Αριθμός Συσκευών</div>
+        <div class="factor-short">Κάθε συσκευή μοιράζεται</div>
+        <div class="factor-detail">10 συσκευές συνδεδεμένες σημαίνει ότι το bandwidth μοιράζεται σε 10. Ακόμα και συσκευές σε αναμονή μπορεί να κάνουν background updates. Ελέγξτε τακτικά ποιες συσκευές είναι ενεργές.</div>
+      </div>
+
+      <div class="factor-card" onclick="toggleFactor(this)">
+        <div class="factor-emoji">🕐</div>
+        <div class="factor-name">Ώρα Αιχμής</div>
+        <div class="factor-short">Συμφόρηση δικτύου</div>
+        <div class="factor-detail">Το βράδυ (19:00–23:00) το δίκτυο του παρόχου έχει μεγαλύτερο φόρτο από πολλούς χρήστες. Μπορεί να νιώσετε μείωση ταχύτητας ακόμα και με καλό πακέτο.</div>
+      </div>
+
+      <div class="factor-card" onclick="toggleFactor(this)">
+        <div class="factor-emoji">🔌</div>
+        <div class="factor-name">Ethernet vs Wi-Fi</div>
+        <div class="factor-short">Ενσύρματο > Ασύρματο</div>
+        <div class="factor-detail">Η σύνδεση με καλώδιο Ethernet πάντα νικά το Wi-Fi σε σταθερότητα και ταχύτητα. Για υπολογιστή εργασίας, κονσόλα ή smart TV — χρησιμοποιήστε καλώδιο όπου μπορείτε.</div>
+      </div>
+
+      <div class="factor-card" onclick="toggleFactor(this)">
+        <div class="factor-emoji">📶</div>
+        <div class="factor-name">Παρεμβολές Wi-Fi</div>
+        <div class="factor-short">Γειτονικά δίκτυα & συσκευές</div>
+        <div class="factor-detail">Μικροκυματικοί φούρνοι, Bluetooth συσκευές, παρακείμενα Wi-Fi δίκτυα και μεταλλικά αντικείμενα μπορούν να μειώσουν την ισχύ σήματος. Δοκιμάστε το 5GHz band για λιγότερες παρεμβολές σε μικρές αποστάσεις.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MISTAKES -->
+  <div class="mistakes-section">
+    <div class="mistakes-title">⚠️ Συχνά Λάθη — Κάντε κλικ για τη λύση</div>
+    <div class="mistakes-list">
+
+      <div class="mistake-item" onclick="toggleMistake(this)">
+        <div class="mistake-x">✕</div>
+        <div>
+          <div class="mistake-text">Router κρυμμένο πίσω από έπιπλα ή σε ντουλάπα</div>
+          <div class="mistake-fix"><span class="fix-prefix">✓ Λύση: </span>Τοποθετήστε τον router σε κεντρικό, ανοιχτό σημείο, ιδανικά σε ύψος. Ο σηματοδότης «βλέπει» προς τα κάτω και στα πλάγια.</div>
+        </div>
+      </div>
+
+      <div class="mistake-item" onclick="toggleMistake(this)">
+        <div class="mistake-x">✕</div>
+        <div>
+          <div class="mistake-text">Παλαιός router (5+ ετών) με γρήγορη σύνδεση</div>
+          <div class="mistake-fix"><span class="fix-prefix">✓ Λύση: </span>Ένας παλαιός router μπορεί να υποστηρίζει μέχρι 300 Mbps, ενώ πληρώνετε για 500 Mbps. Αναβαθμίστε τον εξοπλισμό — τα αποτελέσματα είναι συνήθως άμεσα.</div>
+        </div>
+      </div>
+
+      <div class="mistake-item" onclick="toggleMistake(this)">
+        <div class="mistake-x">✕</div>
+        <div>
+          <div class="mistake-text">Ποτέ δεν έχετε κάνει speed test</div>
+          <div class="mistake-fix"><span class="fix-prefix">✓ Λύση: </span>Κάντε speedtest.net από υπολογιστή συνδεδεμένο με καλώδιο Ethernet. Αν η ταχύτητα διαφέρει πολύ από το συμβόλαιο, επικοινωνήστε με τον πάροχο.</div>
+        </div>
+      </div>
+
+      <div class="mistake-item" onclick="toggleMistake(this)">
+        <div class="mistake-x">✕</div>
+        <div>
+          <div class="mistake-text">Background downloads & cloud backups κατά τη διάρκεια της ημέρας</div>
+          <div class="mistake-fix"><span class="fix-prefix">✓ Λύση: </span>Προγραμματίστε updates, backups και μεγάλα downloads για νύχτα ή ώρες χαμηλής χρήσης. Τα περισσότερα NAS, PC και cloud apps έχουν αυτή την επιλογή.</div>
+        </div>
+      </div>
+
+      <div class="mistake-item" onclick="toggleMistake(this)">
+        <div class="mistake-x">✕</div>
+        <div>
+          <div class="mistake-text">Αγνόηση ασφάλειας — ο router δεν έχει αλλαχθεί ο κωδικός ποτέ</div>
+          <div class="mistake-fix"><span class="fix-prefix">✓ Λύση: </span>«Κλεμμένο» bandwidth από γείτονες μπορεί να επιβραδύνει τη σύνδεση. Αλλάξτε τον κωδικό Wi-Fi, χρησιμοποιήστε WPA3 ή WPA2, και ελέγξτε ποιες συσκευές είναι συνδεδεμένες.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-note">lovefortechnology.net — Κάντε κλικ σε κάθε στοιχείο για λεπτομέρειες</div>
+
+</div>
+
+<script>
+  function toggleCard(el) {
+    const wasActive = el.classList.contains('active');
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    if (!wasActive) el.classList.add('active');
+  }
+
+  function toggleFactor(el) {
+    const wasActive = el.classList.contains('active');
+    document.querySelectorAll('.factor-card').forEach(c => c.classList.remove('active'));
+    if (!wasActive) el.classList.add('active');
+  }
+
+  function toggleMistake(el) {
+    const wasActive = el.classList.contains('active');
+    document.querySelectorAll('.mistake-item').forEach(c => c.classList.remove('active'));
+    if (!wasActive) el.classList.add('active');
+  }
+
+  function toggleSpeed(el) {
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.speed-row').forEach(r => r.classList.remove('open'));
+    if (!wasOpen) {
+      el.classList.add('open');
+      el.querySelector('.speed-tooltip').textContent = el.dataset.info;
+    }
+  }
+
+  // Animate bars on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.w;
+      });
+    }, 300);
+  });
+</script>
+</body>
+</html>
