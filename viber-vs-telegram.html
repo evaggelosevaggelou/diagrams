@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viber vs Telegram — Σύγκριση 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --viber: #7b519d;
+    --viber-light: #f3edf9;
+    --viber-mid: #c9a8e8;
+    --tg: #0088cc;
+    --tg-light: #e6f4fb;
+    --tg-mid: #7ec8e3;
+    --neutral: #f8f9fa;
+    --text: #1a1a2e;
+    --muted: #6c757d;
+    --border: #e2e8f0;
+    --win: #27ae60;
+    --tie: #e67e22;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: var(--text);
+    padding: 28px 20px 40px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .header p {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 0.93em;
+  }
+
+  /* ── HERO BADGES ── */
+  .hero-badges {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 22px;
+    border-radius: 50px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05em;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: transform 0.18s;
+  }
+  .badge:hover { transform: translateY(-2px); }
+  .badge.viber { background: var(--viber); color: #fff; }
+  .badge.tg    { background: var(--tg);    color: #fff; }
+  .badge .icon { font-size: 1.3em; }
+
+  /* ── SCORE BAR ── */
+  .score-section {
+    background: var(--neutral);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+  .score-label {
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .score-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .score-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9em;
+    width: 60px;
+    flex-shrink: 0;
+  }
+  .score-name.viber { color: var(--viber); text-align: right; }
+  .score-name.tg    { color: var(--tg); }
+  .bar-track {
+    flex: 1;
+    height: 14px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-viber {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: var(--viber);
+    border-radius: 99px;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    width: 0;
+  }
+  .bar-tg {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: var(--tg);
+    border-radius: 99px;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    width: 0;
+  }
+  .score-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1em;
+    width: 32px;
+    flex-shrink: 0;
+  }
+  .score-num.viber { color: var(--viber); text-align: right; }
+  .score-num.tg    { color: var(--tg); }
+
+  /* ── CATEGORIES ── */
+  .section-label {
+    font-size: 0.78em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .category {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .category:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
+  .category.open  { box-shadow: 0 6px 24px rgba(0,0,0,0.10); border-color: transparent; }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 12px;
+    background: #fff;
+    user-select: none;
+  }
+  .cat-icon { font-size: 1.4em; flex-shrink: 0; }
+  .cat-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.97em;
+  }
+  .cat-winner {
+    font-size: 0.75em;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .cat-winner.viber { background: var(--viber-light); color: var(--viber); }
+  .cat-winner.tg    { background: var(--tg-light);    color: var(--tg); }
+  .cat-winner.tie   { background: #fff3e0; color: var(--tie); }
+  .cat-arrow {
+    font-size: 0.85em;
+    color: var(--muted);
+    transition: transform 0.25s;
+    margin-left: 6px;
+  }
+  .category.open .cat-arrow { transform: rotate(180deg); }
+
+  .cat-body {
+    display: none;
+    padding: 0 18px 18px;
+    background: #fff;
+  }
+  .category.open .cat-body { display: block; }
+
+  .compare-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .compare-cell {
+    flex: 1 1 140px;
+    border-radius: 10px;
+    padding: 13px 15px;
+    font-size: 0.88em;
+    line-height: 1.65;
+  }
+  .compare-cell.viber {
+    background: var(--viber-light);
+    border-left: 3px solid var(--viber);
+  }
+  .compare-cell.tg {
+    background: var(--tg-light);
+    border-left: 3px solid var(--tg);
+  }
+  .compare-cell .app-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85em;
+    margin-bottom: 5px;
+    display: block;
+  }
+  .compare-cell.viber .app-name { color: var(--viber); }
+  .compare-cell.tg    .app-name { color: var(--tg); }
+
+  .verdict-pill {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 99px;
+  }
+  .verdict-pill.win  { background: #e8f5e9; color: var(--win); }
+  .verdict-pill.lose { background: #fce4e4; color: #c0392b; }
+  .verdict-pill.tie  { background: #fff3e0; color: var(--tie); }
+
+  /* ── FINAL VERDICT ── */
+  .final-box {
+    margin-top: 28px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+  }
+  .final-header {
+    background: var(--text);
+    color: #fff;
+    padding: 16px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1em;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .final-body {
+    display: flex;
+    gap: 0;
+  }
+  .final-side {
+    flex: 1;
+    padding: 20px 22px;
+    line-height: 1.7;
+    font-size: 0.9em;
+  }
+  .final-side.viber { background: var(--viber-light); }
+  .final-side.tg    { background: var(--tg-light); }
+  .final-side h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+  }
+  .final-side.viber h4 { color: var(--viber); }
+  .final-side.tg    h4 { color: var(--tg); }
+  .final-side ul { padding-left: 16px; }
+  .final-side li { margin-bottom: 4px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 0.78em;
+    color: var(--muted);
+  }
+  .footer a { color: var(--tg); text-decoration: none; font-weight: 600; }
+
+  @media (max-width: 480px) {
+    .final-body { flex-direction: column; }
+    .score-name { width: 44px; font-size: 0.8em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Viber vs Telegram</h1>
+  <p>Πλήρης Σύγκριση 2026 — Κλίκ σε κάθε κατηγορία για λεπτομέρειες</p>
+</div>
+
+<!-- HERO BADGES -->
+<div class="hero-badges">
+  <div class="badge viber"><span class="icon">📱</span> Viber</div>
+  <div class="badge tg"><span class="icon">✈️</span> Telegram</div>
+</div>
+
+<!-- SCORE BAR -->
+<div class="score-section">
+  <div class="score-label">Συνολική Βαθμολογία (από 10 κατηγορίες)</div>
+  <div class="score-bar-wrap" style="margin-bottom:10px;">
+    <span class="score-name viber">Viber</span>
+    <div class="bar-track">
+      <div class="bar-viber" id="bar-v" style="width:0%"></div>
+    </div>
+    <span class="score-num viber" id="score-v">3</span>
+  </div>
+  <div class="score-bar-wrap">
+    <span class="score-name tg">Telegram</span>
+    <div class="bar-track">
+      <div class="bar-tg" id="bar-t" style="width:0%"></div>
+    </div>
+    <span class="score-num tg" id="score-t">7</span>
+  </div>
+</div>
+
+<div class="section-label">📂 Κατηγορίες — Κλίκ για ανάλυση</div>
+
+<!-- CATEGORIES -->
+<div id="categories"></div>
+
+<!-- FINAL VERDICT -->
+<div class="final-box">
+  <div class="final-header">🏆 Τελικό Συμπέρασμα</div>
+  <div class="final-body">
+    <div class="final-side viber">
+      <h4>📱 Διάλεξε Viber αν…</h4>
+      <ul>
+        <li>Θέλεις E2EE από προεπιλογή</li>
+        <li>Οι επαφές σου δεν αλλάζουν εύκολα app</li>
+        <li>Χρησιμοποιείς πολύ Viber Out για κλήσεις</li>
+      </ul>
+    </div>
+    <div class="final-side tg">
+      <h4>✈️ Διάλεξε Telegram αν…</h4>
+      <ul>
+        <li>Θέλεις ταχύτητα, bots & κανάλια</li>
+        <li>Στέλνεις μεγάλα αρχεία συχνά</li>
+        <li>Θέλεις cloud storage χωρίς να γεμίζει το κινητό</li>
+        <li>Ψάχνεις καλύτερη εμπειρία καθημερινά</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Δημιουργήθηκε για το <a href="https://www.lovefortechnology.net" target="_blank">lovefortechnology.net</a> &nbsp;|&nbsp; 2026
+</div>
+
+<script>
+const data = [
+  {
+    icon: "📦",
+    title: "Μέγεθος & Απόδοση",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Μεγάλο μέγεθος εφαρμογής (100+ MB). Συσσωρεύει cache και media τοπικά, γεμίζοντας γρήγορα τον αποθηκευτικό χώρο του κινητού.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Ελαφρύ, γρήγορο, ανοίγει άμεσα. Τα αρχεία αποθηκεύονται στο cloud — δεν σπαταλά χώρο στο τηλέφωνο.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "📢",
+    title: "Διαφημίσεις",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Η δωρεάν έκδοση εμφανίζει διαφημίσεις μέσα στις συνομιλίες και στο chat list. Ενοχλητικό για καθημερινή χρήση.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Χωρίς διαφημίσεις στις προσωπικές συνομιλίες. Ελάχιστες διαφημίσεις μόνο σε πολύ μεγάλα δημόσια κανάλια.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "📁",
+    title: "Αποστολή Αρχείων",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Όριο ~200 MB. Αυτόματη συμπίεση εικόνων και βίντεο χωρίς επιλογή. Η ποιότητα υποβαθμίζεται.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Έως 2 GB ανά αρχείο. Αποστολή εικόνων ως αρχεία χωρίς καμία συμπίεση — φτάνουν ακριβώς όπως τα έστειλες.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "🔐",
+    title: "Ασφάλεια & Κρυπτογράφηση",
+    winner: "tie",
+    winnerLabel: "Ισοπαλία",
+    viber: {
+      text: "End-to-end κρυπτογράφηση σε όλες τις 1-1 συνομιλίες από προεπιλογή. Καλή προεπιλεγμένη ασφάλεια.",
+      verdict: "win"
+    },
+    tg: {
+      text: "E2EE μόνο στα Secret Chats (όχι στα κανονικά). Τα cloud chats είναι κρυπτογραφημένα στον server, αλλά όχι end-to-end.",
+      verdict: "lose"
+    }
+  },
+  {
+    icon: "📡",
+    title: "Κανάλια & Ομάδες",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Κοινότητες με βασικές λειτουργίες. Δεν συγκρίνεται με το οικοσύστημα περιεχομένου του Telegram.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Κανάλια με εκατομμύρια συνδρομητές. Supergroups έως 200.000 μέλη. Τεράστιο οικοσύστημα ειδήσεων, τεχνολογίας, ψυχαγωγίας.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "🤖",
+    title: "Bots & Αυτοματισμός",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Ελάχιστοι bots διαθέσιμοι. Πολύ περιορισμένες δυνατότητες αυτοματισμού.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Χιλιάδες bots: μετατροπή αρχείων, μουσική, ειδοποιήσεις, παιχνίδια, διαχείριση ομάδων. Μια ολόκληρη πλατφόρμα.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "📲",
+    title: "Πολλαπλές Συσκευές",
+    winner: "tie",
+    winnerLabel: "Ισοπαλία",
+    viber: {
+      text: "Υποστηρίζει multi-device (κινητό, tablet, PC). Λειτουργεί καλά αλλά χρειάζεται το κινητό συνδεδεμένο.",
+      verdict: "tie"
+    },
+    tg: {
+      text: "Πλήρης ανεξαρτησία συσκευών — Android, iOS, Windows, Mac, Linux, Web. Δεν χρειάζεται το κινητό ενεργό.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "🎨",
+    title: "Προσαρμογή Interface",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Βασικές επιλογές θέματος — φωτεινό/σκούρο. Δεν υπάρχει μεγάλη δυνατότητα εξατομίκευσης.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Εκτεταμένη προσαρμογή: θέματα, χρώματα, γραμματοσειρές, custom chat backgrounds. Κοινότητα custom θεμάτων.",
+      verdict: "win"
+    }
+  },
+  {
+    icon: "📞",
+    title: "Κλήσεις & Video",
+    winner: "tie",
+    winnerLabel: "Ισοπαλία",
+    viber: {
+      text: "Εξαιρετική ποιότητα φωνητικών κλήσεων. Viber Out για κλήσεις σε κανονικούς αριθμούς με πολύ καλές τιμές.",
+      verdict: "win"
+    },
+    tg: {
+      text: "Καλές κλήσεις VoIP μεταξύ χρηστών. Δεν έχει αντίστοιχο του Viber Out για PSTN κλήσεις.",
+      verdict: "tie"
+    }
+  },
+  {
+    icon: "💰",
+    title: "Κόστος & Premium",
+    winner: "tg",
+    winnerLabel: "Telegram νικά",
+    viber: {
+      text: "Δωρεάν με διαφημίσεις. Viber Out (επί πληρωμή). Δεν υπάρχει premium tier για βελτιωμένη εμπειρία.",
+      verdict: "lose"
+    },
+    tg: {
+      text: "Δωρεάν χωρίς διαφημίσεις στις συνομιλίες. Telegram Premium (~5€/μήνα) για ακόμα μεγαλύτερα αρχεία, αποκλειστικά stickers και επιπλέον δυνατότητες.",
+      verdict: "win"
+    }
+  }
+];
+
+function renderCategories() {
+  const container = document.getElementById('categories');
+  data.forEach((cat, i) => {
+    const div = document.createElement('div');
+    div.className = 'category';
+    div.innerHTML = `
+      <div class="cat-header" onclick="toggle(${i})">
+        <span class="cat-icon">${cat.icon}</span>
+        <span class="cat-title">${cat.title}</span>
+        <span class="cat-winner ${cat.winner}">${cat.winnerLabel}</span>
+        <span class="cat-arrow">▼</span>
+      </div>
+      <div class="cat-body" id="body-${i}">
+        <div class="compare-row">
+          <div class="compare-cell viber">
+            <span class="app-name">📱 Viber</span>
+            ${cat.viber.text}
+            <br><span class="verdict-pill ${cat.viber.verdict}">${cat.viber.verdict === 'win' ? '✅ Πλεονέκτημα' : cat.viber.verdict === 'lose' ? '❌ Μειονέκτημα' : '🟡 Ισόπαλο'}</span>
+          </div>
+          <div class="compare-cell tg">
+            <span class="app-name">✈️ Telegram</span>
+            ${cat.tg.text}
+            <br><span class="verdict-pill ${cat.tg.verdict}">${cat.tg.verdict === 'win' ? '✅ Πλεονέκτημα' : cat.tg.verdict === 'lose' ? '❌ Μειονέκτημα' : '🟡 Ισόπαλο'}</span>
+          </div>
+        </div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function toggle(i) {
+  const cats = document.querySelectorAll('.category');
+  const cat = cats[i];
+  const isOpen = cat.classList.contains('open');
+  // close all
+  cats.forEach(c => c.classList.remove('open'));
+  if (!isOpen) cat.classList.add('open');
+}
+
+// Animate score bars on load
+function animateBars() {
+  setTimeout(() => {
+    document.getElementById('bar-v').style.width = '30%';
+    document.getElementById('bar-t').style.width = '70%';
+  }, 300);
+}
+
+renderCategories();
+animateBars();
+
+// Auto-open first
+document.querySelectorAll('.category')[0].classList.add('open');
+</script>
+</body>
+</html>
