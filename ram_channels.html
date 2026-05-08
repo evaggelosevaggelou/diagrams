@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Single vs Dual Channel RAM</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --white: #ffffff;
+    --gray-50: #f8f9fa;
+    --gray-100: #f0f1f3;
+    --gray-200: #e2e4e8;
+    --gray-400: #9ca3af;
+    --gray-600: #4b5563;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --single: #e85d2f;
+    --single-light: #fde8e0;
+    --single-mid: #f5a07a;
+    --dual: #1d6ef5;
+    --dual-light: #dbeafe;
+    --dual-mid: #7ab3f7;
+    --accent: #0fa968;
+    --accent-light: #d1fae5;
+    --border: #e2e4e8;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 12px;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--white);
+    font-family: var(--font-sans);
+    color: var(--gray-900);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 860px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid #6ee7b7;
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: clamp(20px, 4vw, 30px);
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .header h1 span.vs {
+    font-family: var(--font-mono);
+    color: var(--gray-400);
+    font-weight: 400;
+    font-size: 0.75em;
+    margin: 0 6px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.6;
+  }
+  .header p em {
+    font-style: normal;
+    color: var(--gray-800);
+    font-weight: 600;
+  }
+
+  /* Channel cards row */
+  .channels-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .channel-card {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.22s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .channel-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .channel-card.single::before { background: var(--single); }
+  .channel-card.dual::before { background: var(--dual); }
+
+  .channel-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .channel-card.active.single { border-color: var(--single); background: var(--single-light); }
+  .channel-card.active.dual { border-color: var(--dual); background: var(--dual-light); }
+
+  .channel-card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .channel-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .single .channel-icon { background: var(--single-light); }
+  .dual .channel-icon { background: var(--dual-light); }
+
+  .channel-card h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .channel-card .subtitle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 400;
+  }
+
+  /* RAM stick visual */
+  .sticks-visual {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    align-items: flex-end;
+    height: 56px;
+  }
+  .stick {
+    flex: 1;
+    border-radius: 4px 4px 2px 2px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    padding-bottom: 4px;
+    transition: height 0.4s ease;
+  }
+  .stick .chip { width: 70%; height: 7px; border-radius: 2px; position: absolute; top: 6px; opacity: 0.5; }
+  .stick .chip2 { width: 55%; height: 5px; border-radius: 1px; position: absolute; top: 17px; opacity: 0.35; }
+
+  .single .stick { height: 38px; background: linear-gradient(160deg, #f0a080, var(--single)); color: #fff; }
+  .single .stick .chip { background: #fff; }
+  .single .stick .chip2 { background: #fff; }
+
+  .dual .stick { background: linear-gradient(160deg, #80b4f5, var(--dual)); color: #fff; }
+  .dual .stick .chip { background: #fff; }
+  .dual .stick .chip2 { background: #fff; }
+  .dual .stick:nth-child(1) { height: 48px; }
+  .dual .stick:nth-child(2) { height: 48px; }
+
+  .stick-label { margin-top: 2px; font-size: 8px; color: var(--gray-400); font-family: var(--font-mono); text-align: center; }
+
+  /* Bandwidth meter */
+  .bw-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+  }
+  .bw-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: var(--gray-100);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bw-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .single .bw-bar { background: var(--single); width: 50%; }
+  .dual .bw-bar { background: var(--dual); width: 100%; }
+  .bw-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 34px;
+    text-align: right;
+  }
+  .single .bw-val { color: var(--single); }
+  .dual .bw-val { color: var(--dual); }
+
+  .click-hint {
+    font-size: 11px;
+    color: var(--gray-400);
+    text-align: center;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--gray-50);
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: all 0.28s ease;
+  }
+  .detail-panel.hidden { display: none; }
+  .detail-panel.single-detail { border-color: var(--single); }
+  .detail-panel.dual-detail { border-color: var(--dual); }
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .single-detail .detail-header { background: var(--single-light); border-color: #f5b89a; }
+  .dual-detail .detail-header { background: var(--dual-light); border-color: #a3c8f7; }
+
+  .detail-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .detail-close {
+    margin-left: auto;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.07);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--gray-600);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .detail-close:hover { background: rgba(0,0,0,0.14); }
+
+  .detail-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .detail-col {
+    padding: 16px 18px;
+  }
+  .detail-col:first-child { border-right: 1px solid var(--border); }
+
+  .detail-col h4 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+  }
+  .detail-list { list-style: none; }
+  .detail-list li {
+    font-size: 13px;
+    color: var(--gray-700, #374151);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.45;
+  }
+  .detail-list li:last-child { border-bottom: none; }
+  .detail-list li .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 5px;
+  }
+  .single-detail .dot { background: var(--single); }
+  .dual-detail .dot { background: var(--dual); }
+
+  /* Benchmark section */
+  .bench-section {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .bench-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bench-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .bench-header .hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--gray-400);
+    font-family: var(--font-mono);
+  }
+
+  .bench-body { padding: 16px 18px; }
+
+  .bench-row {
+    margin-bottom: 14px;
+  }
+  .bench-row:last-child { margin-bottom: 0; }
+  .bench-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .bench-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+  .bench-note {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-family: var(--font-mono);
+  }
+  .bench-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .bench-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .bench-bar-label {
+    width: 50px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .bench-bar-label.s { color: var(--single); }
+  .bench-bar-label.d { color: var(--dual); }
+  .bench-bar-outer {
+    flex: 1;
+    height: 10px;
+    background: var(--gray-100);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bench-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    width: 0;
+    transition: width 1s cubic-bezier(.4,0,.2,1);
+  }
+  .bench-bar-fill.s { background: linear-gradient(90deg, var(--single-mid), var(--single)); }
+  .bench-bar-fill.d { background: linear-gradient(90deg, var(--dual-mid), var(--dual)); }
+  .bench-bar-val {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 42px;
+    text-align: right;
+    color: var(--gray-600);
+  }
+
+  /* Verdict */
+  .verdict {
+    border: 1.5px solid #6ee7b7;
+    border-radius: var(--radius);
+    background: var(--accent-light);
+    padding: 16px 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .verdict-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .verdict-text h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+  .verdict-text p {
+    font-size: 12.5px;
+    color: var(--gray-600);
+    line-height: 1.6;
+  }
+  .verdict-text strong { color: var(--gray-900); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--gray-400);
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 560px) {
+    .channels-row { grid-template-columns: 1fr; }
+    .detail-body { grid-template-columns: 1fr; }
+    .detail-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="tag">📊 RAM Guide</div>
+    <h1>Single Channel<span class="vs">vs</span>Dual Channel RAM</h1>
+    <p>Επηρεάζει πραγματικά τις επιδόσεις; <em>Κλίκαρε στις κάρτες για λεπτομέρειες.</em></p>
+  </div>
+
+  <!-- Channel cards -->
+  <div class="channels-row">
+
+    <!-- Single Channel -->
+    <div class="channel-card single" id="card-single" onclick="toggleDetail('single')">
+      <div class="card-header">
+        <div class="channel-icon">🔴</div>
+        <div>
+          <div class="h2">Single Channel</div>
+          <div class="subtitle">1 ή 2 sticks — ίδιο slot</div>
+        </div>
+      </div>
+      <div class="sticks-visual">
+        <div class="stick">
+          <div class="chip"></div>
+          <div class="chip2"></div>
+          <span>8GB</span>
+        </div>
+      </div>
+      <div style="margin-bottom:4px; font-size:11px; color:var(--gray-600);">Εύρος ζώνης (bandwidth)</div>
+      <div class="bw-row">
+        <div class="bw-bar-wrap"><div class="bw-bar" id="bw-single"></div></div>
+        <span class="bw-val">~38 GB/s</span>
+      </div>
+      <div class="click-hint">▼ κλίκ για λεπτομέρειες</div>
+    </div>
+
+    <!-- Dual Channel -->
+    <div class="channel-card dual" id="card-dual" onclick="toggleDetail('dual')">
+      <div class="card-header">
+        <div class="channel-icon">🔵</div>
+        <div>
+          <div class="h2">Dual Channel</div>
+          <div class="subtitle">2 sticks — slots A2 + B2</div>
+        </div>
+      </div>
+      <div class="sticks-visual">
+        <div class="stick">
+          <div class="chip"></div>
+          <div class="chip2"></div>
+          <span>8GB</span>
+        </div>
+        <div class="stick">
+          <div class="chip"></div>
+          <div class="chip2"></div>
+          <span>8GB</span>
+        </div>
+      </div>
+      <div style="margin-bottom:4px; font-size:11px; color:var(--gray-600);">Εύρος ζώνης (bandwidth)</div>
+      <div class="bw-row">
+        <div class="bw-bar-wrap"><div class="bw-bar" id="bw-dual"></div></div>
+        <span class="bw-val">~76 GB/s</span>
+      </div>
+      <div class="click-hint">▼ κλίκ για λεπτομέρειες</div>
+    </div>
+
+  </div>
+
+  <!-- Detail: Single -->
+  <div class="detail-panel single-detail hidden" id="detail-single">
+    <div class="detail-header">
+      <span>🔴</span>
+      <h3>Single Channel — Λεπτομέρειες</h3>
+      <button class="detail-close" onclick="closeDetail('single')">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-col">
+        <h4>✅ Πλεονεκτήματα</h4>
+        <ul class="detail-list">
+          <li><span class="dot"></span>Λειτουργεί ακόμα και με 1 μόνο stick RAM</li>
+          <li><span class="dot"></span>Πιο εύκολη αναβάθμιση (1 module κάθε φορά)</li>
+          <li><span class="dot"></span>Λιγότερη κατανάλωση ενέργειας</li>
+          <li><span class="dot"></span>Αρκετό για βασικές εργασίες γραφείου</li>
+        </ul>
+      </div>
+      <div class="detail-col">
+        <h4>❌ Μειονεκτήματα</h4>
+        <ul class="detail-list">
+          <li><span class="dot"></span>Μισό bandwidth σε σχέση με Dual Channel</li>
+          <li><span class="dot"></span>Εμφανής επίπτωση σε iGPU (integrated graphics)</li>
+          <li><span class="dot"></span>Bottleneck σε CPU-intensive εφαρμογές</li>
+          <li><span class="dot"></span>Χαμηλότερα fps σε gaming με iGPU</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail: Dual -->
+  <div class="detail-panel dual-detail hidden" id="detail-dual">
+    <div class="detail-header">
+      <span>🔵</span>
+      <h3>Dual Channel — Λεπτομέρειες</h3>
+      <button class="detail-close" onclick="closeDetail('dual')">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-col">
+        <h4>✅ Πλεονεκτήματα</h4>
+        <ul class="detail-list">
+          <li><span class="dot"></span>Διπλάσιο εύρος ζώνης μνήμης</li>
+          <li><span class="dot"></span>Σημαντική βελτίωση σε iGPU gaming (έως +50%)</li>
+          <li><span class="dot"></span>Καλύτερη ανταπόκριση σε multitasking</li>
+          <li><span class="dot"></span>Προτεινόμενη επιλογή για AMD Ryzen CPUs</li>
+        </ul>
+      </div>
+      <div class="detail-col">
+        <h4>❌ Μειονεκτήματα</h4>
+        <ul class="detail-list">
+          <li><span class="dot"></span>Χρειάζονται 2 ταυτόσημα ή συμβατά sticks</li>
+          <li><span class="dot"></span>Λάθος slots = ακυρώνεται το Dual Channel</li>
+          <li><span class="dot"></span>Ελαφρώς υψηλότερο κόστος αν αγοράσεις kit</li>
+          <li><span class="dot"></span>Σε dedicated GPU η διαφορά μικραίνει</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benchmarks -->
+  <div class="bench-section">
+    <div class="bench-header">
+      <span>📈</span>
+      <h3>Σύγκριση Επιδόσεων</h3>
+      <span class="hint">Κατά προσέγγιση · DDR4-3200</span>
+    </div>
+    <div class="bench-body" id="bench-body">
+
+      <div class="bench-row">
+        <div class="bench-label-row">
+          <span class="bench-name">🎮 Gaming (iGPU — Ryzen 5)</span>
+          <span class="bench-note">fps @ 1080p Low</span>
+        </div>
+        <div class="bench-bars">
+          <div class="bench-bar-row">
+            <span class="bench-bar-label s">Single</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill s" data-w="52"></div></div>
+            <span class="bench-bar-val">52 fps</span>
+          </div>
+          <div class="bench-bar-row">
+            <span class="bench-bar-label d">Dual</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill d" data-w="78"></div></div>
+            <span class="bench-bar-val">78 fps <strong style="color:var(--accent)">+50%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-row">
+        <div class="bench-label-row">
+          <span class="bench-name">🎮 Gaming (dGPU — RTX 4060)</span>
+          <span class="bench-note">fps @ 1080p High</span>
+        </div>
+        <div class="bench-bars">
+          <div class="bench-bar-row">
+            <span class="bench-bar-label s">Single</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill s" data-w="112"></div></div>
+            <span class="bench-bar-val">112 fps</span>
+          </div>
+          <div class="bench-bar-row">
+            <span class="bench-bar-label d">Dual</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill d" data-w="122"></div></div>
+            <span class="bench-bar-val">122 fps <strong style="color:var(--accent)">+9%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-row">
+        <div class="bench-label-row">
+          <span class="bench-name">🖥️ Video Editing (Premiere Pro)</span>
+          <span class="bench-note">export time (χαμηλότερο = καλύτερο)</span>
+        </div>
+        <div class="bench-bars">
+          <div class="bench-bar-row">
+            <span class="bench-bar-label s">Single</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill s" data-w="88"></div></div>
+            <span class="bench-bar-val">4:28 min</span>
+          </div>
+          <div class="bench-bar-row">
+            <span class="bench-bar-label d">Dual</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill d" data-w="70"></div></div>
+            <span class="bench-bar-val">3:32 min <strong style="color:var(--accent)">-21%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-row">
+        <div class="bench-label-row">
+          <span class="bench-name">💻 Καθημερινές εργασίες / γραφείο</span>
+          <span class="bench-note">PCMark 10 score</span>
+        </div>
+        <div class="bench-bars">
+          <div class="bench-bar-row">
+            <span class="bench-bar-label s">Single</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill s" data-w="82"></div></div>
+            <span class="bench-bar-val">6.200</span>
+          </div>
+          <div class="bench-bar-row">
+            <span class="bench-bar-label d">Dual</span>
+            <div class="bench-bar-outer"><div class="bench-bar-fill d" data-w="90"></div></div>
+            <span class="bench-bar-val">6.810 <strong style="color:var(--accent)">+10%</strong></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Verdict -->
+  <div class="verdict">
+    <div class="verdict-icon">💡</div>
+    <div class="verdict-text">
+      <h4>Το συμπέρασμα</h4>
+      <p>Το <strong>Dual Channel αξίζει πάντα</strong> αν χρησιμοποιείς <strong>integrated graphics</strong> (iGPU) — η διαφορά μπορεί να φτάσει <strong>+50% σε gaming</strong>. Με dedicated κάρτα γραφικών το κέρδος είναι μικρότερο (~5–15%), αλλά εξακολουθεί να συνιστάται. Η σωστή τοποθέτηση στα <strong>slots A2+B2</strong> είναι υποχρεωτική για να ενεργοποιηθεί.</p>
+    </div>
+  </div>
+
+  <div class="footer">lovefortechnology.net · Μάιος 2026</div>
+
+</div>
+
+<script>
+  // Animate bars on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.bench-bar-fill').forEach(bar => {
+        const maxVal = bar.classList.contains('s') ?
+          (bar.closest('.bench-row').querySelectorAll('.bench-bar-fill.d')[0]?.dataset.w || 100) :
+          bar.dataset.w;
+        // Normalize to max 94%
+        const sVal = parseFloat(bar.closest('.bench-bars').querySelector('.bench-bar-fill.s').dataset.w);
+        const dVal = parseFloat(bar.closest('.bench-bars').querySelector('.bench-bar-fill.d').dataset.w);
+        const maxW = Math.max(sVal, dVal);
+        const thisVal = parseFloat(bar.dataset.w);
+        bar.style.width = (thisVal / maxW * 92) + '%';
+      });
+    }, 200);
+  });
+
+  function toggleDetail(type) {
+    const panel = document.getElementById('detail-' + type);
+    const card = document.getElementById('card-' + type);
+    const isHidden = panel.classList.contains('hidden');
+
+    // Close both first
+    ['single','dual'].forEach(t => {
+      document.getElementById('detail-' + t).classList.add('hidden');
+      document.getElementById('card-' + t).classList.remove('active');
+    });
+
+    if (isHidden) {
+      panel.classList.remove('hidden');
+      card.classList.add('active');
+      // Smooth scroll to panel
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+  }
+
+  function closeDetail(type) {
+    document.getElementById('detail-' + type).classList.add('hidden');
+    document.getElementById('card-' + type).classList.remove('active');
+  }
+</script>
+</body>
+</html>
