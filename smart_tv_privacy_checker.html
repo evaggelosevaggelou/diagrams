@@ -1,0 +1,130 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1.5rem 0}
+.brand-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.5rem}
+.brand-btn{padding:10px 8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text-secondary);transition:all 0.15s;text-align:center}
+.brand-btn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.brand-btn.active{border:2px solid var(--color-border-info);background:var(--color-background-info);color:var(--color-text-info)}
+.progress-bar{height:6px;border-radius:3px;background:var(--color-background-secondary);margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:#1D9E75;transition:width 0.3s}
+.progress-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:0.5rem}
+.step-list{display:flex;flex-direction:column;gap:10px}
+.step-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);cursor:pointer;transition:all 0.15s}
+.step-item:hover{border-color:var(--color-border-secondary)}
+.step-item.checked{border-color:#1D9E75;background:#E1F5EE}
+.step-check{width:20px;height:20px;min-width:20px;border-radius:50%;border:1.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;transition:all 0.15s;margin-top:1px}
+.step-item.checked .step-check{background:#1D9E75;border-color:#1D9E75}
+.step-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.step-path{font-size:12px;color:var(--color-text-secondary);font-family:var(--font-mono);line-height:1.5}
+.step-item.checked .step-title{color:#085041}
+.step-item.checked .step-path{color:#0F6E56}
+.done-badge{display:inline-block;margin-top:1rem;padding:8px 16px;background:#E1F5EE;color:#085041;border-radius:var(--border-radius-md);font-size:13px;font-weight:500}
+.intro{font-size:14px;color:var(--color-text-secondary);margin-bottom:1.25rem;line-height:1.6}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;color:var(--color-text-tertiary);text-transform:uppercase;margin-bottom:8px}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">Smart TV Privacy Settings Checker — select your TV brand and check off each privacy setting as you disable it</h2>
+
+<p class="intro">Select your TV brand, then check off each setting as you disable it.</p>
+
+<div class="section-label">Select your brand</div>
+<div class="brand-grid" id="brands">
+  <button class="brand-btn" data-brand="samsung" onclick="selectBrand('samsung')"><i class="ti ti-tv" aria-hidden="true" style="display:block;font-size:20px;margin-bottom:4px"></i>Samsung</button>
+  <button class="brand-btn" data-brand="lg" onclick="selectBrand('lg')"><i class="ti ti-tv" aria-hidden="true" style="display:block;font-size:20px;margin-bottom:4px"></i>LG</button>
+  <button class="brand-btn" data-brand="sony" onclick="selectBrand('sony')"><i class="ti ti-tv" aria-hidden="true" style="display:block;font-size:20px;margin-bottom:4px"></i>Sony / Android TV</button>
+  <button class="brand-btn" data-brand="roku" onclick="selectBrand('roku')"><i class="ti ti-tv" aria-hidden="true" style="display:block;font-size:20px;margin-bottom:4px"></i>TCL / Roku</button>
+</div>
+
+<div id="checklist-area" style="display:none">
+  <div class="section-label" id="brand-label"></div>
+  <div class="progress-label" id="progress-label">0 of 0 settings disabled</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="step-list" id="steps"></div>
+  <div id="done-msg" style="display:none"><span class="done-badge"><i class="ti ti-shield-check" aria-hidden="true"></i> All tracking disabled — well done!</span></div>
+</div>
+</div>
+
+<script>
+const data = {
+  samsung: {
+    label: "Samsung (Tizen OS)",
+    steps: [
+      {title:"Disable ACR (Viewing Information Services)", path:"Settings → Support → Terms & Privacy → Viewing Information Services → Off"},
+      {title:"Disable interest-based advertising", path:"Settings → Support → Terms & Privacy → Interest-Based Advertisement Services → Off"},
+      {title:"Disable Bixby voice wake-up", path:"Settings → General → Voice → Bixby Voice Settings → disable Voice Wake-up"},
+      {title:"Review personalisation & opt-out options", path:"Settings → Support → Terms & Privacy → Samsung Privacy Notice → scroll to bottom"}
+    ]
+  },
+  lg: {
+    label: "LG (webOS)",
+    steps: [
+      {title:"Disable ACR (Live Plus)", path:"Settings → All Settings → General → Live Plus → Off"},
+      {title:"Disable personalised advertising", path:"Settings → All Settings → General → About This TV → User Agreements → Personalized Advertising → Off"},
+      {title:"Reset the advertising identifier", path:"Settings → All Settings → General → Additional Settings → Advertising → Reset Ad ID"},
+      {title:"Disable voice & motion recognition", path:"Settings → All Settings → General → AI Service → Voice & Motion Recognition → Off"}
+    ]
+  },
+  sony: {
+    label: "Sony / Android TV / Google TV",
+    steps: [
+      {title:"Disable Samba Interactive TV (ACR)", path:"Settings → Device Preferences → Samba Interactive TV → Off"},
+      {title:"Opt out of ads personalisation (Android TV)", path:"Settings → Device Preferences → About → Ads → Opt out of Ads Personalisation → On"},
+      {title:"Opt out of ads personalisation (Google TV)", path:"Settings → Privacy → Ads → Opt out of Ads Personalisation"},
+      {title:"Disable usage & diagnostics data", path:"Settings → Device Preferences → Usage & Diagnostics → Off"}
+    ]
+  },
+  roku: {
+    label: "TCL / Roku OS",
+    steps: [
+      {title:"Disable ACR tracking", path:"Settings → Privacy → Smart TV Experience → uncheck Use Info from TV Inputs"},
+      {title:"Limit advertising tracking", path:"Settings → Privacy → Advertising → Limit Ad Tracking → On, then reset Ad ID"},
+      {title:"Disable microphone access", path:"Settings → Privacy → Microphone → Off"},
+      {title:"Disable channel usage analytics", path:"Settings → Privacy → Channel Usage Data → uncheck"}
+    ]
+  }
+};
+
+let current = null;
+let checked = {};
+
+function selectBrand(b) {
+  current = b;
+  checked = {};
+  document.querySelectorAll('.brand-btn').forEach(el => el.classList.toggle('active', el.dataset.brand === b));
+  render();
+  document.getElementById('checklist-area').style.display = 'block';
+  document.getElementById('done-msg').style.display = 'none';
+}
+
+function toggle(i) {
+  checked[i] = !checked[i];
+  render();
+}
+
+function render() {
+  const d = data[current];
+  document.getElementById('brand-label').textContent = d.label;
+  const count = Object.values(checked).filter(Boolean).length;
+  const total = d.steps.length;
+  document.getElementById('progress-label').textContent = count + ' of ' + total + ' settings disabled';
+  document.getElementById('progress-fill').style.width = Math.round((count/total)*100) + '%';
+  const list = document.getElementById('steps');
+  list.innerHTML = d.steps.map((s,i) => `
+    <div class="step-item${checked[i]?' checked':''}" onclick="toggle(${i})" role="checkbox" aria-checked="${!!checked[i]}" tabindex="0">
+      <div class="step-check">${checked[i]?'<i class="ti ti-check" style="font-size:12px;color:#fff" aria-hidden="true"></i>':''}</div>
+      <div>
+        <div class="step-title">${s.title}</div>
+        <div class="step-path">${s.path}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('done-msg').style.display = count === total ? 'block' : 'none';
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.classList.contains('step-item')) e.target.click();
+});
+</script>
