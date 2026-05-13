@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Amiga Custom Chipset Architecture | lovefortechnology.org</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cpu:     #3b6ef8;
+    --agnus:   #9b59b6;
+    --denise:  #e74c3c;
+    --paula:   #27ae60;
+    --gary:    #f39c12;
+    --ram:     #1abc9c;
+    --fast:    #7f8c8d;
+    --bg:      #ffffff;
+    --text:    #2c3e50;
+    --muted:   #6c757d;
+    --border:  #dee2e6;
+    --card-bg: #f8f9fa;
+  }
+
+  body {
+    background: #fff;
+    color: var(--text);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 30px;
+  }
+
+  /* ── HEADER ── */
+  .diag-header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .diag-header h1 {
+    font-size: clamp(1.1rem, 3.5vw, 1.45rem);
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .diag-header p {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  /* ── HINT ── */
+  .hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+    letter-spacing: .02em;
+  }
+
+  /* ── DIAGRAM CANVAS ── */
+  .canvas {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto 24px;
+  }
+
+  /* SVG wires */
+  .wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .wire {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+    animation: dash 2s linear infinite;
+  }
+  .wire.active-wire {
+    stroke: var(--cpu);
+    stroke-width: 2.5;
+  }
+  @keyframes dash { to { stroke-dashoffset: -20; } }
+
+  /* Grid layout */
+  .chip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 12px;
+    position: relative;
+  }
+
+  /* ── CHIP NODE ── */
+  .chip {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 14px 10px 12px;
+    text-align: center;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    position: relative;
+    user-select: none;
+  }
+  .chip:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  }
+  .chip.selected {
+    box-shadow: 0 0 0 3px currentColor, 0 6px 22px rgba(0,0,0,.15);
+    transform: translateY(-4px);
+  }
+  .chip .chip-icon { font-size: 1.8rem; display: block; margin-bottom: 5px; }
+  .chip .chip-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .chip .chip-role {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+  .chip .chip-badge {
+    position: absolute;
+    top: -8px; right: -8px;
+    background: currentColor;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+
+  /* color theming per chip */
+  .chip-cpu    { color: var(--cpu);    border-color: var(--cpu);    }
+  .chip-agnus  { color: var(--agnus);  border-color: var(--agnus);  }
+  .chip-denise { color: var(--denise); border-color: var(--denise); }
+  .chip-paula  { color: var(--paula);  border-color: var(--paula);  }
+  .chip-gary   { color: var(--gary);   border-color: var(--gary);   }
+  .chip-ram    { color: var(--ram);    border-color: var(--ram);    }
+  .chip-fast   { color: var(--fast);   border-color: var(--fast);   }
+
+  /* subtle bg fill on selected */
+  .chip-cpu.selected    { background: #eef1ff; }
+  .chip-agnus.selected  { background: #f7eeff; }
+  .chip-denise.selected { background: #fff0f0; }
+  .chip-paula.selected  { background: #edfbf3; }
+  .chip-gary.selected   { background: #fff8e6; }
+  .chip-ram.selected    { background: #e8faf7; }
+  .chip-fast.selected   { background: #f4f5f6; }
+
+  /* grid positions */
+  .g-cpu    { grid-column: 2; grid-row: 1; }
+  .g-agnus  { grid-column: 1; grid-row: 2; }
+  .g-denise { grid-column: 3; grid-row: 2; }
+  .g-paula  { grid-column: 1; grid-row: 3; }
+  .g-ram    { grid-column: 2; grid-row: 2; }
+  .g-gary   { grid-column: 3; grid-row: 3; }
+  .g-fast   { grid-column: 2; grid-row: 3; }
+
+  /* ── INFO PANEL ── */
+  .info-panel {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    max-width: 700px;
+    margin: 0 auto 22px;
+    overflow: hidden;
+    transition: all .3s;
+  }
+  .info-panel.hidden { display: none; }
+  .info-header {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    color: #fff;
+  }
+  .info-header .ih-icon { font-size: 1.6rem; }
+  .info-header .ih-title { font-size: 1rem; font-weight: 700; }
+  .info-header .ih-sub   { font-size: 0.78rem; opacity: .88; }
+  .info-body { padding: 16px 18px; }
+  .info-body p {
+    color: var(--text);
+    font-size: 0.87rem;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .info-body p:last-child { margin-bottom: 0; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tag {
+    border-radius: 20px;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: auto;
+    padding: 0 4px;
+    transition: color .15s;
+  }
+  .close-btn:hover { color: var(--text); }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 700px;
+    margin: 0 auto 10px;
+  }
+  .leg-item {
+    align-items: center;
+    display: flex;
+    gap: 5px;
+    font-size: 0.73rem;
+    color: var(--muted);
+  }
+  .leg-dot {
+    border-radius: 50%;
+    height: 10px;
+    width: 10px;
+  }
+
+  /* ── FOOTER ── */
+  .diag-footer {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 14px;
+  }
+  .diag-footer a { color: var(--cpu); text-decoration: none; }
+
+  @media (max-width: 480px) {
+    .chip-grid { gap: 8px; }
+    .chip { padding: 10px 6px 9px; }
+    .chip .chip-icon { font-size: 1.4rem; }
+    .chip .chip-name { font-size: 0.68rem; }
+    .chip .chip-role { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="diag-header">
+  <h1>🖥️ Amiga Custom Chipset Architecture</h1>
+  <p>Click any chip to explore its role in the Amiga ecosystem</p>
+</div>
+
+
+<!-- HINT -->
+<p class="hint">👆 Tap a chip node to see details</p>
+
+<!-- CHIP GRID -->
+<div class="canvas">
+  <div class="chip-grid" id="chipGrid">
+
+    <!-- CPU -->
+    <div class="chip chip-cpu g-cpu" id="chip-cpu" onclick="selectChip('cpu')">
+      <span class="chip-icon">⚙️</span>
+      <div class="chip-name">Motorola 68000</div>
+      <div class="chip-role">Main CPU · 7.09 MHz</div>
+      <span class="chip-badge" style="background:var(--cpu);">CPU</span>
+    </div>
+
+    <!-- AGNUS -->
+    <div class="chip chip-agnus g-agnus" id="chip-agnus" onclick="selectChip('agnus')">
+      <span class="chip-icon">🔮</span>
+      <div class="chip-name">Agnus</div>
+      <div class="chip-role">DMA · Blitter · Copper</div>
+      <span class="chip-badge" style="background:var(--agnus);">DMA</span>
+    </div>
+
+    <!-- CHIP RAM (center) -->
+    <div class="chip chip-ram g-ram" id="chip-ram" onclick="selectChip('ram')">
+      <span class="chip-icon">💾</span>
+      <div class="chip-name">Chip RAM</div>
+      <div class="chip-role">Shared Memory · 512KB–2MB</div>
+      <span class="chip-badge" style="background:var(--ram);">RAM</span>
+    </div>
+
+    <!-- DENISE -->
+    <div class="chip chip-denise g-denise" id="chip-denise" onclick="selectChip('denise')">
+      <span class="chip-icon">🎨</span>
+      <div class="chip-name">Denise</div>
+      <div class="chip-role">Graphics · Sprites · Colours</div>
+      <span class="chip-badge" style="background:var(--denise);">GFX</span>
+    </div>
+
+    <!-- PAULA -->
+    <div class="chip chip-paula g-paula" id="chip-paula" onclick="selectChip('paula')">
+      <span class="chip-icon">🔊</span>
+      <div class="chip-name">Paula</div>
+      <div class="chip-role">Audio · Disk I/O · Serial</div>
+      <span class="chip-badge" style="background:var(--paula);">AUDIO</span>
+    </div>
+
+    <!-- FAST RAM -->
+    <div class="chip chip-fast g-fast" id="chip-fast" onclick="selectChip('fast')">
+      <span class="chip-icon">⚡</span>
+      <div class="chip-name">Fast RAM</div>
+      <div class="chip-role">CPU-only · 8MB+ expansion</div>
+      <span class="chip-badge" style="background:var(--fast);">EXP</span>
+    </div>
+
+    <!-- GARY -->
+    <div class="chip chip-gary g-gary" id="chip-gary" onclick="selectChip('gary')">
+      <span class="chip-icon">🔌</span>
+      <div class="chip-name">Gary</div>
+      <div class="chip-role">I/O Control · ROM · Slots</div>
+      <span class="chip-badge" style="background:var(--gary);">I/O</span>
+    </div>
+
+  </div><!-- /chip-grid -->
+</div><!-- /canvas -->
+
+
+<!-- INFO PANEL -->
+<div class="info-panel hidden" id="infoPanel">
+  <div class="info-header" id="infoHeader">
+    <span class="ih-icon" id="infoIcon"></span>
+    <div>
+      <div class="ih-title" id="infoTitle"></div>
+      <div class="ih-sub"  id="infoSub"></div>
+    </div>
+    <button class="close-btn" onclick="closePanel()">✕</button>
+  </div>
+  <div class="info-body" id="infoBody"></div>
+</div>
+
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--cpu)"></div>   <span>Main CPU</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--agnus)"></div> <span>DMA / Logic</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--denise)"></div><span>Graphics</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--paula)"></div> <span>Audio / I/O</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--ram)"></div>   <span>Shared Memory</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--fast)"></div>  <span>Expansion</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--gary)"></div>  <span>System Control</span></div>
+</div>
+
+<div class="diag-footer">
+  <span>Interactive diagram for</span>
+  <a href="https://lovefortechnology.org" target="_blank">lovefortechnology.org</a>
+  · 2026
+</div>
+
+
+<script>
+// ── DATA ──
+
+
+const chips = {
+  cpu: {
+    icon: '⚙️',
+    color: '#3b6ef8',
+    en: {
+      title: 'Motorola 68000 — The Brain',
+      sub:   'Main CPU · 7.09 MHz (PAL) / 7.16 MHz (NTSC)',
+      body: `<p>The Motorola 68000 was a powerhouse for its time — a full 32-bit internal architecture with a 16-bit external data bus. In the Amiga, it ran at 7.09 MHz and handled all program logic, game AI, and application code.</p>
+             <p>What made the Amiga special was that the 68000 <strong>didn't have to do everything</strong>. The custom chips — Agnus, Denise, and Paula — handled graphics, audio, and I/O independently, freeing the CPU to focus on game logic. The result was performance that crushed every competitor at the same price point.</p>
+             <p>Later Amiga models upgraded to the 68020 (A1200) and 68030/68040 (A3000/A4000), multiplying performance dramatically.</p>`,
+      tags: ['68000', '32-bit internal', '7 MHz', 'Motorola', 'CISC']
+    }
+  },
+
+  agnus: {
+    icon: '🔮',
+    color: '#9b59b6',
+    en: {
+      title: 'Agnus — The DMA Maestro',
+      sub:   'Address Generator · Blitter · Copper coprocessor',
+      body: `<p>Agnus (Address GeNerator US) is arguably the most powerful of Amiga's custom chips. It managed <strong>Direct Memory Access (DMA)</strong> — meaning it could move data between RAM and other chips without bothering the CPU at all.</p>
+             <p>Inside Agnus lived two co-processors:</p>
+             <p>🔹 <strong>The Blitter</strong> — a hardware rectangle-copy engine. It could move, copy, fill, and combine bitmap graphics at blistering speed. Game sprites, scrolling backgrounds, and screen transitions were all handled here.</p>
+             <p>🔹 <strong>The Copper</strong> — a display co-processor that could change any hardware register at any specific scan line. This enabled effects like mid-screen palette changes, rainbow gradients, and smooth per-line hardware scrolling — all without CPU involvement.</p>`,
+      tags: ['DMA', 'Blitter', 'Copper', 'OCS/ECS/AGA', 'Co-processor']
+    }
+  },
+
+  denise: {
+    icon: '🎨',
+    color: '#e74c3c',
+    en: {
+      title: 'Denise — The Colour Artist',
+      sub:   'Display Encoder · Sprites · Dual Playfield',
+      body: `<p>Denise was responsible for everything you <em>saw</em> on screen. It took the raw pixel data from Chip RAM (managed by Agnus) and converted it into a video signal for your monitor or TV.</p>
+             <p>Key capabilities: up to <strong>4,096 colours</strong> on screen (OCS) and <strong>256,000 colours</strong> in AGA mode, hardware sprites (8 simultaneous, each with their own colour palette), and the legendary <strong>HAM mode</strong> (Hold-And-Modify) which could display all 4,096 colours simultaneously — an impossible feat for any competitor.</p>
+             <p>Denise also handled the dual-playfield mode used in many games for deep parallax scrolling — two independent scroll planes at different speeds creating an illusion of depth without any CPU work.</p>`,
+      tags: ['4096 colours', 'HAM mode', 'Sprites', 'Dual Playfield', 'OCS→AGA']
+    }
+  },
+
+  paula: {
+    icon: '🔊',
+    color: '#27ae60',
+    en: {
+      title: 'Paula — The Sound & Soul',
+      sub:   'Audio DMA · Floppy Controller · Serial Port',
+      body: `<p>Paula was the Amiga's audio chip — and it was extraordinary. It provided <strong>4 independent audio channels</strong>, each with its own DMA-driven sample playback at 8-bit resolution and up to ~28 kHz sample rate. Two channels went to the left speaker, two to the right — true stereo.</p>
+             <p>This was the foundation for the "MOD" music format that became legendary in the demoscene: composers would store instrument samples in RAM and Paula would play them back in real time, creating rich tracked music without burdening the CPU at all.</p>
+             <p>Paula also handled the <strong>floppy disk controller</strong> (capable of reading non-standard disk formats that PCs couldn't touch) and the serial port — which is why Amiga modems worked so well for their era.</p>`,
+      tags: ['4 channels', 'Stereo DMA', 'MOD music', 'Floppy I/O', '8-bit audio']
+    }
+  },
+
+  ram: {
+    icon: '💾',
+    color: '#1abc9c',
+    en: {
+      title: 'Chip RAM — The Shared Battlefield',
+      sub:   'Shared memory between CPU and all custom chips',
+      body: `<p>Chip RAM is one of the most elegant and clever aspects of the Amiga architecture. Unlike a conventional computer where RAM is the CPU's private domain, Chip RAM is <strong>simultaneously accessible by the CPU, Agnus, Denise, and Paula</strong>.</p>
+             <p>This means all graphics data (bitmaps, sprites, copper lists) and all audio samples live in the same memory pool that the CPU also uses. Agnus arbitrates access via DMA cycles, ensuring no collisions occur. The result: incredible throughput and zero bottlenecks between chips.</p>
+             <p>The original Amiga 1000 had 256KB. The Amiga 500 topped out at 512KB (expandable to 1MB with the trap-door expansion). The Amiga 1200 with AGA could address up to 2MB of Chip RAM.</p>`,
+      tags: ['Shared bus', 'DMA arbitration', '512KB–2MB', 'Chip accessible', 'Bandwidth']
+    }
+  },
+
+  fast: {
+    icon: '⚡',
+    color: '#7f8c8d',
+    en: {
+      title: 'Fast RAM — The CPU\'s Private Turbo',
+      sub:   'CPU-exclusive expansion RAM · Up to 8MB and beyond',
+      body: `<p>Fast RAM is the Amiga's expansion memory — and it's "fast" for a very specific reason: <strong>the custom chips cannot access it</strong>. This means the CPU never has to compete with Agnus's DMA cycles for memory access, resulting in noticeably faster program execution.</p>
+             <p>When a program is loaded entirely into Fast RAM, the CPU can run at full speed without any DMA wait states. This is why adding a Fast RAM expansion to an Amiga 500 made games and applications feel significantly snappier even though the clock speed didn't change.</p>
+             <p>The Amiga 1200 could address up to 8MB of Fast RAM via its expansion slot. Accelerator cards pushed this to 128MB or more, effectively turning an A1200 into a workstation-class machine.</p>`,
+      tags: ['CPU-only', 'No DMA wait', '8MB+', 'Trap-door', 'Accelerator']
+    }
+  },
+
+  gary: {
+    icon: '🔌',
+    color: '#f39c12',
+    en: {
+      title: 'Gary — The Quiet Gatekeeper',
+      sub:   'I/O Controller · ROM decoder · Bus arbitration',
+      body: `<p>Gary is the least glamorous of the Amiga chips but absolutely essential. It acted as the system's <strong>address decoder and bus controller</strong> — the traffic cop that decided which chip got access to which memory region at any given moment.</p>
+             <p>Gary handled decoding for the Kickstart ROM (the Amiga's operating system in firmware), the CIA chips (which managed keyboard, joysticks, timers, and parallel port), and the expansion bus. Without Gary, the CPU would have no way of knowing where to find the OS, where RAM ended, or how to talk to peripherals.</p>
+             <p>In later Amiga models, Gary's functions were partially integrated into new chips (Gayle in the A600/A1200, and Bridgette in the A4000), but the concept remained the same: a central arbiter for all system I/O.</p>`,
+      tags: ['Bus arbitration', 'ROM decoder', 'CIA interface', 'I/O control', 'Gayle successor']
+    }
+  }
+};
+
+// ── STATE ──
+let selected = null;
+
+
+function selectChip(id) {
+  if (selected === id) { closePanel(); return; }
+  selected = id;
+
+  // highlight chips
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('chip-' + id).classList.add('selected');
+
+  renderPanel(id);
+}
+
+function renderPanel(id) {
+  const c  = chips[id];
+  const d  = c['en'];
+  const panel  = document.getElementById('infoPanel');
+  const header = document.getElementById('infoHeader');
+
+  document.getElementById('infoIcon').textContent  = c.icon;
+  document.getElementById('infoTitle').textContent = d.title;
+  document.getElementById('infoSub').textContent   = d.sub;
+
+  header.style.background = c.color;
+
+  const tagsHtml = d.tags.map(t =>
+    `<span class="tag" style="background:${c.color}">${t}</span>`
+  ).join('');
+
+  document.getElementById('infoBody').innerHTML =
+    d.body + `<div class="tag-row">${tagsHtml}</div>`;
+
+  panel.classList.remove('hidden');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closePanel() {
+  selected = null;
+  document.getElementById('infoPanel').classList.add('hidden');
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+}
+</script>
+</body>
+</html>
