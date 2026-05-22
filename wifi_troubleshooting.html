@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Προβλήματα WiFi – Διαγνωστικό Διάγραμμα</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --header-bg: #0f0f14;
+    --header-text: #e8e8f0;
+    --accent: #2563eb;
+    --accent2: #0ea5e9;
+    --accent3: #7c3aed;
+    --card-bg: #f8faff;
+    --card-border: #dde6f7;
+    --card-hover: #eef3ff;
+    --text-main: #1a1a2e;
+    --text-sub: #4a5568;
+    --solution-bg: #f0fdf4;
+    --solution-border: #22c55e;
+    --tip-bg: #fffbeb;
+    --tip-border: #f59e0b;
+    --warn-bg: #fff1f2;
+    --warn-border: #f43f5e;
+    --live-dot: #22c55e;
+  }
+
+  html, body {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-main);
+  }
+
+  /* ── HEADER ── */
+  .diagram-header {
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(34,197,94,0.15);
+    border: 1px solid rgba(34,197,94,0.4);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--live-dot);
+    white-space: nowrap;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--live-dot);
+    border-radius: 50%;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.75); }
+  }
+
+  .header-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--header-text);
+    opacity: 0.9;
+  }
+
+  /* Language toggle */
+  .lang-toggle {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .lang-btn {
+    padding: 4px 13px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    transition: all 0.2s;
+  }
+
+  .lang-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 20px;
+  }
+
+  /* ── MAIN WRAPPER ── */
+  .diagram-outer {
+    min-height: calc(100vh - 46px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 28px 16px 28px;
+  }
+
+  .diagram-inner {
+    width: 100%;
+    max-width: 860px;
+  }
+
+  /* ── TITLE BLOCK ── */
+  .diagram-title-block {
+    text-align: center;
+    margin-bottom: 26px;
+  }
+
+  .diagram-title-block h1 {
+    font-size: clamp(1.3rem, 3vw, 1.85rem);
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+
+  .diagram-title-block p {
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    line-height: 1.55;
+  }
+
+  .diagram-title-block .subtitle-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── PROBLEM CARDS ── */
+  .problems-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .problem-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    cursor: pointer;
+  }
+
+  .problem-card:hover {
+    border-color: var(--accent2);
+    box-shadow: 0 4px 18px rgba(14,165,233,0.12);
+  }
+
+  .problem-card.open {
+    border-color: var(--accent);
+    box-shadow: 0 6px 22px rgba(37,99,235,0.13);
+  }
+
+  .problem-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    user-select: none;
+  }
+
+  .problem-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .problem-info { flex: 1; min-width: 0; }
+
+  .problem-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+  }
+
+  .problem-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    margin-top: 2px;
+    line-height: 1.45;
+  }
+
+  .problem-chevron {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--accent);
+    flex-shrink: 0;
+    transition: transform 0.3s, background 0.2s;
+  }
+
+  .problem-card.open .problem-chevron {
+    transform: rotate(180deg);
+    background: var(--accent);
+    color: white;
+  }
+
+  /* ── EXPANDABLE BODY ── */
+  .problem-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .problem-card.open .problem-body {
+    max-height: 700px;
+  }
+
+  .problem-body-inner {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--card-border);
+    margin-bottom: 4px;
+  }
+
+  /* What box */
+  .what-box {
+    background: var(--tip-bg);
+    border-left: 3px solid var(--tip-border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 0.85rem;
+    color: #78350f;
+    line-height: 1.6;
+  }
+
+  .box-label {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Solutions */
+  .solutions-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #16a34a;
+  }
+
+  .solutions-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .solutions-list li {
+    display: flex;
+    gap: 10px;
+    background: var(--solution-bg);
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 0.855rem;
+    color: #14532d;
+    line-height: 1.55;
+    align-items: flex-start;
+  }
+
+  .sol-num {
+    width: 22px;
+    height: 22px;
+    background: #22c55e;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Tip / Warning inline */
+  .inline-tip {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 0.82rem;
+    color: #1e40af;
+    line-height: 1.55;
+  }
+
+  .inline-warn {
+    background: var(--warn-bg);
+    border: 1px solid #fda4af;
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 0.82rem;
+    color: #9f1239;
+    line-height: 1.55;
+  }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    margin-top: 22px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .bottom-bar-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+  .bottom-bar-text { flex: 1; min-width: 160px; }
+  .bottom-bar-text strong { color: #fff; font-size: 0.9rem; display: block; margin-bottom: 2px; }
+  .bottom-bar-text span { color: #93c5fd; font-size: 0.8rem; line-height: 1.5; display: block; }
+
+  /* ── COLOR ACCENTS per card ── */
+  .card-1 .problem-icon { background: #fef3c7; }
+  .card-2 .problem-icon { background: #ede9fe; }
+  .card-3 .problem-icon { background: #fee2e2; }
+  .card-4 .problem-icon { background: #dbeafe; }
+  .card-5 .problem-icon { background: #dcfce7; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 540px) {
+    .problem-header { padding: 13px 14px; gap: 10px; }
+    .problem-body-inner { padding: 0 14px 16px; }
+    .problem-icon { width: 38px; height: 38px; font-size: 1.2rem; }
+    .problem-title { font-size: 0.92rem; }
+    .diagram-outer { padding: 18px 10px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="diagram-header">
+  <div class="header-left">
+    <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    <span class="header-title">📶 WiFi Troubleshooting — lovefortechnology.net</span>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('el')" id="btn-el">ΕΛ</button>
+    <button class="lang-btn"        onclick="setLang('en')" id="btn-en">EN</button>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<div class="diagram-outer">
+  <div class="diagram-inner">
+
+    <!-- Title -->
+    <div class="diagram-title-block">
+      <h1 data-el="Προβλήματα WiFi: Διαγνωστικός Οδηγός" data-en="WiFi Problems: Diagnostic Guide">
+        Προβλήματα WiFi: Διαγνωστικός Οδηγός
+      </h1>
+      <p data-el="5 συνηθισμένα ζητήματα με βήμα-βήμα λύσεις" data-en="5 common issues with step-by-step solutions">
+        5 συνηθισμένα ζητήματα με βήμα-βήμα λύσεις
+      </p>
+      <span class="subtitle-hint" data-el="👆 Κάντε κλικ σε κάθε πρόβλημα για τις λύσεις" data-en="👆 Click each problem to reveal solutions">
+        👆 Κάντε κλικ σε κάθε πρόβλημα για τις λύσεις
+      </span>
+    </div>
+
+    <!-- Cards -->
+    <div class="problems-grid">
+
+      <!-- CARD 1 -->
+      <div class="problem-card card-1" onclick="toggleCard(this)">
+        <div class="problem-header">
+          <div class="problem-icon">🐌</div>
+          <div class="problem-info">
+            <div class="problem-title" data-el="Αργή Σύνδεση στο Διαδίκτυο" data-en="Slow Internet Connection">Αργή Σύνδεση στο Διαδίκτυο</div>
+            <div class="problem-subtitle" data-el="Σελίδες ανοίγουν αργά, βίντεο κολλάνε, downloads ατελείωτα" data-en="Pages load slowly, videos buffer, endless downloads">Σελίδες ανοίγουν αργά, βίντεο κολλάνε, downloads ατελείωτα</div>
+          </div>
+          <div class="problem-chevron">▼</div>
+        </div>
+        <div class="problem-body">
+          <div class="problem-body-inner">
+            <div class="divider"></div>
+            <div class="what-box">
+              <span class="box-label" data-el="Τι συμβαίνει" data-en="What's happening">Τι συμβαίνει</span>
+              <span data-el="Δεν φταίει πάντα ο πάροχος. Πολλές παράλληλες συνδέσεις, παρεμβολές ή λανθασμένη τοποθεσία router μπορεί να είναι τα αίτια." data-en="It's not always the ISP's fault. Multiple simultaneous connections, interference, or poor router placement may be the cause.">Δεν φταίει πάντα ο πάροχος. Πολλές παράλληλες συνδέσεις, παρεμβολές ή λανθασμένη τοποθεσία router μπορεί να είναι τα αίτια.</span>
+            </div>
+            <div class="solutions-label" data-el="✅ Λύσεις" data-en="✅ Solutions">✅ Λύσεις</div>
+            <ul class="solutions-list">
+              <li><span class="sol-num">1</span><span data-el="Πλησιάστε το router — όσο πιο κοντά, τόσο πιο δυνατό σήμα." data-en="Move closer to the router — the closer you are, the stronger the signal.">Πλησιάστε το router — όσο πιο κοντά, τόσο πιο δυνατό σήμα.</span></li>
+              <li><span class="sol-num">2</span><span data-el="Ελέγξτε πόσες συσκευές είναι συνδεδεμένες — κινητά, tablet, smart TV, κονσόλες μοιράζονται την ίδια ταχύτητα." data-en="Check how many devices are connected — phones, tablets, smart TVs, consoles all share the same bandwidth.">Ελέγξτε πόσες συσκευές είναι συνδεδεμένες — κινητά, tablet, smart TV, κονσόλες μοιράζονται την ίδια ταχύτητα.</span></li>
+              <li><span class="sol-num">3</span><span data-el="Επανεκκινήστε το router: αποσυνδέστε για 30 δευτερόλεπτα, ξανασυνδέστε." data-en="Restart the router: unplug for 30 seconds, then reconnect.">Επανεκκινήστε το router: αποσυνδέστε για 30 δευτερόλεπτα, ξανασυνδέστε.</span></li>
+              <li><span class="sol-num">4</span><span data-el="Κλείστε βαριές εφαρμογές παρασκηνίου (downloads, Windows Update, cloud backup)." data-en="Close heavy background apps (downloads, Windows Update, cloud backup).">Κλείστε βαριές εφαρμογές παρασκηνίου (downloads, Windows Update, cloud backup).</span></li>
+              <li><span class="sol-num">5</span><span data-el="Κάντε τεστ ταχύτητας στο speedtest.net ή fast.com — με μόνο μία συσκευή συνδεδεμένη." data-en="Run a speed test at speedtest.net or fast.com — with only one device connected.">Κάντε τεστ ταχύτητας στο speedtest.net ή fast.com — με μόνο μία συσκευή συνδεδεμένη.</span></li>
+            </ul>
+            <div class="inline-tip">💡 <strong data-el="Συμβουλή:" data-en="Tip:">Συμβουλή:</strong> <span data-el="Αν η μετρούμενη ταχύτητα υπολείπεται σημαντικά από αυτή που πληρώνετε, επικοινωνήστε με τον πάροχο." data-en="If measured speed is significantly lower than what you pay for, contact your ISP.">Αν η μετρούμενη ταχύτητα υπολείπεται σημαντικά από αυτή που πληρώνετε, επικοινωνήστε με τον πάροχο.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2 -->
+      <div class="problem-card card-2" onclick="toggleCard(this)">
+        <div class="problem-header">
+          <div class="problem-icon">📶</div>
+          <div class="problem-info">
+            <div class="problem-title" data-el="Αδύναμο Σήμα WiFi" data-en="Weak WiFi Signal">Αδύναμο Σήμα WiFi</div>
+            <div class="problem-subtitle" data-el="Σε κάποια δωμάτια το σήμα είναι σχεδόν ανύπαρκτο, ελάχιστες μπάρες" data-en="In some rooms signal is almost non-existent, very few bars">Σε κάποια δωμάτια το σήμα είναι σχεδόν ανύπαρκτο, ελάχιστες μπάρες</div>
+          </div>
+          <div class="problem-chevron">▼</div>
+        </div>
+        <div class="problem-body">
+          <div class="problem-body-inner">
+            <div class="divider"></div>
+            <div class="what-box">
+              <span class="box-label" data-el="Τι συμβαίνει" data-en="What's happening">Τι συμβαίνει</span>
+              <span data-el="Χοντροί τοίχοι, ντουλάπια και λανθασμένη τοποθεσία μειώνουν δραστικά το σήμα. Παλιό hardware επίσης παίζει ρόλο." data-en="Thick walls, cabinets and poor placement drastically reduce signal. Old hardware also plays a role.">Χοντροί τοίχοι, ντουλάπια και λανθασμένη τοποθεσία μειώνουν δραστικά το σήμα. Παλιό hardware επίσης παίζει ρόλο.</span>
+            </div>
+            <div class="solutions-label" data-el="✅ Λύσεις" data-en="✅ Solutions">✅ Λύσεις</div>
+            <ul class="solutions-list">
+              <li><span class="sol-num">1</span><span data-el="Τοποθετήστε το router κεντρικά: ανοιχτό σημείο, σε ύψος, μακριά από ντουλάπια και χοντρούς τοίχους." data-en="Place the router centrally: an open spot, elevated, away from cabinets and thick walls.">Τοποθετήστε το router κεντρικά: ανοιχτό σημείο, σε ύψος, μακριά από ντουλάπια και χοντρούς τοίχους.</span></li>
+              <li><span class="sol-num">2</span><span data-el="Απομακρύνετε παρεμβολές: φούρνους μικροκυμάτων, ασύρματα τηλέφωνα, μεγάλα μεταλλικά αντικείμενα." data-en="Remove interference sources: microwave ovens, cordless phones, large metallic objects.">Απομακρύνετε παρεμβολές: φούρνους μικροκυμάτων, ασύρματα τηλέφωνα, μεγάλα μεταλλικά αντικείμενα.</span></li>
+              <li><span class="sol-num">3</span><span data-el="Ρυθμίστε κεραίες: μία κάθετα, μία οριζόντια — καλύτερη κάλυψη σε όλες τις κατευθύνσεις." data-en="Adjust antennas: one vertical, one horizontal — better coverage in all directions.">Ρυθμίστε κεραίες: μία κάθετα, μία οριζόντια — καλύτερη κάλυψη σε όλες τις κατευθύνσεις.</span></li>
+              <li><span class="sol-num">4</span><span data-el="Για μεγάλους χώρους: ενισχυτής σήματος (repeater) ή σύστημα Mesh WiFi." data-en="For large spaces: a signal booster (repeater) or Mesh WiFi system.">Για μεγάλους χώρους: ενισχυτής σήματος (repeater) ή σύστημα Mesh WiFi.</span></li>
+              <li><span class="sol-num">5</span><span data-el="Παλιό router; Αναβάθμιση σε WiFi 5 ή WiFi 6 κάνει αισθητή διαφορά." data-en="Old router? Upgrading to WiFi 5 or WiFi 6 makes a noticeable difference.">Παλιό router; Αναβάθμιση σε WiFi 5 ή WiFi 6 κάνει αισθητή διαφορά.</span></li>
+            </ul>
+            <div class="inline-tip">💡 <span data-el="Mesh WiFi (TP-Link Deco, ASUS ZenWiFi, Google Nest) είναι η καλύτερη λύση για πολυώροφα σπίτια." data-en="Mesh WiFi (TP-Link Deco, ASUS ZenWiFi, Google Nest) is the best solution for multi-floor homes.">Mesh WiFi (TP-Link Deco, ASUS ZenWiFi, Google Nest) είναι η καλύτερη λύση για πολυώροφα σπίτια.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3 -->
+      <div class="problem-card card-3" onclick="toggleCard(this)">
+        <div class="problem-header">
+          <div class="problem-icon">🔐</div>
+          <div class="problem-info">
+            <div class="problem-title" data-el="Δεν Συνδέεται στο Δίκτυο" data-en="Cannot Connect to Network">Δεν Συνδέεται στο Δίκτυο</div>
+            <div class="problem-subtitle" data-el="Η συσκευή βλέπει το δίκτυο αλλά αποτυγχάνει να συνδεθεί" data-en="The device sees the network but fails to connect">Η συσκευή βλέπει το δίκτυο αλλά αποτυγχάνει να συνδεθεί</div>
+          </div>
+          <div class="problem-chevron">▼</div>
+        </div>
+        <div class="problem-body">
+          <div class="problem-body-inner">
+            <div class="divider"></div>
+            <div class="what-box">
+              <span class="box-label" data-el="Τι συμβαίνει" data-en="What's happening">Τι συμβαίνει</span>
+              <span data-el="Ακόμα και αν πληκτρολογείτε σωστά τον κωδικό, η σύνδεση αποτυγχάνει. Συνήθως πρόβλημα κωδικού, ρυθμίσεων ή του ίδιου του router." data-en="Even typing the correct password, connection fails. Usually a password, settings or router issue.">Ακόμα και αν πληκτρολογείτε σωστά τον κωδικό, η σύνδεση αποτυγχάνει. Συνήθως πρόβλημα κωδικού, ρυθμίσεων ή του ίδιου του router.</span>
+            </div>
+            <div class="solutions-label" data-el="✅ Λύσεις" data-en="✅ Solutions">✅ Λύσεις</div>
+            <ul class="solutions-list">
+              <li><span class="sol-num">1</span><span data-el="Ελέγξτε προσεκτικά τον κωδικό: κεφαλαία, μικρά, αριθμοί, ειδικοί χαρακτήρες — ένα λάθος γράμμα αρκεί." data-en="Check the password carefully: uppercase, lowercase, numbers, special characters — one wrong letter is enough.">Ελέγξτε προσεκτικά τον κωδικό: κεφαλαία, μικρά, αριθμοί, ειδικοί χαρακτήρες — ένα λάθος γράμμα αρκεί.</span></li>
+              <li><span class="sol-num">2</span><span data-el="Ξεχάστε το δίκτυο: διαγράψτε την αποθηκευμένη σύνδεση και συνδεθείτε ξανά από την αρχή." data-en="Forget the network: delete the saved connection and reconnect from scratch.">Ξεχάστε το δίκτυο: διαγράψτε την αποθηκευμένη σύνδεση και συνδεθείτε ξανά από την αρχή.</span></li>
+              <li><span class="sol-num">3</span><span data-el="Επανεκκίνηση router ΚΑΙ συσκευής — και τα δύο μαζί, με τη σειρά." data-en="Restart both router AND device — both together, in sequence.">Επανεκκίνηση router ΚΑΙ συσκευής — και τα δύο μαζί, με τη σειρά.</span></li>
+              <li><span class="sol-num">4</span><span data-el="Δοκιμάστε άλλη συσκευή: αν συνδέεται, το πρόβλημα είναι στη δικιά σας. Αν καμία δεν μπορεί, φταίει το router." data-en="Try another device: if it connects, the problem is your device. If none can, the router is at fault.">Δοκιμάστε άλλη συσκευή: αν συνδέεται, το πρόβλημα είναι στη δικιά σας. Αν καμία δεν μπορεί, φταίει το router.</span></li>
+              <li><span class="sol-num">5</span><span data-el="Αλλάξτε κωδικό WiFi από τις ρυθμίσεις του router και συνδεθείτε με το νέο." data-en="Change the WiFi password from router settings and reconnect with the new one.">Αλλάξτε κωδικό WiFi από τις ρυθμίσεις του router και συνδεθείτε με το νέο.</span></li>
+            </ul>
+            <div class="inline-warn">⚠️ <span data-el="Αν καμία συσκευή δεν μπορεί να συνδεθεί, το ζήτημα είναι σχεδόν σίγουρα στο router — όχι στις συσκευές σας." data-en="If no device can connect, the issue is almost certainly the router — not your devices.">Αν καμία συσκευή δεν μπορεί να συνδεθεί, το ζήτημα είναι σχεδόν σίγουρα στο router — όχι στις συσκευές σας.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 4 -->
+      <div class="problem-card card-4" onclick="toggleCard(this)">
+        <div class="problem-header">
+          <div class="problem-icon">🌐</div>
+          <div class="problem-info">
+            <div class="problem-title" data-el="Συνδέεται στο WiFi αλλά Όχι στο Ίντερνετ" data-en="Connected to WiFi but No Internet">Συνδέεται στο WiFi αλλά Όχι στο Ίντερνετ</div>
+            <div class="problem-subtitle" data-el="Εικονίδιο σύνδεσης ενεργό, αλλά καμία σελίδα δεν ανοίγει" data-en="Connection icon active, but no page opens">Εικονίδιο σύνδεσης ενεργό, αλλά καμία σελίδα δεν ανοίγει</div>
+          </div>
+          <div class="problem-chevron">▼</div>
+        </div>
+        <div class="problem-body">
+          <div class="problem-body-inner">
+            <div class="divider"></div>
+            <div class="what-box">
+              <span class="box-label" data-el="Τι συμβαίνει" data-en="What's happening">Τι συμβαίνει</span>
+              <span data-el="Έχετε σήμα WiFi, αλλά το router δεν «βλέπει» το ίντερνετ. Μπορεί να φταίει η γραμμή του παρόχου ή πρόβλημα στο router." data-en="You have WiFi signal, but the router can't see the internet. The ISP line or router configuration may be at fault.">Έχετε σήμα WiFi, αλλά το router δεν «βλέπει» το ίντερνετ. Μπορεί να φταίει η γραμμή του παρόχου ή πρόβλημα στο router.</span>
+            </div>
+            <div class="solutions-label" data-el="✅ Λύσεις" data-en="✅ Solutions">✅ Λύσεις</div>
+            <ul class="solutions-list">
+              <li><span class="sol-num">1</span><span data-el="Ελέγξτε άλλες συσκευές: αν όλες έχουν το ίδιο πρόβλημα, φταίει το router ή η γραμμή." data-en="Check other devices: if all have the same problem, the router or line is at fault.">Ελέγξτε άλλες συσκευές: αν όλες έχουν το ίδιο πρόβλημα, φταίει το router ή η γραμμή.</span></li>
+              <li><span class="sol-num">2</span><span data-el="Επανεκκίνηση 60 δευτερολέπτων — κάποιες φορές χρειάζεται πλήρης ξεκούραση του router." data-en="Restart for 60 seconds — sometimes the router needs a full rest.">Επανεκκίνηση 60 δευτερολέπτων — κάποιες φορές χρειάζεται πλήρης ξεκούραση του router.</span></li>
+              <li><span class="sol-num">3</span><span data-el="Ελέγξτε τα καλώδια: το καλώδιο εισόδου (τηλεφωνικό ή οπτικής ίνας) πρέπει να είναι καλά συνδεδεμένο." data-en="Check cables: the input cable (phone line or fiber) must be securely connected.">Ελέγξτε τα καλώδια: το καλώδιο εισόδου (τηλεφωνικό ή οπτικής ίνας) πρέπει να είναι καλά συνδεδεμένο.</span></li>
+              <li><span class="sol-num">4</span><span data-el="Δείτε τη λυχνία Internet/WAN στο router — αν είναι σβηστή ή κόκκινη, υπάρχει πρόβλημα γραμμής." data-en="Check the Internet/WAN LED on the router — if off or red, there's a line problem.">Δείτε τη λυχνία Internet/WAN στο router — αν είναι σβηστή ή κόκκινη, υπάρχει πρόβλημα γραμμής.</span></li>
+              <li><span class="sol-num">5</span><span data-el="Καλέστε τον πάροχο — μπορεί να υπάρχει βλάβη ή προγραμματισμένες εργασίες στην περιοχή." data-en="Call your ISP — there may be an outage or scheduled work in your area.">Καλέστε τον πάροχο — μπορεί να υπάρχει βλάβη ή προγραμματισμένες εργασίες στην περιοχή.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 5 -->
+      <div class="problem-card card-5" onclick="toggleCard(this)">
+        <div class="problem-header">
+          <div class="problem-icon">🔄</div>
+          <div class="problem-info">
+            <div class="problem-title" data-el="Συχνές Αποσυνδέσεις" data-en="Frequent Disconnections">Συχνές Αποσυνδέσεις</div>
+            <div class="problem-subtitle" data-el="Η σύνδεση κόβεται τυχαία — κυρίως σε κλήσεις, gaming, streaming" data-en="Connection drops randomly — especially during calls, gaming, streaming">Η σύνδεση κόβεται τυχαία — κυρίως σε κλήσεις, gaming, streaming</div>
+          </div>
+          <div class="problem-chevron">▼</div>
+        </div>
+        <div class="problem-body">
+          <div class="problem-body-inner">
+            <div class="divider"></div>
+            <div class="what-box">
+              <span class="box-label" data-el="Τι συμβαίνει" data-en="What's happening">Τι συμβαίνει</span>
+              <span data-el="Παρεμβολές από γειτονικά δίκτυα, υπερθέρμανση router ή ζητήματα firmware μπορεί να είναι η αιτία." data-en="Interference from neighboring networks, router overheating, or firmware issues may be the cause.">Παρεμβολές από γειτονικά δίκτυα, υπερθέρμανση router ή ζητήματα firmware μπορεί να είναι η αιτία.</span>
+            </div>
+            <div class="solutions-label" data-el="✅ Λύσεις" data-en="✅ Solutions">✅ Λύσεις</div>
+            <ul class="solutions-list">
+              <li><span class="sol-num">1</span><span data-el="Ελέγξτε αν συμβαίνει σε όλες τις συσκευές — αν μόνο σε μία, το πρόβλημα είναι εκεί." data-en="Check if it happens on all devices — if only one, that device is the problem.">Ελέγξτε αν συμβαίνει σε όλες τις συσκευές — αν μόνο σε μία, το πρόβλημα είναι εκεί.</span></li>
+              <li><span class="sol-num">2</span><span data-el="Ενημερώστε τη συσκευή — ένα εκκρεμές update μπορεί να προκαλεί ασταθή WiFi συμπεριφορά." data-en="Update your device — a pending update may cause unstable WiFi behavior.">Ενημερώστε τη συσκευή — ένα εκκρεμές update μπορεί να προκαλεί ασταθή WiFi συμπεριφορά.</span></li>
+              <li><span class="sol-num">3</span><span data-el="Αλλάξτε κανάλι εκπομπής WiFi από τις ρυθμίσεις — αν πολλά δίκτυα χρησιμοποιούν το ίδιο κανάλι." data-en="Change the WiFi broadcast channel in settings — if many networks use the same channel.">Αλλάξτε κανάλι εκπομπής WiFi από τις ρυθμίσεις — αν πολλά δίκτυα χρησιμοποιούν το ίδιο κανάλι.</span></li>
+              <li><span class="sol-num">4</span><span data-el="Απομακρύνετε baby monitors και ασύρματα τηλέφωνα DECT — λειτουργούν στα 2.4GHz, ίδια συχνότητα με το WiFi." data-en="Move baby monitors and DECT phones away — they operate at 2.4GHz, same frequency as WiFi.">Απομακρύνετε baby monitors και ασύρματα τηλέφωνα DECT — λειτουργούν στα 2.4GHz, ίδια συχνότητα με το WiFi.</span></li>
+              <li><span class="sol-num">5</span><span data-el="Ελέγξτε θερμοκρασία: αν ζεσταίνεται υπερβολικά, βάλτε το router σε καλύτερα αεριζόμενο σημείο." data-en="Check temperature: if overheating, place the router in a better-ventilated spot.">Ελέγξτε θερμοκρασία: αν ζεσταίνεται υπερβολικά, βάλτε το router σε καλύτερα αεριζόμενο σημείο.</span></li>
+            </ul>
+            <div class="inline-tip">💡 <span data-el="2.4GHz = μεγαλύτερη εμβέλεια, περισσότερες παρεμβολές. 5GHz = γρηγορότερο, λιγότερες παρεμβολές. Επιλέξτε ανάλογα." data-en="2.4GHz = wider range, more interference. 5GHz = faster, less interference. Choose accordingly.">2.4GHz = μεγαλύτερη εμβέλεια, περισσότερες παρεμβολές. 5GHz = γρηγορότερο, λιγότερες παρεμβολές. Επιλέξτε ανάλογα.</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /problems-grid -->
+
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+      <div class="bottom-bar-icon">🎯</div>
+      <div class="bottom-bar-text">
+        <strong data-el="Γρήγορη Λύση πάντα πρώτα: Επανεκκίνηση Router" data-en="Quick Fix always first: Router Restart">Γρήγορη Λύση πάντα πρώτα: Επανεκκίνηση Router</strong>
+        <span data-el="Βγάλτε το από το ρεύμα για 60 δευτερόλεπτα. Λύνει το 70% των προβλημάτων WiFi χωρίς τίποτα άλλο." data-en="Unplug it for 60 seconds. Solves 70% of WiFi problems without anything else.">Βγάλτε το από το ρεύμα για 60 δευτερόλεπτα. Λύνει το 70% των προβλημάτων WiFi χωρίς τίποτα άλλο.</span>
+      </div>
+    </div>
+
+  </div><!-- /diagram-inner -->
+</div><!-- /diagram-outer -->
+
+<script>
+  function toggleCard(card) {
+    const isOpen = card.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.problem-card').forEach(c => c.classList.remove('open'));
+    // Open clicked if it wasn't already open
+    if (!isOpen) card.classList.add('open');
+  }
+
+  // Language switcher
+  const langData = { current: 'el' };
+
+  function setLang(lang) {
+    langData.current = lang;
+    document.getElementById('btn-el').classList.toggle('active', lang === 'el');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.querySelectorAll('[data-el]').forEach(el => {
+      el.textContent = el.getAttribute('data-' + lang);
+    });
+    document.documentElement.lang = lang === 'el' ? 'el' : 'en';
+  }
+</script>
+</body>
+</html>
