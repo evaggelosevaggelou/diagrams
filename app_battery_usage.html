@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Κατανάλωση Ενέργειας ανά Εφαρμογή</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    .bars {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .label {
+      width: 148px;
+      flex-shrink: 0;
+      font-size: 13px;
+      color: #4a5568;
+      text-align: right;
+    }
+
+    .bar-track {
+      flex: 1;
+      background: #f1f3f5;
+      border-radius: 8px;
+      height: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: filter 0.2s, transform 0.15s;
+      transform-origin: left center;
+    }
+
+    .row:hover .bar-fill,
+    .row.active .bar-fill {
+      filter: brightness(1.12);
+    }
+
+    .pct {
+      width: 42px;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    /* Tooltip / detail panel */
+    .detail {
+      margin-top: 18px;
+      background: #f8f9fa;
+      border-left: 4px solid #ccc;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.6;
+      min-height: 72px;
+      transition: border-color 0.25s;
+    }
+
+    .detail strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 14px;
+    }
+
+    /* Language toggle */
+    .lang-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .lang-toggle button {
+      border: 1px solid #dee2e6;
+      background: #fff;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #555;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lang-toggle button.active {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+  </style>
+</head>
+<body>
+<div class="chart-wrap">
+
+  <div class="lang-toggle">
+    <button id="btn-el" class="active" onclick="setLang('el')">🌐 ΕΛ</button>
+    <button id="btn-en" onclick="setLang('en')">🌐 EN</button>
+  </div>
+
+  <h2 id="chart-title">📊 Σχετική Κατανάλωση Ενέργειας ανά Τύπο Εφαρμογής</h2>
+
+  <div class="bars" id="bars"></div>
+
+  <div class="detail" id="detail">
+    <span id="detail-hint" style="color:#aaa;">👆 Κλίκ σε μια μπάρα για λεπτομέρειες</span>
+  </div>
+
+  <p class="hint" id="chart-note">* Ενδεικτικά ποσοστά — διαφέρουν ανά συσκευή και χρήση</p>
+</div>
+
+<script>
+  const data = {
+    el: {
+      title: "📊 Σχετική Κατανάλωση Ενέργειας ανά Τύπο Εφαρμογής",
+      hint: "👆 Κλίκ σε μια μπάρα για λεπτομέρειες",
+      note: "* Ενδεικτικά ποσοστά — διαφέρουν ανά συσκευή και χρήση",
+      items: [
+        {
+          label: "📱 Social Media", pct: 31, color: "#dc3545",
+          detail: "<strong>📱 Social Media (~31%)</strong>Η μεγαλύτερη κατηγορία κατανάλωσης. Οι εφαρμογές τρέχουν συνεχώς στο παρασκήνιο, φορτώνουν βίντεο auto-play και χρησιμοποιούν GPS & push notifications."
+        },
+        {
+          label: "🎮 Παιχνίδια", pct: 25, color: "#ff9800",
+          detail: "<strong>🎮 Παιχνίδια (~25%)</strong>Τα 3D παιχνίδια φορτίζουν βαριά GPU και CPU. Η οθόνη παραμένει σε υψηλή φωτεινότητα και το δίκτυο είναι συνεχώς ενεργό σε online παιχνίδια."
+        },
+        {
+          label: "▶️ Streaming", pct: 20, color: "#e6a800",
+          detail: "<strong>▶️ Streaming (~20%)</strong>Το streaming βίντεο (YouTube, Netflix κ.λπ.) αδειάζει γρήγορα μπαταρία λόγω της ανάγκης για συνεχή λήψη δεδομένων και αναπαραγωγή βίντεο."
+        },
+        {
+          label: "🗺️ Πλοήγηση GPS", pct: 15, color: "#28a745",
+          detail: "<strong>🗺️ Πλοήγηση GPS (~15%)</strong>Το GPS χρησιμοποιεί αισθητήρα θέσης συνεχώς. Σε συνδυασμό με χάρτη και φωνητικές οδηγίες, η κατανάλωση είναι σημαντική."
+        },
+        {
+          label: "📷 Κάμερα", pct: 9, color: "#17a2b8",
+          detail: "<strong>📷 Κάμερα (~9%)</strong>Η κάμερα ενεργοποιεί αισθητήρες εικόνας και επεξεργασία σε πραγματικό χρόνο. Η κατανάλωση αυξάνεται σημαντικά με εγγραφή βίντεο 4K."
+        }
+      ]
+    },
+    en: {
+      title: "📊 Relative Battery Consumption by App Type",
+      hint: "👆 Click a bar for details",
+      note: "* Indicative percentages — varies by device and usage",
+      items: [
+        {
+          label: "📱 Social Media", pct: 31, color: "#dc3545",
+          detail: "<strong>📱 Social Media (~31%)</strong>The biggest category. These apps run constantly in the background, auto-play videos, and actively use GPS & push notifications."
+        },
+        {
+          label: "🎮 Games", pct: 25, color: "#ff9800",
+          detail: "<strong>🎮 Games (~25%)</strong>3D games heavily load the GPU and CPU. The screen stays at high brightness and network stays active in online games."
+        },
+        {
+          label: "▶️ Streaming", pct: 20, color: "#e6a800",
+          detail: "<strong>▶️ Streaming (~20%)</strong>Video streaming (YouTube, Netflix, etc.) drains battery quickly due to continuous data downloads and video playback."
+        },
+        {
+          label: "🗺️ GPS Navigation", pct: 15, color: "#28a745",
+          detail: "<strong>🗺️ GPS Navigation (~15%)</strong>GPS uses the location sensor continuously. Combined with map rendering and voice guidance, the drain is significant."
+        },
+        {
+          label: "📷 Camera", pct: 9, color: "#17a2b8",
+          detail: "<strong>📷 Camera (~9%)</strong>The camera activates image sensors with real-time processing. Consumption increases significantly with 4K video recording."
+        }
+      ]
+    }
+  };
+
+  let lang = 'el';
+  let activeIndex = null;
+  const maxPct = 31;
+
+  function setLang(l) {
+    lang = l;
+    document.getElementById('btn-el').classList.toggle('active', l === 'el');
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    activeIndex = null;
+    render();
+  }
+
+  function render() {
+    const d = data[lang];
+    document.getElementById('chart-title').textContent = d.title;
+    document.getElementById('chart-note').textContent = d.note;
+
+    const barsEl = document.getElementById('bars');
+    barsEl.innerHTML = '';
+
+    d.items.forEach((item, i) => {
+      const barW = Math.round((item.pct / maxPct) * 100);
+
+      const row = document.createElement('div');
+      row.className = 'row' + (activeIndex === i ? ' active' : '');
+      row.innerHTML = `
+        <div class="label">${item.label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${barW}%; background:${item.color};"></div>
+        </div>
+        <div class="pct" style="color:${item.color};">~${item.pct}%</div>
+      `;
+      row.addEventListener('click', () => {
+        activeIndex = activeIndex === i ? null : i;
+        render();
+      });
+      barsEl.appendChild(row);
+    });
+
+    const detailEl = document.getElementById('detail');
+    if (activeIndex !== null) {
+      const item = d.items[activeIndex];
+      detailEl.style.borderColor = item.color;
+      detailEl.innerHTML = item.detail;
+    } else {
+      detailEl.style.borderColor = '#ccc';
+      detailEl.innerHTML = `<span style="color:#aaa;">${d.hint}</span>`;
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
