@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Επίπεδα Προειδοποίησης Μπαταρίας</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 18px;
+    }
+
+    .cards {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .card {
+      flex: 1;
+      border-radius: 12px;
+      border: 2px solid;
+      padding: 16px 12px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card.normal  { border-color: #28a745; background: rgba(40,167,69,0.07); }
+    .card.warning { border-color: #ff9800; background: rgba(255,152,0,0.07); }
+    .card.critical{ border-color: #dc3545; background: rgba(220,53,69,0.07); }
+
+    .card.active.normal  { box-shadow: 0 6px 20px rgba(40,167,69,0.3); }
+    .card.active.warning { box-shadow: 0 6px 20px rgba(255,152,0,0.3); }
+    .card.active.critical{ box-shadow: 0 6px 20px rgba(220,53,69,0.3); }
+
+    /* battery icon */
+    .battery-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .battery-body {
+      position: relative;
+      width: 52px;
+      height: 26px;
+      border-radius: 5px;
+      border: 2.5px solid;
+    }
+    .card.normal  .battery-body { border-color: #28a745; }
+    .card.warning .battery-body { border-color: #ff9800; }
+    .card.critical .battery-body { border-color: #dc3545; }
+
+    .battery-cap {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 7px;
+      height: 13px;
+      border-radius: 0 3px 3px 0;
+    }
+    .card.normal  .battery-cap { background: #28a745; }
+    .card.warning .battery-cap { background: #ff9800; }
+    .card.critical .battery-cap { background: #dc3545; }
+
+    .battery-fill {
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      bottom: 2px;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .card.normal  .battery-fill { background: #28a745; width: 80%; }
+    .card.warning .battery-fill { background: #ff9800; width: 28%; }
+    .card.critical .battery-fill { background: #dc3545; width: 8%; }
+
+    .card-emoji { font-size: 22px; margin-bottom: 6px; }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .card.normal  .card-title { color: #28a745; }
+    .card.warning .card-title { color: #e65100; }
+    .card.critical .card-title { color: #dc3545; }
+
+    .card-range {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 2px;
+    }
+    .card-hint {
+      font-size: 10px;
+      color: #888;
+    }
+
+    /* detail panel */
+    .detail {
+      margin-top: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #ccc;
+      background: #f8f9fa;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.65;
+      min-height: 68px;
+      transition: border-color 0.25s;
+    }
+    .detail strong { display: block; font-size: 14px; margin-bottom: 4px; }
+
+    /* lang toggle */
+    .lang-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .lang-toggle button {
+      border: 1px solid #dee2e6;
+      background: #fff;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #555;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lang-toggle button.active {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="lang-toggle">
+    <button id="btn-el" class="active" onclick="setLang('el')">🌐 ΕΛ</button>
+    <button id="btn-en" onclick="setLang('en')">🌐 EN</button>
+  </div>
+
+  <h2 id="chart-title">Επίπεδα Προειδοποίησης Μπαταρίας</h2>
+
+  <div class="cards">
+    <div class="card normal"   id="card-0" onclick="activate(0)">
+      <div class="battery-wrap">
+        <div class="battery-body">
+          <div class="battery-fill"></div>
+          <div class="battery-cap"></div>
+        </div>
+      </div>
+      <div class="card-emoji">✅</div>
+      <div class="card-title"  id="t0"></div>
+      <div class="card-range"  id="r0"></div>
+      <div class="card-hint"   id="h0"></div>
+    </div>
+
+    <div class="card warning"  id="card-1" onclick="activate(1)">
+      <div class="battery-wrap">
+        <div class="battery-body">
+          <div class="battery-fill"></div>
+          <div class="battery-cap"></div>
+        </div>
+      </div>
+      <div class="card-emoji">⚠️</div>
+      <div class="card-title"  id="t1"></div>
+      <div class="card-range"  id="r1"></div>
+      <div class="card-hint"   id="h1"></div>
+    </div>
+
+    <div class="card critical" id="card-2" onclick="activate(2)">
+      <div class="battery-wrap">
+        <div class="battery-body">
+          <div class="battery-fill"></div>
+          <div class="battery-cap"></div>
+        </div>
+      </div>
+      <div class="card-emoji">🚨</div>
+      <div class="card-title"  id="t2"></div>
+      <div class="card-range"  id="r2"></div>
+      <div class="card-hint"   id="h2"></div>
+    </div>
+  </div>
+
+  <div class="detail" id="detail"></div>
+
+</div>
+
+<script>
+const data = {
+  el: {
+    title: "Επίπεδα Προειδοποίησης Μπαταρίας",
+    cards: [
+      { title: "Κανονικό",        range: ">20%",   hint: "Χωρίς άγχος" },
+      { title: "Προειδοποίηση",   range: "10–20%", hint: "Φόρτισε σύντομα" },
+      { title: "Κρίσιμο",         range: "<10%",   hint: "Φόρτισε ΑΜΕΣΑ!" }
+    ],
+    details: [
+      "<strong>✅ Κανονικό επίπεδο (&gt;20%)</strong>Η συσκευή λειτουργεί κανονικά. Δεν υπάρχουν περιορισμοί στις λειτουργίες. Το σύστημα δεν επεμβαίνει και δεν εμφανίζεται καμία προειδοποίηση. Απλή χρήση, χωρίς καμία ανησυχία.",
+      "<strong>⚠️ Επίπεδο Προειδοποίησης (10–20%)</strong>Το λειτουργικό σύστημα εμφανίζει ειδοποίηση χαμηλής μπαταρίας. Ενδέχεται να περιοριστεί η φωτεινότητα οθόνης ή η απόδοση. Καλό είναι να συνδέσεις τη φόρτιση σύντομα.",
+      "<strong>🚨 Κρίσιμο επίπεδο (&lt;10%)</strong>Η συσκευή ενεργοποιεί τη λειτουργία εξοικονόμησης ενέργειας. Μειώνεται δραστικά η απόδοση και το GPS/Bluetooth μπορεί να απενεργοποιηθεί. Φόρτισε αμέσως για να αποφύγεις απώλεια δεδομένων."
+    ],
+    hint: "👆 Κλίκ σε μια κάρτα για λεπτομέρειες"
+  },
+  en: {
+    title: "Battery Warning Levels",
+    cards: [
+      { title: "Normal",   range: ">20%",   hint: "No worries" },
+      { title: "Warning",  range: "10–20%", hint: "Charge soon" },
+      { title: "Critical", range: "<10%",   hint: "Charge NOW!" }
+    ],
+    details: [
+      "<strong>✅ Normal Level (&gt;20%)</strong>The device operates normally with no restrictions. No system warnings are triggered and all features remain fully available. Simply use your device without any concerns.",
+      "<strong>⚠️ Warning Level (10–20%)</strong>The OS displays a low battery notification. Screen brightness or performance may be slightly reduced. It's a good idea to plug in your charger soon.",
+      "<strong>🚨 Critical Level (&lt;10%)</strong>The device activates Low Power Mode aggressively. Performance drops significantly and GPS/Bluetooth may be disabled. Charge immediately to prevent data loss or unexpected shutdown."
+    ],
+    hint: "👆 Click a card for details"
+  }
+};
+
+let lang = 'el';
+let active = null;
+
+function setLang(l) {
+  lang = l;
+  active = null;
+  document.getElementById('btn-el').classList.toggle('active', l === 'el');
+  document.getElementById('btn-en').classList.toggle('active', l === 'en');
+  render();
+}
+
+function activate(i) {
+  active = active === i ? null : i;
+  render();
+}
+
+function render() {
+  const d = data[lang];
+  document.getElementById('chart-title').textContent = d.title;
+
+  d.cards.forEach((c, i) => {
+    document.getElementById('t' + i).textContent = c.title;
+    document.getElementById('r' + i).textContent = c.range;
+    document.getElementById('h' + i).textContent = c.hint;
+    const card = document.getElementById('card-' + i);
+    card.classList.toggle('active', active === i);
+  });
+
+  const det = document.getElementById('detail');
+  const colors = ['#28a745', '#ff9800', '#dc3545'];
+  if (active !== null) {
+    det.style.borderColor = colors[active];
+    det.innerHTML = d.details[active];
+  } else {
+    det.style.borderColor = '#ccc';
+    det.innerHTML = `<span style="color:#aaa;">${d.hint}</span>`;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
