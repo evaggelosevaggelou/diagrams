@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Παράγοντες Ταχύτητας Φόρτισης</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: #ffffff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 32px 20px;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  h1 {
+    font-size: clamp(13px, 2.6vw, 17px);
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ── Diagram layout ── */
+  .diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  /* ── Factors column ── */
+  .factors {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .factor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(102,126,234,0.10);
+    border: 1.5px solid #667eea;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: clamp(11px, 2vw, 13px);
+    color: #4a5568;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+    user-select: none;
+    position: relative;
+  }
+
+  .factor:hover {
+    background: rgba(102,126,234,0.2);
+    transform: translateX(3px);
+  }
+
+  .factor.active {
+    background: rgba(102,126,234,0.22);
+    border-color: #4a62d8;
+    box-shadow: 0 2px 10px rgba(102,126,234,0.25);
+    transform: translateX(4px);
+  }
+
+  .factor .icon { font-size: 16px; flex-shrink: 0; }
+
+  /* ── Connector lines ── */
+  .connector {
+    width: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    align-self: stretch;
+  }
+
+  .connector svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* ── Result box ── */
+  .result {
+    width: 130px;
+    flex-shrink: 0;
+    background: #667eea;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 10px;
+    gap: 2px;
+    box-shadow: 0 4px 18px rgba(102,126,234,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .result.pulse {
+    animation: pulse 0.4s ease;
+  }
+
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .result span:first-child {
+    font-size: 22px;
+  }
+
+  .result .label {
+    font-size: clamp(12px, 2.2vw, 15px);
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ── Detail card ── */
+  .detail-card {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 12px;
+    padding: 16px 20px;
+    background: #f4f6ff;
+    border-left: 5px solid #667eea;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .detail-card.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-card h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3a4ecc;
+    margin-bottom: 8px;
+  }
+
+  .detail-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .detail-card ul li {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #444;
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .detail-card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    opacity: 0.7;
+  }
+
+  .hint {
+    font-size: 11px;
+    color: #aaa;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <h1>⚡ Παράγοντες που επηρεάζουν την ταχύτητα φόρτισης</h1>
+
+  <div class="diagram">
+
+    <!-- Factors -->
+    <div class="factors">
+      <div class="factor" data-key="charger" role="button" tabindex="0">
+        <span class="icon">🔌</span> Τύπος φορτιστή
+      </div>
+      <div class="factor" data-key="usage" role="button" tabindex="0">
+        <span class="icon">📱</span> Χρήση συσκευής
+      </div>
+      <div class="factor" data-key="temp" role="button" tabindex="0">
+        <span class="icon">🌡️</span> Θερμοκρασία
+      </div>
+      <div class="factor" data-key="cable" role="button" tabindex="0">
+        <span class="icon">🔗</span> Κατ. καλωδίου
+      </div>
+      <div class="factor" data-key="age" role="button" tabindex="0">
+        <span class="icon">⏳</span> Ηλικία μπαταρίας
+      </div>
+    </div>
+
+    <!-- SVG connector -->
+    <div class="connector">
+      <svg id="connector-svg" viewBox="0 0 52 230" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#667eea"/>
+          </marker>
+        </defs>
+        <!-- lines from each factor midpoint to center, then arrow to result -->
+        <line x1="0" y1="23"  x2="26" y2="115" stroke="#667eea" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="0" y1="69"  x2="26" y2="115" stroke="#667eea" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="0" y1="115" x2="26" y2="115" stroke="#667eea" stroke-width="1.5"/>
+        <line x1="0" y1="161" x2="26" y2="115" stroke="#667eea" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="0" y1="207" x2="26" y2="115" stroke="#667eea" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="26" y1="115" x2="50" y2="115" stroke="#667eea" stroke-width="2.5" marker-end="url(#arr)"/>
+      </svg>
+    </div>
+
+    <!-- Result -->
+    <div class="result" id="result-box">
+      <span>⚡</span>
+      <span class="label">Ταχύτητα Φόρτισης</span>
+    </div>
+
+  </div>
+
+  <p class="hint">Κλίκ σε κάθε παράγοντα για λεπτομέρειες</p>
+
+  <!-- Detail cards -->
+  <div class="detail-card" id="card-charger">
+    <h2>🔌 Τύπος φορτιστή</h2>
+    <ul>
+      <li>Ένας φορτιστής 65W φορτίζει 3–4× γρηγορότερα από έναν 5W.</li>
+      <li>Η τεχνολογία Quick Charge (Qualcomm) ή PD (USB Power Delivery) επιταχύνει σημαντικά τη φόρτιση.</li>
+      <li>Ο φορτιστής πρέπει να είναι συμβατός με τη συσκευή — ένας τυχαίος φορτιστής δεν ενεργοποιεί fast charging.</li>
+      <li>Ασύρματη φόρτιση (Qi): γενικά πιο αργή και παράγει περισσότερη θερμότητα.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card" id="card-usage">
+    <h2>📱 Χρήση συσκευής κατά τη φόρτιση</h2>
+    <ul>
+      <li>Η ενεργή χρήση (gaming, video calls) καταναλώνει ενέργεια ταυτόχρονα — η φόρτιση επιβραδύνεται ή σταματά.</li>
+      <li>Η λειτουργία «Airplane Mode» ή σβηστή οθόνη επιταχύνει τη φόρτιση έως 30%.</li>
+      <li>Εφαρμογές που τρέχουν στο background (GPS, sync) μειώνουν κι αυτές την ταχύτητα.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card" id="card-temp">
+    <h2>🌡️ Θερμοκρασία περιβάλλοντος</h2>
+    <ul>
+      <li>Ιδανική θερμοκρασία φόρτισης: 15–35°C.</li>
+      <li>Κάτω από 10°C η χημεία της μπαταρίας επιβραδύνεται — ο φορτισμός γίνεται πιο αργός για ασφάλεια.</li>
+      <li>Πάνω από 40°C το BMS (Battery Management System) μειώνει τη ροή για να αποφύγει υπερθέρμανση.</li>
+      <li>Μην αφήνετε συσκευές να φορτίζουν στον ήλιο ή κάτω από μαξιλάρι.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card" id="card-cable">
+    <h2>🔗 Ποιότητα καλωδίου</h2>
+    <ul>
+      <li>Ένα φθηνό καλώδιο USB-C μπορεί να υποστηρίζει μόνο 500mA αντί για 3–5A.</li>
+      <li>Καλώδια USB 2.0 δεν υποστηρίζουν USB Power Delivery — παρόλο που ο φορτιστής είναι 65W+.</li>
+      <li>Αναζητήστε καλώδια με πιστοποίηση (e-Marked chip για >60W).</li>
+      <li>Φθαρμένα ή στριμμένα καλώδια αυξάνουν την αντίσταση και μειώνουν τη ροή ρεύματος.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card" id="card-age">
+    <h2>⏳ Ηλικία μπαταρίας</h2>
+    <ul>
+      <li>Μια μπαταρία με υγεία κάτω από 80% φορτίζει πιο αργά και κρατά λιγότερο.</li>
+      <li>Μετά από ~500 κύκλους φόρτισης, η χωρητικότητα Li-Ion μειώνεται αισθητά.</li>
+      <li>Το BMS προσαρμόζει αυτόματα τη ρεύμα φόρτισης για παλιές μπαταρίες ώστε να τις προστατεύσει.</li>
+      <li>Ελέγξτε την υγεία μπαταρίας: iOS → Ρυθμίσεις → Μπαταρία, Android → AccuBattery app.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  const factors = document.querySelectorAll('.factor');
+  const cards   = document.querySelectorAll('.detail-card');
+  const result  = document.getElementById('result-box');
+  let active = null;
+
+  factors.forEach(f => {
+    const go = () => {
+      const key = f.dataset.key;
+      const card = document.getElementById('card-' + key);
+
+      if (active === key) {
+        f.classList.remove('active');
+        card.classList.remove('visible');
+        active = null;
+        return;
+      }
+
+      factors.forEach(x => x.classList.remove('active'));
+      cards.forEach(c => c.classList.remove('visible'));
+
+      f.classList.add('active');
+      card.classList.add('visible');
+      active = key;
+
+      // pulse result box
+      result.classList.remove('pulse');
+      void result.offsetWidth;
+      result.classList.add('pulse');
+    };
+
+    f.addEventListener('click', go);
+    f.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+</script>
+
+</body>
+</html>
