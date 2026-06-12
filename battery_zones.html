@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ζώνες Στάθμης Μπαταρίας</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: #ffffff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 32px 20px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  h1 {
+    font-size: clamp(15px, 3vw, 20px);
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Battery shell ── */
+  .battery-shell {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .battery-body {
+    position: relative;
+    width: calc(100% - 18px);
+    height: 72px;
+    border-radius: 12px;
+    border: 3px solid #555;
+    overflow: hidden;
+    display: flex;
+    cursor: pointer;
+  }
+
+  .battery-tip {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 36px;
+    background: #555;
+    border-radius: 0 5px 5px 0;
+  }
+
+  /* ── Zones ── */
+  .zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: filter 0.18s, transform 0.18s;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .zone:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.6);
+  }
+
+  .zone:hover { filter: brightness(1.12); }
+  .zone.active { filter: brightness(1.18); transform: scaleY(1.04); z-index: 1; }
+
+  .z-critical { background: #dc3545; flex: 1.2; }
+  .z-low      { background: #ff9800; flex: 1.8; }
+  .z-normal   { background: #ffc107; flex: 1.8; }
+  .z-good     { background: #28a745; flex: 1.2; }
+
+  .zone-pct {
+    font-size: clamp(11px, 2vw, 13px);
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.25);
+  }
+  .z-normal .zone-pct { color: #4a3000; text-shadow: none; }
+
+  .zone-label {
+    font-size: clamp(10px, 1.8vw, 12px);
+    color: rgba(255,255,255,0.92);
+  }
+  .z-normal .zone-label { color: #5a3e00; }
+
+  /* ── Tick marks ── */
+  .ticks {
+    display: flex;
+    width: calc(100% - 18px);
+    justify-content: space-between;
+    padding: 4px 0 0;
+  }
+  .ticks span {
+    font-size: 11px;
+    color: #999;
+    /* manual positions by flex */
+  }
+
+  /* ── Detail card ── */
+  .detail-card {
+    width: 100%;
+    max-width: 640px;
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: none;
+    animation: fadeIn 0.2s ease;
+    border-left: 5px solid transparent;
+  }
+
+  .detail-card.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-card h2 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .detail-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .detail-card ul li {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #444;
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .detail-card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: inherit;
+    opacity: 0.6;
+  }
+
+  .hint {
+    font-size: 11px;
+    color: #aaa;
+    text-align: center;
+  }
+
+  /* Zone-specific card colors */
+  .card-critical { background: #fff5f5; border-color: #dc3545; }
+  .card-critical h2 { color: #dc3545; }
+  .card-critical ul li::before { color: #dc3545; }
+
+  .card-low { background: #fff8f0; border-color: #ff9800; }
+  .card-low h2 { color: #e07000; }
+  .card-low ul li::before { color: #ff9800; }
+
+  .card-normal { background: #fffbee; border-color: #d4a000; }
+  .card-normal h2 { color: #9a6e00; }
+  .card-normal ul li::before { color: #d4a000; }
+
+  .card-good { background: #f0fff4; border-color: #28a745; }
+  .card-good h2 { color: #1a7a33; }
+  .card-good ul li::before { color: #28a745; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <h1>🔋 Ζώνες Στάθμης Μπαταρίας</h1>
+
+  <div class="battery-shell">
+    <div class="battery-body" id="battery">
+      <div class="zone z-critical" data-zone="critical" role="button" tabindex="0" aria-label="Κρίσιμο 0-20%">
+        <span class="zone-pct">0–20%</span>
+        <span class="zone-label">Κρίσιμο</span>
+      </div>
+      <div class="zone z-low" data-zone="low" role="button" tabindex="0" aria-label="Χαμηλό 20-50%">
+        <span class="zone-pct">20–50%</span>
+        <span class="zone-label">Χαμηλό</span>
+      </div>
+      <div class="zone z-normal" data-zone="normal" role="button" tabindex="0" aria-label="Κανονικό 50-80%">
+        <span class="zone-pct">50–80%</span>
+        <span class="zone-label">Κανονικό</span>
+      </div>
+      <div class="zone z-good" data-zone="good" role="button" tabindex="0" aria-label="Άριστο 80-100%">
+        <span class="zone-pct">80–100%</span>
+        <span class="zone-label">Άριστο</span>
+      </div>
+    </div>
+    <div class="battery-tip"></div>
+  </div>
+
+  <div class="ticks">
+    <span>0%</span>
+    <span>20%</span>
+    <span style="margin-left:auto;margin-right:auto">50%</span>
+    <span>80%</span>
+    <span>100%</span>
+  </div>
+
+  <p class="hint">Κλίκ σε κάθε ζώνη για λεπτομέρειες</p>
+
+  <!-- Detail cards -->
+  <div class="detail-card card-critical" id="card-critical">
+    <h2>⚠️ Κρίσιμο — 0–20%</h2>
+    <ul>
+      <li>Άμεση σύνδεση στο φορτιστή — αποφύγετε περαιτέρω χρήση.</li>
+      <li>Η βαθιά εκφόρτιση καταστρέφει τα κύτταρα Li-Ion με τον καιρό.</li>
+      <li>Πολλές συσκευές κλείνουν αυτόματα στο 5–10% για προστασία.</li>
+      <li>Μην αφήνετε τη μπαταρία στο 0% για παρατεταμένο διάστημα.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card card-low" id="card-low">
+    <h2>🟠 Χαμηλό — 20–50%</h2>
+    <ul>
+      <li>Αποδεκτό για σύντομη χρήση, αλλά συνίσταται φόρτιση σύντομα.</li>
+      <li>Αποφύγετε απαιτητικές εφαρμογές (gaming, video) σε αυτό το εύρος.</li>
+      <li>Καλό σημείο εκκίνησης φόρτισης για καθημερινή χρήση.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card card-normal" id="card-normal">
+    <h2>🟡 Κανονικό — 50–80%</h2>
+    <ul>
+      <li>Ιδανικό εύρος για καθημερινή χρήση και μέγιστη διάρκεια ζωής.</li>
+      <li>Οι περισσότεροι κατασκευαστές (Apple, Samsung) συνιστούν αυτό το εύρος.</li>
+      <li>Η θερμοκρασία παραμένει σταθερή, μειώνοντας τη φθορά.</li>
+      <li>Η λειτουργία «Optimized Charging» στοχεύει αυτή τη ζώνη.</li>
+    </ul>
+  </div>
+
+  <div class="detail-card card-good" id="card-good">
+    <h2>🟢 Άριστο — 80–100%</h2>
+    <ul>
+      <li>Πλήρης χωρητικότητα — κατάλληλο πριν από μεγάλα ταξίδια ή έκτακτη ανάγκη.</li>
+      <li>Η συχνή φόρτιση στο 100% επιταχύνει τον κύκλο γήρανσης μακροπρόθεσμα.</li>
+      <li>Μην αφήνετε τη συσκευή στο φορτιστή μετά το 100% για ώρες.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  const zones = document.querySelectorAll('.zone');
+  const cards = document.querySelectorAll('.detail-card');
+  let activeZone = null;
+
+  zones.forEach(zone => {
+    const activate = () => {
+      const key = zone.dataset.zone;
+      const card = document.getElementById('card-' + key);
+
+      if (activeZone === key) {
+        // toggle off
+        zone.classList.remove('active');
+        card.classList.remove('visible');
+        activeZone = null;
+        return;
+      }
+
+      // deactivate previous
+      zones.forEach(z => z.classList.remove('active'));
+      cards.forEach(c => c.classList.remove('visible'));
+
+      zone.classList.add('active');
+      card.classList.add('visible');
+      activeZone = key;
+    };
+
+    zone.addEventListener('click', activate);
+    zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+  });
+</script>
+
+</body>
+</html>
