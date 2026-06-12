@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Κατάσταση Υγείας Μπαταρίας</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  /* Battery shell */
+  .battery-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  svg.battery-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: default;
+  }
+
+  /* Clickable zones */
+  .zone-hit {
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .zone-hit:hover { opacity: 0.12; }
+  .zone-hit.active  { opacity: 0.18; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    margin-top: 14px;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #444;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 20px;
+    transition: background 0.15s;
+  }
+  .legend-item:hover { background: #f0f0f0; }
+  .legend-item.active { background: #f0f0f0; font-weight: 600; }
+  .dot {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Info panel */
+  .info-panel {
+    margin-top: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .info-panel.visible {
+    box-shadow: 0 3px 14px rgba(0,0,0,0.10);
+  }
+  .info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .info-header .badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .info-body {
+    padding: 14px 16px;
+    background: #fafafa;
+    display: none;
+  }
+  .info-panel.visible .info-body { display: block; }
+  .info-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .info-body ul li {
+    font-size: 13px;
+    color: #444;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .info-body ul li::before {
+    content: "•";
+    position: absolute;
+    left: 4px;
+    color: #888;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🔋 Κατάσταση Υγείας Μπαταρίας</h2>
+
+  <!-- Battery bar SVG -->
+  <div class="battery-wrap">
+    <svg class="battery-svg" viewBox="0 0 660 108" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="batt-health-clip">
+          <rect height="68" rx="10" width="616" x="10" y="20"/>
+        </clipPath>
+      </defs>
+
+      <!-- Shell -->
+      <rect fill="none" height="72" rx="12" stroke-width="3" stroke="#555" width="620" x="8" y="18"/>
+      <!-- Terminal -->
+      <rect fill="#555" height="36" rx="5" width="20" x="630" y="36"/>
+
+      <!-- Fill zones -->
+      <g clip-path="url(#batt-health-clip)">
+        <rect fill="#dc3545" height="68" width="431" x="10"  y="20"/>
+        <rect fill="#ffc107" height="68" width="62"  x="441" y="20"/>
+        <rect fill="#5cb85c" height="68" width="62"  x="503" y="20"/>
+        <rect fill="#28a745" height="68" width="61"  x="565" y="20"/>
+        <!-- Dividers -->
+        <line stroke="rgba(255,255,255,0.7)" stroke-width="2" x1="441" x2="441" y1="20" y2="88"/>
+        <line stroke="rgba(255,255,255,0.7)" stroke-width="2" x1="503" x2="503" y1="20" y2="88"/>
+        <line stroke="rgba(255,255,255,0.7)" stroke-width="2" x1="565" x2="565" y1="20" y2="88"/>
+      </g>
+
+      <!-- Clickable hit areas (invisible rects on top) -->
+      <rect class="zone-hit" fill="#dc3545" height="68" width="431" x="10"  y="20" rx="0" data-zone="bad"    onclick="selectZone('bad')"/>
+      <rect class="zone-hit" fill="#ffc107" height="68" width="62"  x="441" y="20" data-zone="medium" onclick="selectZone('medium')"/>
+      <rect class="zone-hit" fill="#5cb85c" height="68" width="62"  x="503" y="20" data-zone="good"   onclick="selectZone('good')"/>
+      <rect class="zone-hit" fill="#28a745" height="68" width="61"  x="565" y="20" data-zone="great"  onclick="selectZone('great')"/>
+
+      <!-- Tick marks -->
+      <line stroke="#888" stroke-width="1.5" x1="10"  x2="10"  y1="90" y2="99"/>
+      <line stroke="#888" stroke-width="1.5" x1="441" x2="441" y1="90" y2="99"/>
+      <line stroke="#888" stroke-width="1.5" x1="503" x2="503" y1="90" y2="99"/>
+      <line stroke="#888" stroke-width="1.5" x1="565" x2="565" y1="90" y2="99"/>
+      <line stroke="#888" stroke-width="1.5" x1="626" x2="626" y1="90" y2="99"/>
+
+      <!-- Labels -->
+      <text font-family="Arial,sans-serif" font-size="12" fill="#666" text-anchor="middle" x="10"  y="108">0%</text>
+      <text font-family="Arial,sans-serif" font-size="12" fill="#666" text-anchor="middle" x="441" y="108">70%</text>
+      <text font-family="Arial,sans-serif" font-size="12" fill="#666" text-anchor="middle" x="503" y="108">80%</text>
+      <text font-family="Arial,sans-serif" font-size="12" fill="#666" text-anchor="middle" x="565" y="108">90%</text>
+      <text font-family="Arial,sans-serif" font-size="12" fill="#666" text-anchor="middle" x="626" y="108">100%</text>
+    </svg>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item" data-zone="bad"    onclick="selectZone('bad')">
+      <span class="dot" style="background:#dc3545"></span> Κάτω από 70% — Κακή
+    </div>
+    <div class="legend-item" data-zone="medium" onclick="selectZone('medium')">
+      <span class="dot" style="background:#ffc107"></span> 70–79% — Μέτρια
+    </div>
+    <div class="legend-item" data-zone="good"   onclick="selectZone('good')">
+      <span class="dot" style="background:#5cb85c"></span> 80–89% — Πολύ καλή
+    </div>
+    <div class="legend-item" data-zone="great"  onclick="selectZone('great')">
+      <span class="dot" style="background:#28a745"></span> 90–100% — Άριστη
+    </div>
+  </div>
+
+  <!-- Info panel -->
+  <div class="info-panel" id="info-panel">
+    <div class="info-header" id="info-header">
+      <span id="info-icon"></span>
+      <span id="info-title"></span>
+      <span class="badge" id="info-range"></span>
+    </div>
+    <div class="info-body">
+      <ul id="info-list"></ul>
+    </div>
+  </div>
+
+  <p class="hint" id="hint-text">👆 Κλίκ σε μια ζώνη ή στο legend για λεπτομέρειες</p>
+</div>
+
+<script>
+const zones = {
+  bad: {
+    color:  "#dc3545",
+    border: "#dc3545",
+    icon:   "🔴",
+    title:  "Κακή κατάσταση μπαταρίας",
+    range:  "0 – 69%",
+    tips: [
+      "Η μπαταρία δεν κρατά όσο έπρεπε — παρατηρείς σημαντική πτώση αυτονομίας.",
+      "Σε αυτό το επίπεδο η συσκευή μπορεί να κλείνει ξαφνικά, ακόμα και με 20–30% φαινομενικό ποσοστό.",
+      "Συνιστάται αντικατάσταση μπαταρίας — σε κέντρο service ή από κατασκευαστή.",
+      "Αποφύγετε ταυτόχρονη χρήση + φόρτιση: επιβαρύνει περαιτέρω την ήδη αδύναμη μπαταρία.",
+      "Έλεγχος iOS: Ρυθμίσεις → Μπαταρία → Υγεία μπαταρίας. Android: AccuBattery app."
+    ]
+  },
+  medium: {
+    color:  "#e6a800",
+    border: "#ffc107",
+    icon:   "🟡",
+    title:  "Μέτρια κατάσταση μπαταρίας",
+    range:  "70 – 79%",
+    tips: [
+      "Η μπαταρία λειτουργεί, αλλά έχει χάσει αισθητά από την αρχική της χωρητικότητα.",
+      "Μπορεί να παρατηρείς μειωμένη αυτονομία, ειδικά με ενεργή χρήση (gaming, πλοήγηση).",
+      "Αποφύγετε πλήρη εκφόρτιση στο 0% — επιβαρύνει τα κύτταρα της μπαταρίας.",
+      "Ενεργοποίησε βελτιστοποιημένη φόρτιση (iOS / Android) για να επιβραδύνεις την υποβάθμιση.",
+      "Σκέψου αντικατάσταση αν η συσκευή είναι <3 χρόνων — αναλογία κόστους/οφέλους συνήθως συμφέρει."
+    ]
+  },
+  good: {
+    color:  "#3d8b3d",
+    border: "#5cb85c",
+    icon:   "🟢",
+    title:  "Πολύ καλή κατάσταση μπαταρίας",
+    range:  "80 – 89%",
+    tips: [
+      "Η μπαταρία είναι σε καλή κατάσταση — αυτό το εύρος θεωρείται φυσιολογική φθορά.",
+      "Apple θεωρεί αντικατάσταση απαραίτητη κάτω από 80% — βρίσκεσαι ακριβώς στο όριο.",
+      "Διατήρησε τη φόρτιση μεταξύ 20–80% για να επιβραδύνεις περαιτέρω υποβάθμιση.",
+      "Απόφυγε φόρτιση όλη νύχτα χωρίς βελτιστοποιημένη φόρτιση ενεργοποιημένη.",
+      "Δεν χρειάζεται άμεση ενέργεια — απλώς καλές συνήθειες φόρτισης."
+    ]
+  },
+  great: {
+    color:  "#1e7e34",
+    border: "#28a745",
+    icon:   "✅",
+    title:  "Άριστη κατάσταση μπαταρίας",
+    range:  "90 – 100%",
+    tips: [
+      "Η μπαταρία σου είναι σχεδόν καινούρια — άριστη χωρητικότητα και απόδοση.",
+      "Διατήρησε αυτή την κατάσταση: φόρτιζε μεταξύ 20–80% όταν μπορείς.",
+      "Απόφυγε παρατεταμένη έκθεση σε υψηλές θερμοκρασίες (>40°C) ή ενώ φορτίζεις.",
+      "Η βελτιστοποιημένη φόρτιση (iOS) / Adaptive Charging (Android) είναι σύμμαχός σου.",
+      "Με σωστές συνήθειες, η μπαταρία μπορεί να μείνει πάνω από 85% για 2–3 χρόνια."
+    ]
+  }
+};
+
+let current = null;
+
+function selectZone(zone) {
+  // Toggle off if same zone clicked again
+  if (current === zone) {
+    current = null;
+    document.querySelectorAll('.zone-hit, .legend-item').forEach(el => el.classList.remove('active'));
+    const panel = document.getElementById('info-panel');
+    panel.classList.remove('visible');
+    panel.style.borderColor = 'transparent';
+    document.getElementById('hint-text').style.display = 'block';
+    return;
+  }
+
+  current = zone;
+  const z = zones[zone];
+
+  // Highlight hit area
+  document.querySelectorAll('.zone-hit').forEach(el => {
+    el.classList.toggle('active', el.dataset.zone === zone);
+  });
+  // Highlight legend
+  document.querySelectorAll('.legend-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.zone === zone);
+  });
+
+  // Populate panel
+  document.getElementById('info-icon').textContent  = z.icon;
+  document.getElementById('info-title').textContent = z.title;
+  document.getElementById('info-range').textContent = z.range;
+  document.getElementById('info-header').style.background = z.color;
+
+  const list = document.getElementById('info-list');
+  list.innerHTML = z.tips.map(t => `<li>${t}</li>`).join('');
+
+  const panel = document.getElementById('info-panel');
+  panel.style.borderColor = z.border;
+  panel.classList.add('visible');
+  document.getElementById('hint-text').style.display = 'none';
+}
+</script>
+</body>
+</html>
