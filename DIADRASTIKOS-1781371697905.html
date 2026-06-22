@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="el">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Πώς Λειτουργεί το Windows Registry — Interactive Guide</title>
+    <title>How the Windows Registry Works — Interactive Guide</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,21 +70,21 @@
 
     <div class="rg-steps">
         <div class="rg-step active" onclick="setStep(1)">
-            <div class="rg-step-num">Βήμα 1</div>
-            <div class="rg-step-label">🗂 Πλοήγηση</div>
+            <div class="rg-step-num">Step 1</div>
+            <div class="rg-step-label">🗂 Navigate</div>
         </div>
         <div class="rg-step" onclick="setStep(2)">
-            <div class="rg-step-num">Βήμα 2</div>
-            <div class="rg-step-label">🔍 Εύρεση τιμής</div>
+            <div class="rg-step-num">Step 2</div>
+            <div class="rg-step-label">🔍 Find the value</div>
         </div>
         <div class="rg-step" onclick="setStep(3)">
-            <div class="rg-step-num">Βήμα 3</div>
-            <div class="rg-step-label">✏️ Τροποποίηση</div>
+            <div class="rg-step-num">Step 3</div>
+            <div class="rg-step-label">✏️ Edit it</div>
         </div>
     </div>
 
     <div class="rg-info" id="infoBox">
-        Άνοιξε το <b>regedit</b> (Win + R → πληκτρολόγησε <b>regedit</b> → Enter). Στο αριστερό panel βλέπεις τη δενδρική δομή. Κλικ στα βέλη για να αναπτύξεις κάθε κλάδο — ή επικόλλησε την πλήρη διαδρομή στη γραμμή διευθύνσεων κάτω.
+        Open <b>regedit</b> (Win + R → type <b>regedit</b> → Enter). The left panel shows the tree structure. Click the arrows to expand each branch — or paste the full path into the address bar below to jump straight there.
     </div>
 
     <div class="mockup-frame">
@@ -123,36 +123,36 @@
                 <div class="tree-item">▶ HKEY_CURRENT_USER</div>
             </div>
             <div class="detail-pane">
-                <div class="detail-header" id="detailHeader">Επιλέξτε ένα key για να δείτε τις τιμές του</div>
+                <div class="detail-header" id="detailHeader">Select a key to see its values</div>
                 <table class="reg-table">
                     <thead>
                         <tr>
-                            <th>Όνομα (Name)</th>
-                            <th>Τύπος (Type)</th>
-                            <th>Δεδομένα (Data)</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Data</th>
                         </tr>
                     </thead>
                     <tbody id="regBody">
-                        <tr><td colspan="3" style="color:#555;font-size:12px;padding:16px 8px;">— κενό —</td></tr>
+                        <tr><td colspan="3" style="color:#555;font-size:12px;padding:16px 8px;">— empty —</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
         <div class="addr-bar">
-            <span class="addr-label">Διαδρομή:</span>
+            <span class="addr-label">Path:</span>
             <span class="addr-path" id="addrPath">HKEY_LOCAL_MACHINE</span>
         </div>
     </div>
 
     <div class="rg-controls" id="controls">
-        <button class="rg-btn primary" onclick="nextStep()">Επόμενο βήμα →</button>
+        <button class="rg-btn primary" onclick="nextStep()">Next step →</button>
     </div>
 
     <div id="step3controls" style="display:none; margin-top:1rem;">
-        <div style="font-size:13px;color:#475569;margin-bottom:8px;">Άλλαξε την τιμή <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">DisableRegistryTools</code>:</div>
+        <div style="font-size:13px;color:#475569;margin-bottom:8px;">Change the value of <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">DisableRegistryTools</code>:</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="rg-btn primary" onclick="setRegValue('0')">Όρισε → 0 <span class="badge badge-green">Ενεργοποίηση</span></button>
-            <button class="rg-btn" onclick="setRegValue('1')">Όρισε → 1 <span class="badge badge-red">Απενεργοποίηση</span></button>
+            <button class="rg-btn primary" onclick="setRegValue('0')">Set → 0 <span class="badge badge-green">Enable</span></button>
+            <button class="rg-btn" onclick="setRegValue('1')">Set → 1 <span class="badge badge-red">Disable</span></button>
         </div>
     </div>
 
@@ -163,9 +163,9 @@
     const PATH = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\System';
 
     const infos = {
-        1: 'Άνοιξε το <b>regedit</b> (Win + R → πληκτρολόγησε <b>regedit</b> → Enter). Στο αριστερό panel βλέπεις τη δενδρική δομή. Κλικ στα βέλη για να αναπτύξεις κάθε κλάδο — ή επικόλλησε την πλήρη διαδρομή στη γραμμή διευθύνσεων κάτω.',
-        2: 'Βρες το <b>key (φάκελο)</b> στα αριστερά. Στη δεξιά πλευρά εμφανίζονται οι τιμές του. Αν η τιμή δεν υπάρχει: δεξί κλικ στον κενό χώρο → <b>New → DWORD (32-bit) Value</b> και δώσε το όνομα.',
-        3: 'Κάνε <b>διπλό κλικ</b> στην τιμή για να ανοίξει το παράθυρο επεξεργασίας. Άλλαξε το Data: <b>0 = απενεργοποίηση</b>, <b>1 = ενεργοποίηση</b>. Πάτα ΟΚ και επανεκκίνησε αν χρειαστεί.'
+        1: 'Open <b>regedit</b> (Win + R → type <b>regedit</b> → Enter). The left panel shows the tree structure. Click the arrows to expand each branch — or paste the full path into the address bar below to jump straight there.',
+        2: 'Find the <b>key (folder)</b> on the left. Its values appear on the right side. If the value doesn\'t exist: right-click an empty area → <b>New → DWORD (32-bit) Value</b> and give it a name.',
+        3: '<b>Double-click</b> the value to open the edit window. Change the Data: <b>0 = disabled</b>, <b>1 = enabled</b>. Click OK and restart if needed.'
     };
 
     const tableRows = `<tr class="highlighted">
@@ -176,7 +176,7 @@
     <tr>
         <td class="reg-name">(Default)</td>
         <td class="reg-type">REG_SZ</td>
-        <td class="reg-data">(τιμή δεν έχει οριστεί)</td>
+        <td class="reg-data">(value not set)</td>
     </tr>`;
 
     function setStep(n) {
@@ -194,8 +194,8 @@
             document.getElementById('subPolicies').style.display = 'none';
             document.getElementById('nodeWindows').style.display = 'none';
             document.getElementById('addrPath').textContent = 'HKEY_LOCAL_MACHINE';
-            document.getElementById('detailHeader').textContent = 'Επιλέξτε ένα key για να δείτε τις τιμές του';
-            document.getElementById('regBody').innerHTML = '<tr><td colspan="3" style="color:#555;font-size:12px;padding:16px 8px;">— κενό —</td></tr>';
+            document.getElementById('detailHeader').textContent = 'Select a key to see its values';
+            document.getElementById('regBody').innerHTML = '<tr><td colspan="3" style="color:#555;font-size:12px;padding:16px 8px;">— empty —</td></tr>';
         }
 
         document.getElementById('step3controls').style.display = n === 3 ? 'block' : 'none';
@@ -211,7 +211,7 @@
         if (!cell) return;
         cell.textContent = val === '0' ? '0x00000000 (0)' : '0x00000001 (1)';
         cell.className = 'reg-data changed';
-        document.getElementById('infoBox').innerHTML = 'Η τιμή άλλαξε επιτυχώς! Πάτα <b>OK</b> στο παράθυρο επεξεργασίας. Σε ορισμένες περιπτώσεις χρειάζεται <b>επανεκκίνηση</b> για να εφαρμοστεί η αλλαγή.';
+        document.getElementById('infoBox').innerHTML = 'The value was changed successfully! Click <b>OK</b> in the edit window. In some cases a <b>restart</b> is required for the change to take effect.';
     }
 </script>
 </body>
