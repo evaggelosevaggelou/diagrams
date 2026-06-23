@@ -1,0 +1,391 @@
+
+<style>
+  h2.sr-only { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0); }
+  .sb-wrap { padding: 1rem 0; font-family: var(--font-sans); }
+  .sb-header { text-align:center; margin-bottom: 1.5rem; }
+  .sb-header .icon-big { font-size: 40px; display:block; margin-bottom: 10px; animation: pulse 2.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+  .sb-header h1 { font-size: 20px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+  .sb-header p { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; max-width: 480px; margin: 0 auto; }
+
+  .tabs { display:flex; gap:8px; margin-bottom: 1rem; }
+  .tab-btn { flex:1; padding:10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); color: var(--color-text-secondary); font-size:14px; font-weight:500; cursor:pointer; transition: all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .tab-btn.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+  .tab-btn i { font-size:18px; }
+
+  .tip-panel { display:none; }
+  .tip-panel.active { display:block; }
+
+  .steps-list { display:flex; flex-direction:column; gap:10px; margin-bottom: 1rem; }
+  .step-row { display:grid; grid-template-columns:40px 1fr; gap:12px; align-items:start; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding:12px 14px; border:0.5px solid var(--color-border-tertiary); }
+  .step-num { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#fff;flex-shrink:0; }
+  .num-android { background:#1a8c45; }
+  .num-iphone  { background:#185FA5; }
+  .step-txt { font-size:14px; line-height:1.55; color:var(--color-text-primary); padding-top:9px; }
+  .step-note { display:inline-block;margin-top:6px;font-size:12px;font-weight:500;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:var(--border-radius-md);padding:3px 10px; }
+
+  .why-box { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); border:0.5px solid var(--color-border-tertiary); padding:14px 16px; margin-bottom: 1rem; }
+  .why-box .why-label { font-size:12px; font-weight:500; color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .why-box p { font-size:13.5px; line-height:1.65; color:var(--color-text-primary); }
+
+  .extras-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:10px; margin-bottom: 1rem; }
+  .extra-card { background:var(--color-background-primary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:14px; cursor:pointer; transition: border-color 0.2s; }
+  .extra-card:hover { border-color: var(--color-border-primary); }
+  .extra-card .ec-icon { font-size:24px; margin-bottom:8px; display:block; color:var(--color-text-secondary); }
+  .extra-card .ec-title { font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:4px; }
+  .extra-card .ec-desc { font-size:12px; color:var(--color-text-secondary); line-height:1.5; }
+  .extra-card .ec-badge { display:inline-block; margin-top:8px; font-size:11px; font-weight:500; padding:2px 8px; border-radius:var(--border-radius-md); }
+  .badge-easy { background:var(--color-background-success); color:var(--color-text-success); }
+  .badge-med  { background:var(--color-background-warning); color:var(--color-text-warning); }
+
+  .detail-panel { background:var(--color-background-secondary); border-radius:var(--border-radius-lg); border:0.5px solid var(--color-border-tertiary); padding:16px; margin-bottom:1rem; display:none; }
+  .detail-panel.open { display:block; }
+  .detail-panel h3 { font-size:15px; font-weight:500; margin-bottom:10px; color:var(--color-text-primary); display:flex; align-items:center; gap:8px; }
+  .detail-panel ul { list-style:none; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .detail-panel ul li { font-size:13.5px; color:var(--color-text-primary); line-height:1.55; display:flex; gap:10px; align-items:flex-start; }
+  .detail-panel ul li i { color:var(--color-text-success); flex-shrink:0; margin-top:2px; }
+  .close-btn { float:right; background:none; border:none; cursor:pointer; color:var(--color-text-secondary); font-size:16px; }
+
+  .signal-meter { background:var(--color-background-secondary); border-radius:var(--border-radius-lg); border:0.5px solid var(--color-border-tertiary); padding:16px; margin-bottom:1rem; }
+  .signal-meter h3 { font-size:14px; font-weight:500; color:var(--color-text-secondary); margin-bottom:12px; display:flex;align-items:center;gap:6px; }
+  .bars-row { display:flex; gap:6px; align-items:flex-end; height:60px; margin-bottom:8px; }
+  .bar { flex:1; border-radius:4px 4px 0 0; background:var(--color-background-tertiary); position:relative; transition: height 0.4s ease, background 0.4s; min-height:8px; }
+  .bar.lit { background:#1a8c45; }
+  .bar.lit.warn { background:#BA7517; }
+  .meter-label { font-size:12px; color:var(--color-text-secondary); text-align:center; margin-top:4px; }
+  .meter-state { font-size:13px; font-weight:500; color:var(--color-text-primary); margin-top:8px; }
+  .meter-btns { display:flex; gap:8px; margin-top:12px; }
+  .meter-btns button { flex:1; font-size:13px; }
+
+  .quiz-box { background:var(--color-background-secondary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:16px; margin-bottom:1rem; }
+  .quiz-box h3 { font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .quiz-options { display:flex; flex-direction:column; gap:8px; }
+  .qopt { padding:10px 14px; border-radius:var(--border-radius-md); border:0.5px solid var(--color-border-secondary); background:var(--color-background-primary); font-size:13.5px; color:var(--color-text-primary); cursor:pointer; text-align:left; transition:all 0.2s; }
+  .qopt:hover { border-color:var(--color-border-primary); }
+  .qopt.correct { background:var(--color-background-success); color:var(--color-text-success); border-color:var(--color-border-success); }
+  .qopt.wrong  { background:var(--color-background-danger);  color:var(--color-text-danger);  border-color:var(--color-border-danger); }
+  .quiz-feedback { margin-top:10px; font-size:13px; color:var(--color-text-secondary); display:none; }
+  .quiz-next { margin-top:10px; display:none; }
+
+  .checklist { background:var(--color-background-secondary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:16px; }
+  .checklist h3 { font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .check-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:0.5px solid var(--color-border-tertiary); cursor:pointer; }
+  .check-item:last-child { border-bottom:none; }
+  .check-box { width:20px;height:20px;border-radius:4px;border:1.5px solid var(--color-border-secondary);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all 0.2s; }
+  .check-item.done .check-box { background:#1a8c45; border-color:#1a8c45; }
+  .check-item.done .check-box i { color:#fff; }
+  .check-item.done .check-lbl { text-decoration:line-through; color:var(--color-text-secondary); }
+  .check-lbl { font-size:13.5px; color:var(--color-text-primary); line-height:1.5; }
+  .progress-bar-wrap { height:6px; background:var(--color-background-tertiary); border-radius:3px; margin-top:12px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:#1a8c45; border-radius:3px; transition:width 0.4s ease; }
+  .progress-txt { font-size:12px; color:var(--color-text-secondary); margin-top:6px; }
+</style>
+
+<div class="sb-wrap">
+<h2 class="sr-only">Διαδραστικός οδηγός βελτίωσης σήματος κινητού</h2>
+
+<div class="sb-header">
+  <span class="icon-big">📶</span>
+  <h1>Βελτίωσε το σήμα & το Wi-Fi σου</h1>
+  <p>Επίλεξε συσκευή, δες τα βήματα, δοκίμασε κι άλλα κόλπα — όλα σε ένα μέρος.</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('android')" id="tab-android">
+    <i class="ti ti-brand-android" aria-hidden="true"></i> Android
+  </button>
+  <button class="tab-btn" onclick="switchTab('iphone')" id="tab-iphone">
+    <i class="ti ti-brand-apple" aria-hidden="true"></i> iPhone
+  </button>
+</div>
+
+<div class="tip-panel active" id="panel-android">
+  <div class="steps-list">
+    <div class="step-row">
+      <div class="step-num num-android">1</div>
+      <div class="step-txt">Σύρε από <strong>πάνω προς τα κάτω</strong> για να ανοίξεις το γρήγορο μενού ρυθμίσεων.</div>
+    </div>
+    <div class="step-row">
+      <div class="step-num num-android">2</div>
+      <div class="step-txt">Πάτησε το εικονίδιο <strong>Λειτουργία Πτήσης</strong> για να την ενεργοποιήσεις.
+        <span class="step-note"><i class="ti ti-clock" aria-hidden="true"></i> Περίμενε 5–7 δευτερόλεπτα</span>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num num-android">3</div>
+      <div class="step-txt">Πάτησε ξανά για να <strong>απενεργοποιήσεις</strong> τη Λειτουργία Πτήσης.
+        <span class="step-note" style="background:var(--color-background-success);color:var(--color-text-success);"><i class="ti ti-check" aria-hidden="true"></i> Αυτόματη επανασύνδεση</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tip-panel" id="panel-iphone">
+  <div class="steps-list">
+    <div class="step-row">
+      <div class="step-num num-iphone">1</div>
+      <div class="step-txt">Σύρε από την <strong>επάνω δεξιά γωνία</strong> για να ανοίξεις το Κέντρο Ελέγχου.</div>
+    </div>
+    <div class="step-row">
+      <div class="step-num num-iphone">2</div>
+      <div class="step-txt">Πάτησε το εικονίδιο <strong>Λειτουργία Πτήσης</strong>.
+        <span class="step-note"><i class="ti ti-clock" aria-hidden="true"></i> Περίμενε 5–7 δευτερόλεπτα</span>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num num-iphone">3</div>
+      <div class="step-txt">Πάτησέ το ξανά για να <strong>απενεργοποιήσεις</strong> τη Λειτουργία Πτήσης.
+        <span class="step-note" style="background:var(--color-background-success);color:var(--color-text-success);"><i class="ti ti-check" aria-hidden="true"></i> Ανανέωση συνδέσεων</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="why-box">
+  <div class="why-label"><i class="ti ti-bulb" aria-hidden="true"></i> Γιατί λειτουργεί;</div>
+  <p>Το κινητό μπορεί να μείνει «κολλημένο» σε αδύναμη κεραία ακόμα κι αν υπάρχει καλύτερη. Η Λειτουργία Πτήσης αναγκάζει πλήρη αποσύνδεση — και το κινητό επιλέγει αυτόματα το βέλτιστο δίκτυο.</p>
+</div>
+
+<div class="signal-meter">
+  <h3><i class="ti ti-wifi" aria-hidden="true"></i> Προσομοίωση σήματος</h3>
+  <div class="bars-row" id="bars-row">
+    <div class="bar" id="b1" style="height:20%"></div>
+    <div class="bar" id="b2" style="height:20%"></div>
+    <div class="bar" id="b3" style="height:20%"></div>
+    <div class="bar" id="b4" style="height:20%"></div>
+    <div class="bar" id="b5" style="height:20%"></div>
+  </div>
+  <div class="meter-label" id="meter-lbl">Αδύναμο σήμα</div>
+  <div class="meter-state" id="meter-state">Πάτησε «Ενεργοποίηση Πτήσης» για να δεις τη διαδικασία</div>
+  <div class="meter-btns">
+    <button id="btn-on" onclick="meterStep(1)"><i class="ti ti-plane" aria-hidden="true"></i> Ενεργοποίηση Πτήσης</button>
+    <button id="btn-off" onclick="meterStep(2)" disabled><i class="ti ti-plane-off" aria-hidden="true"></i> Απενεργοποίηση</button>
+    <button id="btn-reset" onclick="meterReset()" style="display:none"><i class="ti ti-refresh" aria-hidden="true"></i> Επαναφορά</button>
+  </div>
+</div>
+
+<div style="margin-bottom:10px;">
+  <p style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-bulb" aria-hidden="true"></i> Κι άλλα κόλπα για καλύτερο σήμα</p>
+  <div class="extras-grid" id="extras-grid">
+
+    <div class="extra-card" onclick="openExtra('dns')">
+      <i class="ti ti-server" class="ec-icon" aria-hidden="true" style="font-size:24px;margin-bottom:8px;display:block;color:var(--color-text-secondary);"></i>
+      <div class="ec-title">Αλλαγή DNS</div>
+      <div class="ec-desc">Πιο γρήγορο browsing με Google ή Cloudflare DNS</div>
+      <span class="ec-badge badge-easy">Εύκολο</span>
+    </div>
+
+    <div class="extra-card" onclick="openExtra('band')">
+      <i class="ti ti-radio" class="ec-icon" aria-hidden="true" style="font-size:24px;margin-bottom:8px;display:block;color:var(--color-text-secondary);"></i>
+      <div class="ec-title">2.4 vs 5 GHz</div>
+      <div class="ec-desc">Επέλεξε τη σωστή ζώνη Wi-Fi για εμβέλεια ή ταχύτητα</div>
+      <span class="ec-badge badge-easy">Εύκολο</span>
+    </div>
+
+    <div class="extra-card" onclick="openExtra('cache')">
+      <i class="ti ti-trash" class="ec-icon" aria-hidden="true" style="font-size:24px;margin-bottom:8px;display:block;color:var(--color-text-secondary);"></i>
+      <div class="ec-title">Καθαρισμός cache δικτύου</div>
+      <div class="ec-desc">Διαγραφή παλιών δεδομένων που επιβραδύνουν τη σύνδεση</div>
+      <span class="ec-badge badge-med">Μέτριο</span>
+    </div>
+
+    <div class="extra-card" onclick="openExtra('bg')">
+      <i class="ti ti-apps-off" class="ec-icon" aria-hidden="true" style="font-size:24px;margin-bottom:8px;display:block;color:var(--color-text-secondary);"></i>
+      <div class="ec-title">Απενεργοποίηση εφαρμογών φόντου</div>
+      <div class="ec-desc">Εφαρμογές που τρέχουν στο παρασκήνιο καταναλώνουν δεδομένα</div>
+      <span class="ec-badge badge-easy">Εύκολο</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="detail-panel" id="detail-dns">
+  <button class="close-btn" onclick="closeExtra('dns')" aria-label="Κλείσιμο"><i class="ti ti-x"></i></button>
+  <h3><i class="ti ti-server" aria-hidden="true"></i> Αλλαγή DNS</h3>
+  <ul>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Πήγαινε Ρυθμίσεις → Wi-Fi → Πάτησε και κράτα το δίκτυό σου</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Επίλεξε «Τροποποίηση δικτύου» και μετά «Σύνθετες επιλογές»</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Άλλαξε IP σε «Στατική» και συμπλήρωσε DNS 1: <strong>1.1.1.1</strong> (Cloudflare) ή <strong>8.8.8.8</strong> (Google)</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Αποθήκευσε και επανασύνδεσε. Ταχύτερος χρόνος απόκρισης ιστοσελίδων!</li>
+  </ul>
+</div>
+
+<div class="detail-panel" id="detail-band">
+  <button class="close-btn" onclick="closeExtra('band')" aria-label="Κλείσιμο"><i class="ti ti-x"></i></button>
+  <h3><i class="ti ti-radio" aria-hidden="true"></i> 2.4 GHz vs 5 GHz</h3>
+  <ul>
+    <li><i class="ti ti-check" aria-hidden="true"></i> <strong>2.4 GHz:</strong> Μεγαλύτερη εμβέλεια, περνά τοίχους — ιδανικό αν είσαι μακριά από τον router</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> <strong>5 GHz:</strong> Πολύ γρηγορότερο αλλά μικρότερη εμβέλεια — ιδανικό κοντά στον router</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Αν ο router σου έχει και τις δύο ζώνες, επίλεξε χειροκίνητα ανάλογα με τη θέση σου</li>
+  </ul>
+</div>
+
+<div class="detail-panel" id="detail-cache">
+  <button class="close-btn" onclick="closeExtra('cache')" aria-label="Κλείσιμο"><i class="ti ti-x"></i></button>
+  <h3><i class="ti ti-trash" aria-hidden="true"></i> Καθαρισμός cache δικτύου</h3>
+  <ul>
+    <li><i class="ti ti-check" aria-hidden="true"></i> <strong>Android:</strong> Ρυθμίσεις → Εφαρμογές → Επιλογή εφαρμογής → Αποθηκευτικός χώρος → Εκκαθάριση cache</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> <strong>iPhone:</strong> Ρυθμίσεις → Γενικά → Αποθήκευση iPhone → Επιλογή εφαρμογής → Εκφόρτωση εφαρμογής</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Για πλήρη επαναφορά ρυθμίσεων δικτύου: Ρυθμίσεις → Γενικά → Μεταφορά/Επαναφορά → Επαναφορά ρυθμίσεων δικτύου</li>
+  </ul>
+</div>
+
+<div class="detail-panel" id="detail-bg">
+  <button class="close-btn" onclick="closeExtra('bg')" aria-label="Κλείσιμο"><i class="ti ti-x"></i></button>
+  <h3><i class="ti ti-apps-off" aria-hidden="true"></i> Εφαρμογές φόντου</h3>
+  <ul>
+    <li><i class="ti ti-check" aria-hidden="true"></i> <strong>Android:</strong> Ρυθμίσεις → Μπαταρία → Χρήση μπαταρίας → Περιορισμός εφαρμογών φόντου</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> <strong>iPhone:</strong> Ρυθμίσεις → Γενικά → Ανανέωση εφαρμογής στο παρασκήνιο → Απενεργοποίηση</li>
+    <li><i class="ti ti-check" aria-hidden="true"></i> Αυτό ελευθερώνει εύρος ζώνης για τις εφαρμογές που χρησιμοποιείς ενεργά</li>
+  </ul>
+</div>
+
+<div class="quiz-box">
+  <h3><i class="ti ti-help-circle" aria-hidden="true"></i> Μικρό quiz — Ξέρεις γιατί;</h3>
+  <div id="quiz-inner"></div>
+</div>
+
+<div class="checklist">
+  <h3><i class="ti ti-list-check" aria-hidden="true"></i> Λίστα ελέγχου σήματος</h3>
+  <div id="checklist-items"></div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="pb" style="width:0%"></div></div>
+  <div class="progress-txt" id="pb-txt">0 / 5 ολοκληρώθηκαν</div>
+</div>
+
+</div>
+
+<script>
+function switchTab(os) {
+  ['android','iphone'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===os);
+    document.getElementById('panel-'+t).classList.toggle('active', t===os);
+  });
+}
+
+let meterPhase = 0;
+function meterStep(phase) {
+  const bars = [document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b4'),document.getElementById('b5')];
+  const lbl = document.getElementById('meter-lbl');
+  const state = document.getElementById('meter-state');
+  const btnOn = document.getElementById('btn-on');
+  const btnOff = document.getElementById('btn-off');
+  const btnReset = document.getElementById('btn-reset');
+
+  if(phase===1) {
+    bars.forEach(b => { b.style.height='0%'; b.classList.remove('lit','warn'); });
+    lbl.textContent = 'Λειτουργία Πτήσης ενεργή';
+    state.textContent = 'Αποσύνδεση από όλα τα δίκτυα... περίμενε 5–7 δευτερόλεπτα';
+    btnOn.disabled = true;
+    btnOff.disabled = false;
+  } else if(phase===2) {
+    const heights = ['85%','90%','100%','95%','80%'];
+    bars.forEach((b,i) => {
+      setTimeout(()=>{ b.style.height=heights[i]; b.classList.add('lit'); }, i*120);
+    });
+    lbl.textContent = 'Ισχυρό σήμα';
+    state.textContent = 'Επανασύνδεση σε βέλτιστο δίκτυο — επιτυχία!';
+    btnOff.disabled = true;
+    btnReset.style.display = 'block';
+    btnOn.style.display = 'none';
+  }
+}
+function meterReset() {
+  const bars = [document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b4'),document.getElementById('b5')];
+  const heights = ['20%','20%','20%','20%','20%'];
+  bars.forEach((b,i)=>{ b.style.height=heights[i]; b.classList.remove('lit','warn'); });
+  document.getElementById('meter-lbl').textContent = 'Αδύναμο σήμα';
+  document.getElementById('meter-state').textContent = 'Πάτησε «Ενεργοποίηση Πτήσης» για να δεις τη διαδικασία';
+  document.getElementById('btn-on').disabled=false;
+  document.getElementById('btn-on').style.display='';
+  document.getElementById('btn-off').disabled=true;
+  document.getElementById('btn-reset').style.display='none';
+}
+
+function openExtra(id) {
+  document.querySelectorAll('.detail-panel').forEach(p=>p.classList.remove('open'));
+  document.getElementById('detail-'+id).classList.add('open');
+}
+function closeExtra(id) {
+  document.getElementById('detail-'+id).classList.remove('open');
+}
+
+const questions = [
+  {
+    q: 'Τι κάνει η Λειτουργία Πτήσης στο δίκτυο;',
+    opts: ['Διαγράφει τα δεδομένα σου','Αποσυνδέει και επανασυνδέει όλα τα δίκτυα','Αυξάνει τη μπαταρία μόνο','Ενεργοποιεί το Bluetooth'],
+    correct: 1,
+    explain: 'Σωστά! Αναγκάζει πλήρη αποσύνδεση ώστε το κινητό να ψάξει και να επιλέξει ξανά το βέλτιστο δίκτυο.'
+  },
+  {
+    q: 'Πόσα δευτερόλεπτα πρέπει να περιμένεις με ενεργή Λειτουργία Πτήσης;',
+    opts: ['1–2 δευτερόλεπτα','10–15 δευτερόλεπτα','5–7 δευτερόλεπτα','30 δευτερόλεπτα'],
+    correct: 2,
+    explain: 'Σωστά! 5–7 δευτερόλεπτα αρκούν για να ολοκληρωθεί η αποσύνδεση από τους πύργους κεραιών.'
+  },
+  {
+    q: 'Ποιο DNS είναι πιο γρήγορο για browsing;',
+    opts: ['192.168.1.1','1.1.1.1 (Cloudflare)','255.255.255.0','10.0.0.1'],
+    correct: 1,
+    explain: 'Το 1.1.1.1 της Cloudflare είναι από τα πιο γρήγορα δημόσια DNS παγκοσμίως.'
+  }
+];
+let qi = 0;
+function renderQuiz() {
+  if(qi >= questions.length) {
+    document.getElementById('quiz-inner').innerHTML = '<p style="font-size:14px;color:var(--color-text-success);font-weight:500;"><i class="ti ti-trophy"></i> Τέλεια! Απάντησες σωστά σε όλες τις ερωτήσεις!</p>';
+    return;
+  }
+  const q = questions[qi];
+  let html = `<p style="font-size:14px;color:var(--color-text-primary);margin-bottom:10px;">${q.q}</p><div class="quiz-options">`;
+  q.opts.forEach((o,i) => { html += `<button class="qopt" onclick="answerQuiz(${i})">${o}</button>`; });
+  html += '</div><div class="quiz-feedback" id="qfb"></div><div class="quiz-next" id="qnext"><button onclick="nextQuestion()">Επόμενη ερώτηση →</button></div>';
+  document.getElementById('quiz-inner').innerHTML = html;
+}
+function answerQuiz(i) {
+  const q = questions[qi];
+  const opts = document.querySelectorAll('.qopt');
+  opts.forEach(o=>o.disabled=true);
+  opts[i].classList.add(i===q.correct ? 'correct' : 'wrong');
+  if(i!==q.correct) opts[q.correct].classList.add('correct');
+  const fb = document.getElementById('qfb');
+  fb.style.display='block';
+  fb.textContent = i===q.correct ? q.explain : 'Όχι ακριβώς. '+q.explain;
+  fb.style.color = i===q.correct ? 'var(--color-text-success)' : 'var(--color-text-danger)';
+  if(qi < questions.length-1) document.getElementById('qnext').style.display='block';
+  else {
+    const nxt = document.getElementById('qnext');
+    nxt.style.display='block';
+    nxt.innerHTML='<button onclick="nextQuestion()">Δες αποτέλεσμα ↗</button>';
+  }
+}
+function nextQuestion() { qi++; renderQuiz(); }
+renderQuiz();
+
+const checkItems = [
+  'Δοκίμασα Λειτουργία Πτήσης on/off',
+  'Έλεγξα αν χρησιμοποιώ 2.4 ή 5 GHz',
+  'Άλλαξα DNS σε 1.1.1.1 ή 8.8.8.8',
+  'Απενεργοποίησα εφαρμογές φόντου',
+  'Καθάρισα το cache δικτύου'
+];
+function renderChecklist() {
+  const cont = document.getElementById('checklist-items');
+  cont.innerHTML = checkItems.map((c,i)=>`
+    <div class="check-item" id="ci-${i}" onclick="toggleCheck(${i})">
+      <div class="check-box"><i class="ti ti-check" aria-hidden="true" style="font-size:13px;display:none" id="ck-${i}"></i></div>
+      <div class="check-lbl" id="cl-${i}">${c}</div>
+    </div>
+  `).join('');
+}
+let checked = new Set();
+function toggleCheck(i) {
+  const item = document.getElementById('ci-'+i);
+  const icon = document.getElementById('ck-'+i);
+  if(checked.has(i)) { checked.delete(i); item.classList.remove('done'); icon.style.display='none'; }
+  else { checked.add(i); item.classList.add('done'); icon.style.display='block'; }
+  const pct = Math.round(checked.size/checkItems.length*100);
+  document.getElementById('pb').style.width = pct+'%';
+  document.getElementById('pb-txt').textContent = checked.size+' / '+checkItems.length+' ολοκληρώθηκαν';
+}
+renderChecklist();
+</script>
