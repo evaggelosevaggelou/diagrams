@@ -1,0 +1,295 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+.rg{padding:1rem 0;font-family:var(--font-sans);}
+.steps-row{display:flex;gap:8px;margin-bottom:1rem;}
+.stp{flex:1;padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;transition:all 0.15s;}
+.stp.active{border:1.5px solid #185FA5;background:#E6F1FB;}
+.stp-n{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;}
+.stp.active .stp-n{color:#185FA5;}
+.stp-l{font-size:13px;font-weight:500;color:var(--color-text-primary);}
+.stp.active .stp-l{color:#0C447C;}
+
+.info-box{background:var(--color-background-secondary);border-radius:0;border-left:3px solid #378ADD;padding:12px 16px;margin-bottom:1rem;font-size:14px;color:var(--color-text-primary);line-height:1.6;border-top-right-radius:var(--border-radius-md);border-bottom-right-radius:var(--border-radius-md);}
+.info-box b{color:#185FA5;}
+
+.regedit-frame{border-radius:var(--border-radius-lg);border:1px solid #334155;overflow:hidden;background:#1e1e1e;}
+.re-titlebar{background:#2d2d2d;padding:7px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #3a3a3a;}
+.re-dot{width:10px;height:10px;border-radius:50%;}
+.re-title{font-size:12px;color:#aaa;font-family:var(--font-mono);margin-left:4px;}
+.re-toolbar{background:#252526;padding:5px 14px;display:flex;gap:16px;border-bottom:1px solid #333;}
+.re-menu{font-size:12px;color:#ccc;}
+.re-body{display:flex;min-height:200px;}
+
+.tree-pane{width:200px;border-right:1px solid #333;padding:6px 0;overflow:hidden;flex-shrink:0;}
+.ti-row{padding:3px 10px;font-size:12px;font-family:var(--font-mono);color:#ccc;cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none;}
+.ti-row.sel{background:#094771;color:#fff;}
+.ti-row:hover:not(.sel){background:#2a2d2e;}
+.ti-row i{font-size:13px;color:#e5c07b;}
+.ti-sub{padding-left:14px;}
+
+.detail-pane{flex:1;padding:8px;min-width:0;}
+.dp-header{font-size:11px;color:#858585;margin-bottom:6px;font-family:var(--font-mono);}
+.reg-tbl{width:100%;border-collapse:collapse;table-layout:fixed;}
+.reg-tbl th{font-size:11px;color:#858585;text-align:left;padding:3px 8px;border-bottom:1px solid #333;font-weight:400;}
+.reg-tbl th:nth-child(1){width:38%;}
+.reg-tbl th:nth-child(2){width:22%;}
+.reg-tbl th:nth-child(3){width:40%;}
+.reg-tbl td{font-size:12px;font-family:var(--font-mono);padding:4px 8px;color:#ddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.reg-tbl tr.hl td{background:rgba(55,138,221,0.18);}
+.rn{color:#e06c75;}.rt{color:#c678dd;}.rd{color:#e5c07b;}.rd.changed{color:#98c379;}
+
+.addr-bar{background:#252526;padding:4px 14px;border-top:1px solid #333;display:flex;align-items:center;gap:8px;}
+.addr-lbl{font-size:11px;color:#858585;white-space:nowrap;}
+.addr-path{font-size:11px;font-family:var(--font-mono);color:#9cdcfe;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;}
+
+.controls-row{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap;align-items:center;}
+.danger-note{margin-top:1rem;padding:10px 14px;border-radius:var(--border-radius-md);background:var(--color-background-danger);color:var(--color-text-danger);font-size:13px;border:0.5px solid var(--color-border-danger);}
+.success-note{margin-top:1rem;padding:10px 14px;border-radius:var(--border-radius-md);background:var(--color-background-success);color:var(--color-text-success);font-size:13px;border:0.5px solid var(--color-border-success);display:none;}
+
+.hive-legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;}
+.hive-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary);transition:all 0.15s;}
+.hive-pill.active-hive{background:#E6F1FB;color:#0C447C;border-color:#185FA5;}
+
+.search-row{display:flex;gap:8px;margin-bottom:1rem;}
+.search-row input{flex:1;font-size:13px;}
+.search-result{font-size:13px;color:var(--color-text-secondary);margin-top:6px;padding:8px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);display:none;}
+
+.quiz-wrap{margin-top:1.5rem;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:16px;}
+.quiz-wrap h3{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.q-opt{padding:9px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:13.5px;color:var(--color-text-primary);cursor:pointer;text-align:left;transition:all 0.15s;}
+.q-opt:hover{border-color:var(--color-border-primary);}
+.q-opt.correct{background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success);}
+.q-opt.wrong{background:var(--color-background-danger);color:var(--color-text-danger);border-color:var(--color-border-danger);}
+.q-fb{margin-top:8px;font-size:13px;display:none;}
+.q-next{margin-top:10px;display:none;}
+
+.types-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:1rem;}
+.type-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;transition:border-color 0.15s;}
+.type-card:hover{border-color:var(--color-border-primary);}
+.type-card .tc-name{font-size:13px;font-weight:500;color:#c678dd;font-family:var(--font-mono);margin-bottom:4px;}
+.type-card .tc-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5;}
+.type-detail{margin-top:8px;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-primary);line-height:1.6;display:none;}
+</style>
+
+<div class="rg">
+<h2 class="sr-only">Διαδραστικός οδηγός για το Windows Registry — βήματα, τύποι τιμών, αναζήτηση και quiz</h2>
+
+<div class="steps-row">
+  <div class="stp active" onclick="setStep(1)" id="s1"><div class="stp-n">Βήμα 1</div><div class="stp-l"><i class="ti ti-folder-open" aria-hidden="true"></i> Πλοήγηση</div></div>
+  <div class="stp" onclick="setStep(2)" id="s2"><div class="stp-n">Βήμα 2</div><div class="stp-l"><i class="ti ti-search" aria-hidden="true"></i> Εύρεση τιμής</div></div>
+  <div class="stp" onclick="setStep(3)" id="s3"><div class="stp-n">Βήμα 3</div><div class="stp-l"><i class="ti ti-edit" aria-hidden="true"></i> Επεξεργασία</div></div>
+</div>
+
+<div class="info-box" id="infoBox">
+  Άνοιξε το <b>regedit</b> — πάτησε <b>Win + R</b>, πληκτρολόγησε <b>regedit</b> και Enter. Το αριστερό παράθυρο δείχνει τη δενδρική δομή. Πάτησε τα βέλη για να ανοίξεις κλαδιά ή επικόλλησε απευθείας τη διαδρομή στη γραμμή διευθύνσεων κάτω.
+</div>
+
+<div class="regedit-frame">
+  <div class="re-titlebar">
+    <div class="re-dot" style="background:#e74c3c"></div>
+    <div class="re-dot" style="background:#f39c12"></div>
+    <div class="re-dot" style="background:#27ae60"></div>
+    <div class="re-title">Επεξεργαστής Μητρώου</div>
+  </div>
+  <div class="re-toolbar">
+    <span class="re-menu">Αρχείο</span>
+    <span class="re-menu">Επεξεργασία</span>
+    <span class="re-menu">Προβολή</span>
+    <span class="re-menu">Αγαπημένα</span>
+    <span class="re-menu">Βοήθεια</span>
+  </div>
+  <div class="re-body">
+    <div class="tree-pane">
+      <div class="ti-row" onclick="treeClick('hkcr')"><i class="ti ti-chevron-right" aria-hidden="true"></i> HKEY_CLASSES_ROOT</div>
+      <div class="ti-row sel" onclick="treeClick('hklm')"><i class="ti ti-chevron-down" aria-hidden="true"></i> HKEY_LOCAL_MACHINE</div>
+      <div class="ti-sub">
+        <div class="ti-row" id="nodeSW" onclick="treeClick('sw')"><i class="ti ti-chevron-right" aria-hidden="true"></i> SOFTWARE</div>
+        <div class="ti-sub" id="nodePol" style="display:none">
+          <div class="ti-row"><i class="ti ti-chevron-down" aria-hidden="true"></i> Policies</div>
+          <div class="ti-sub">
+            <div class="ti-row"><i class="ti ti-chevron-down" aria-hidden="true"></i> Microsoft</div>
+            <div class="ti-sub" id="nodeWin" style="display:none">
+              <div class="ti-row sel"><i class="ti ti-folder" aria-hidden="true"></i> System</div>
+            </div>
+          </div>
+        </div>
+        <div class="ti-row"><i class="ti ti-chevron-right" aria-hidden="true"></i> SYSTEM</div>
+        <div class="ti-row"><i class="ti ti-chevron-right" aria-hidden="true"></i> HARDWARE</div>
+      </div>
+      <div class="ti-row" onclick="treeClick('hku')"><i class="ti ti-chevron-right" aria-hidden="true"></i> HKEY_USERS</div>
+      <div class="ti-row" onclick="treeClick('hkcu')"><i class="ti ti-chevron-right" aria-hidden="true"></i> HKEY_CURRENT_USER</div>
+    </div>
+    <div class="detail-pane">
+      <div class="dp-header" id="dpHeader">Επίλεξε κλειδί για να δεις τις τιμές</div>
+      <table class="reg-tbl">
+        <thead><tr><th>Όνομα</th><th>Τύπος</th><th>Δεδομένα</th></tr></thead>
+        <tbody id="regBody"><tr><td colspan="3" style="color:#555;font-size:12px;padding:14px 8px;">— κενό —</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="addr-bar">
+    <span class="addr-lbl">Διαδρομή:</span>
+    <span class="addr-path" id="addrPath">HKEY_LOCAL_MACHINE</span>
+  </div>
+</div>
+
+<div class="controls-row" id="ctrlRow">
+  <button onclick="nextStep()">Επόμενο βήμα <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+</div>
+
+<div id="step3ctrl" style="display:none;margin-top:1rem;">
+  <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">Άλλαξε την τιμή του <code style="font-family:var(--font-mono);background:var(--color-background-secondary);padding:1px 6px;border-radius:4px;">DisableRegistryTools</code>:</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button onclick="setVal('0')" style="background:#EAF3DE;color:#27500A;border-color:#3B6D11;">Ορισμός → 0 <span style="font-size:11px;opacity:0.8;">(Ενεργό)</span></button>
+    <button onclick="setVal('1')" style="background:#FCEBEB;color:#791F1F;border-color:#A32D2D;">Ορισμός → 1 <span style="font-size:11px;opacity:0.8;">(Απενεργό)</span></button>
+  </div>
+  <div class="danger-note" id="dangerNote"><i class="ti ti-alert-triangle" aria-hidden="true"></i> <strong>Προσοχή:</strong> Λάθος αλλαγές στο Registry μπορεί να προκαλέσουν δυσλειτουργία των Windows. Πάντα δημιούργησε backup πριν επεξεργαστείς τιμές (Αρχείο → Εξαγωγή).</div>
+  <div class="success-note" id="successNote"><i class="ti ti-check" aria-hidden="true"></i> Η τιμή άλλαξε επιτυχώς! Σε κάποιες περιπτώσεις χρειάζεται <strong>επανεκκίνηση</strong> για να εφαρμοστεί η αλλαγή.</div>
+</div>
+
+<div style="margin-top:1.5rem;">
+  <p style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-database" aria-hidden="true"></i> Τύποι τιμών του Registry</p>
+  <div class="types-grid" id="typesGrid">
+    <div class="type-card" onclick="toggleType('dword')"><div class="tc-name">REG_DWORD</div><div class="tc-desc">32-bit αριθμός. Πιο συνηθισμένος τύπος.</div></div>
+    <div class="type-card" onclick="toggleType('sz')"><div class="tc-name">REG_SZ</div><div class="tc-desc">Απλό κείμενο (string).</div></div>
+    <div class="type-card" onclick="toggleType('binary')"><div class="tc-name">REG_BINARY</div><div class="tc-desc">Ακατέργαστα δυαδικά δεδομένα.</div></div>
+    <div class="type-card" onclick="toggleType('expand')"><div class="tc-name">REG_EXPAND_SZ</div><div class="tc-desc">Κείμενο με μεταβλητές περιβάλλοντος.</div></div>
+  </div>
+  <div class="type-detail" id="type-dword"><i class="ti ti-info-circle" aria-hidden="true"></i> <strong>REG_DWORD</strong> — χρησιμοποιείται κυρίως για ρυθμίσεις on/off (0 ή 1) και αριθμητικές παραμέτρους. Εμφανίζεται ως εξαδεκαδικός (π.χ. 0x00000001) αλλά μπορείς να εισάγεις δεκαδική τιμή.</div>
+  <div class="type-detail" id="type-sz"><i class="ti ti-info-circle" aria-hidden="true"></i> <strong>REG_SZ</strong> — απλό κείμενο, π.χ. ονόματα αρχείων, διαδρομές, URLs. Είναι ο πιο ευανάγνωστος τύπος. Παράδειγμα: <code style="font-family:var(--font-mono)">C:\Windows\System32</code></div>
+  <div class="type-detail" id="type-binary"><i class="ti ti-info-circle" aria-hidden="true"></i> <strong>REG_BINARY</strong> — αποθηκεύει δεδομένα ως bytes σε εξαδεκαδική μορφή. Χρησιμοποιείται από το σύστημα και οδηγούς για πολύπλοκα δεδομένα διαμόρφωσης.</div>
+  <div class="type-detail" id="type-expand"><i class="ti ti-info-circle" aria-hidden="true"></i> <strong>REG_EXPAND_SZ</strong> — όπως το REG_SZ αλλά με μεταβλητές όπως <code style="font-family:var(--font-mono)">%SystemRoot%</code> που επεκτείνονται αυτόματα κατά την ανάγνωση.</div>
+</div>
+
+<div style="margin-top:1.5rem;">
+  <p style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-search" aria-hidden="true"></i> Αναζήτηση διαδρομής</p>
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="π.χ. DisableRegistryTools ή SOFTWARE\Policies" oninput="doSearch()">
+    <button onclick="doSearch()"><i class="ti ti-search" aria-hidden="true"></i></button>
+  </div>
+  <div class="search-result" id="searchResult"></div>
+</div>
+
+<div class="quiz-wrap">
+  <h3><i class="ti ti-help-circle" aria-hidden="true"></i> Quiz — Τεστ γνώσεων Registry</h3>
+  <div id="quizInner"></div>
+</div>
+
+</div>
+
+<script>
+const PATH = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\System';
+let curStep = 1;
+
+const infos = {
+  1: 'Άνοιξε το <b>regedit</b> — πάτησε <b>Win + R</b>, πληκτρολόγησε <b>regedit</b> και Enter. Το αριστερό παράθυρο δείχνει τη δενδρική δομή. Πάτησε τα βέλη για να ανοίξεις κλαδιά ή επικόλλησε τη διαδρομή στη γραμμή διευθύνσεων.',
+  2: 'Βρες το <b>κλειδί (φάκελο)</b> στα αριστερά. Οι τιμές του εμφανίζονται δεξιά. Αν η τιμή δεν υπάρχει: δεξί κλικ σε κενό χώρο → <b>Νέο → Τιμή DWORD (32-bit)</b> και δώσε της όνομα.',
+  3: '<b>Διπλό κλικ</b> στην τιμή για να ανοίξεις το παράθυρο επεξεργασίας. Άλλαξε τα δεδομένα: <b>0 = απενεργοποίηση</b>, <b>1 = ενεργοποίηση</b>. Πάτησε ΟΚ. Πιθανόν να χρειαστεί <b>επανεκκίνηση</b>.'
+};
+
+const tableRows = `<tr class="hl"><td class="rn">DisableRegistryTools</td><td class="rt">REG_DWORD</td><td class="rd" id="rdCell">0x00000000 (0)</td></tr>
+<tr><td class="rn">(Προεπιλογή)</td><td class="rt">REG_SZ</td><td class="rd">(η τιμή δεν έχει οριστεί)</td></tr>
+<tr><td class="rn">EnableLinkedConnections</td><td class="rt">REG_DWORD</td><td class="rd">0x00000000 (0)</td></tr>`;
+
+function setStep(n) {
+  curStep = n;
+  [1,2,3].forEach(i => document.getElementById('s'+i).classList.toggle('active', i===n));
+  document.getElementById('infoBox').innerHTML = infos[n];
+  if(n>=2) {
+    document.getElementById('nodePol').style.display='block';
+    document.getElementById('nodeWin').style.display='block';
+    document.getElementById('addrPath').textContent = PATH;
+    document.getElementById('dpHeader').textContent = '\\System';
+    document.getElementById('regBody').innerHTML = tableRows;
+  } else {
+    document.getElementById('nodePol').style.display='none';
+    document.getElementById('nodeWin').style.display='none';
+    document.getElementById('addrPath').textContent = 'HKEY_LOCAL_MACHINE';
+    document.getElementById('dpHeader').textContent = 'Επίλεξε κλειδί για να δεις τις τιμές';
+    document.getElementById('regBody').innerHTML = '<tr><td colspan="3" style="color:#555;font-size:12px;padding:14px 8px;">— κενό —</td></tr>';
+  }
+  document.getElementById('step3ctrl').style.display = n===3 ? 'block' : 'none';
+  document.getElementById('ctrlRow').style.display = n<3 ? 'flex' : 'none';
+  document.getElementById('successNote').style.display='none';
+  document.getElementById('dangerNote').style.display='block';
+}
+
+function nextStep() { if(curStep<3) setStep(curStep+1); }
+
+function setVal(v) {
+  const c = document.getElementById('rdCell');
+  if(!c) return;
+  c.textContent = v==='0' ? '0x00000000 (0)' : '0x00000001 (1)';
+  c.className = 'rd changed';
+  document.getElementById('dangerNote').style.display='none';
+  document.getElementById('successNote').style.display='block';
+  document.getElementById('infoBox').innerHTML = 'Η τιμή άλλαξε! Στο πραγματικό regedit πάτα <b>ΟΚ</b> στο παράθυρο διαλόγου. Αν χρειαστεί, κάνε <b>επανεκκίνηση</b> για να εφαρμοστεί η αλλαγή.';
+}
+
+function treeClick(node) {
+  if(node==='sw' && curStep===1) {
+    document.getElementById('infoBox').innerHTML = infos[1]+' <b>→ Επέκτεινε το SOFTWARE</b> για να βρεις την τοποθεσία.';
+  }
+}
+
+const typeState = {};
+function toggleType(id) {
+  typeState[id] = !typeState[id];
+  const el = document.getElementById('type-'+id);
+  el.style.display = typeState[id] ? 'block' : 'none';
+}
+
+const searchData = [
+  {k:'DisableRegistryTools', p:'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\System', desc:'Ενεργοποιεί/απενεργοποιεί πρόσβαση στο regedit.'},
+  {k:'DisableTaskMgr', p:'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', desc:'Απενεργοποιεί τον Διαχειριστή Εργασιών.'},
+  {k:'EnableFirewall', p:'HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy', desc:'Ελέγχει την κατάσταση του Windows Firewall.'},
+  {k:'SOFTWARE\\Policies', p:'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies', desc:'Κεντρικός κόμβος πολιτικών του συστήματος (Group Policy).'},
+  {k:'Run', p:'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', desc:'Εφαρμογές που εκτελούνται αυτόματα κατά την εκκίνηση.'},
+];
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const out = document.getElementById('searchResult');
+  if(q.length < 3) { out.style.display='none'; return; }
+  const hits = searchData.filter(r => r.k.toLowerCase().includes(q) || r.p.toLowerCase().includes(q));
+  if(hits.length===0) {
+    out.style.display='block';
+    out.innerHTML='<i class="ti ti-search-off" aria-hidden="true"></i> Δεν βρέθηκαν αποτελέσματα.';
+    return;
+  }
+  out.style.display='block';
+  out.innerHTML = hits.map(h=>`<div style="margin-bottom:10px;"><div style="font-size:13px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-mono);">${h.k}</div><div style="font-size:11px;color:#9cdcfe;font-family:var(--font-mono);margin:2px 0;">${h.p}</div><div style="font-size:12px;color:var(--color-text-secondary);">${h.desc}</div></div>`).join('<hr style="border:none;border-top:0.5px solid var(--color-border-tertiary);margin:8px 0;">');
+}
+
+const questions = [
+  {q:'Πού αποθηκεύονται οι ρυθμίσεις τρέχοντος χρήστη;', opts:['HKEY_LOCAL_MACHINE','HKEY_CLASSES_ROOT','HKEY_CURRENT_USER','HKEY_USERS'], c:2, fb:'Το HKEY_CURRENT_USER (HKCU) περιέχει τις ρυθμίσεις και προτιμήσεις του συνδεδεμένου χρήστη.'},
+  {q:'Τι τύπος τιμής χρησιμοποιείται συνήθως για on/off ρυθμίσεις;', opts:['REG_SZ','REG_BINARY','REG_DWORD','REG_EXPAND_SZ'], c:2, fb:'Το REG_DWORD αποθηκεύει 32-bit αριθμό — ιδανικό για 0/1 (απενεργοποιημένο/ενεργοποιημένο).'},
+  {q:'Πώς ανοίγεις γρήγορα το regedit;', opts:['Ctrl+Alt+Del','Win + R → regedit','Start → Search → Registry','Alt+F4 → regedit'], c:1, fb:'Win + R ανοίγει το παράθυρο Εκτέλεσης, πληκτρολογείς regedit και πατάς Enter.'},
+  {q:'Τι πρέπει να κάνεις ΠΡΙΝ επεξεργαστείς το Registry;', opts:['Να κλείσεις το antivirus','Να κάνεις backup (Εξαγωγή)','Να αποσυνδεθείς από το internet','Τίποτα, είναι ασφαλές'], c:1, fb:'Πάντα εξάγεις (backup) το κλειδί ή ολόκληρο το Registry πριν κάνεις αλλαγές — μέσω Αρχείο → Εξαγωγή.'},
+];
+let qi=0, score=0;
+
+function renderQuiz() {
+  if(qi>=questions.length) {
+    document.getElementById('quizInner').innerHTML=`<div style="text-align:center;padding:12px 0;"><div style="font-size:22px;font-weight:500;color:var(--color-text-primary);">${score}/${questions.length}</div><div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px;">${score===questions.length?'Άριστα! Γνώστης του Registry.':score>=2?'Πολύ καλά! Μάθε λίγο ακόμα.':'Εξάσκησου λίγο παραπάνω!'}</div><button style="margin-top:12px;" onclick="qi=0;score=0;renderQuiz()"><i class="ti ti-refresh" aria-hidden="true"></i> Ξανά</button></div>`;
+    return;
+  }
+  const q=questions[qi];
+  document.getElementById('quizInner').innerHTML=`<p style="font-size:14px;color:var(--color-text-primary);margin-bottom:10px;">${qi+1}/${questions.length} — ${q.q}</p><div class="q-opts">${q.opts.map((o,i)=>`<button class="q-opt" onclick="ansQ(${i})">${o}</button>`).join('')}</div><div class="q-fb" id="qfb"></div><div class="q-next" id="qnxt"><button onclick="qi++;renderQuiz()">${qi<questions.length-1?'Επόμενη →':'Αποτέλεσμα →'}</button></div>`;
+}
+function ansQ(i) {
+  const q=questions[qi];
+  document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.q-opt')[i].classList.add(i===q.c?'correct':'wrong');
+  if(i!==q.c) document.querySelectorAll('.q-opt')[q.c].classList.add('correct');
+  if(i===q.c) score++;
+  const fb=document.getElementById('qfb');
+  fb.style.display='block';
+  fb.style.color=i===q.c?'var(--color-text-success)':'var(--color-text-danger)';
+  fb.textContent=(i===q.c?'Σωστά! ':'Λάθος. ')+q.fb;
+  document.getElementById('qnxt').style.display='block';
+}
+renderQuiz();
+</script>
