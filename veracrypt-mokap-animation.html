@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VeraCrypt – κινούμενο μοκάπ οδηγού</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0f1112;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;color:#1b1b1b}
+#holder{position:fixed;inset:0 0 44px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage{position:relative;width:1280px;height:720px;flex:none;overflow:hidden;background:linear-gradient(135deg,#cfe3f5 0%,#8fb7e0 40%,#5f8fcf 70%,#b9a3e3 100%);transform-origin:center center}
+#stage:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.55),transparent 60%)}
+.win{position:absolute;background:#f3f3f3;border:1px solid #9aa4ad;border-radius:8px;box-shadow:0 18px 50px rgba(0,0,0,.35);overflow:hidden;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;transform:scale(.97)}
+.win.on{opacity:1;transform:none}
+.tb{height:34px;background:#fff;display:flex;align-items:center;padding:0 12px;font-size:13px;gap:8px;border-bottom:1px solid #e3e3e3}
+.tb i{width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#2a8c82,#2f6fb0)}
+.tb .x{margin-left:auto;letter-spacing:14px;color:#555;font-size:12px}
+.menu{display:flex;gap:16px;padding:6px 14px;font-size:13px;background:#fff;border-bottom:1px solid #e3e3e3}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-width:110px;height:32px;padding:0 16px;border:1px solid #b8b8b8;border-radius:5px;background:#fdfdfd;font-size:14px;transition:background .15s,transform .1s}
+.btn.pr{background:#d6e8fb;border-color:#3b82d8;transform:scale(.96)}
+.btn.dis{color:#999;background:#eee}
+#main{left:200px;top:70px;width:880px;height:540px}
+.tbl{margin:12px 14px 0;height:250px;background:#fff;border:1px solid #bbb;font-size:13px;overflow:hidden}
+.tbl .h,.tbl .r{display:flex;height:25px;align-items:center;border-bottom:1px solid #eee}
+.tbl .h{background:#f0f0f0;font-weight:600;height:26px}
+.tbl .r.sel{background:#cde4fb}
+.c1{width:80px;padding-left:12px}.c2{flex:1}.c3{width:110px}.c4{width:160px}
+.row-btns{display:flex;gap:10px;margin:12px 14px}
+.volbox{margin:6px 14px;padding:14px;border:1px solid #cfcfcf;border-radius:6px;background:#fafafa;display:flex;gap:10px;align-items:center;font-size:14px}
+.inp{flex:1;height:30px;border:1px solid #9a9a9a;background:#fff;border-radius:4px;padding:5px 9px;font-size:14px;white-space:nowrap;overflow:hidden}
+.inp.f{border-color:#2f6fb0;box-shadow:0 0 0 1px #2f6fb0}
+.bot{display:flex;gap:10px;margin:14px;justify-content:space-between}
+#wiz{left:340px;top:110px;width:600px;height:480px}
+.wh{background:#fff;padding:14px 22px;border-bottom:1px solid #ddd}
+.wh b{font-size:17px;display:block}.wh span{font-size:13px;color:#555}
+.wb{height:312px;padding:22px 28px;font-size:15px;line-height:1.5;position:relative}
+.pg{position:absolute;inset:22px 28px;display:none}.pg.on{display:block}
+.rad{display:flex;gap:10px;align-items:flex-start;margin:0 0 16px}
+.rad i{width:16px;height:16px;border-radius:50%;border:2px solid #666;flex:none;margin-top:3px;background:#fff;transition:all .2s}
+.rad.sel i{border-color:#2f6fb0;background:radial-gradient(#2f6fb0 45%,#fff 50%)}
+.rad small{display:block;color:#666;font-size:12.5px}
+.wf{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid #ddd;background:#f3f3f3}
+.lab{font-size:14px;margin:0 0 6px}
+.pbar{height:22px;border:1px solid #9a9a9a;background:#fff;border-radius:4px;overflow:hidden;margin-top:18px}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2a8c82,#47b3a7)}
+.ok{color:#1f6b63;font-weight:600;margin-top:16px;opacity:0;transition:opacity .4s}
+.ok.on{opacity:1}
+#dlg{left:430px;top:230px;width:420px;height:200px}
+#exp{left:170px;top:60px;width:940px;height:540px}
+.exb{display:flex;height:calc(100% - 34px)}
+.side{width:200px;background:#f9f9f9;border-right:1px solid #e3e3e3;padding:14px;font-size:13.5px;line-height:2.1;color:#333}
+.main2{flex:1;background:#fff;padding:18px 24px}
+.main2 h4{margin:0 0 12px;font-size:13px;color:#555;font-weight:600}
+.drv{display:flex;gap:16px;align-items:center;padding:12px;border-radius:6px;margin-bottom:10px;width:420px;font-size:14px}
+.drv .ic{width:54px;height:40px;border-radius:6px;background:linear-gradient(135deg,#9fb2c4,#6f8397);flex:none}
+.drv .ic.z{background:linear-gradient(135deg,#2a8c82,#2f6fb0)}
+.drv .bar{height:10px;background:#e3e3e3;border-radius:5px;margin:6px 0 4px;width:260px;overflow:hidden}
+.drv .bar i{display:block;height:100%;background:#3b82d8}
+.drv small{color:#666;font-size:12.5px}
+#drvz{opacity:0;transform:translateY(8px);transition:all .5s}
+#drvz.on{opacity:1;transform:none;background:#e5f1fb;box-shadow:0 0 0 2px #3b82d8}
+#task{position:absolute;left:0;right:0;bottom:0;height:48px;background:rgba(240,243,248,.85);backdrop-filter:blur(14px);display:flex;gap:12px;justify-content:center;align-items:center;border-top:1px solid rgba(255,255,255,.6)}
+#task i{width:28px;height:28px;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+#task i:nth-child(1){background:linear-gradient(135deg,#3b82d8,#6fb0f0)}#task i:nth-child(3){background:linear-gradient(135deg,#f3b53b,#f08a3b)}#task i:nth-child(4){background:linear-gradient(135deg,#2a8c82,#2f6fb0)}
+#cur{position:absolute;left:0;top:0;width:26px;height:26px;z-index:50;pointer-events:none;transition:transform 1s cubic-bezier(.45,.05,.25,1);transform:translate(640px,680px);filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.rip{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid #2f6fb0;z-index:49;animation:rp .5s ease-out forwards;pointer-events:none}
+@keyframes rp{to{transform:scale(4);opacity:0}}
+#ctl{position:fixed;left:0;right:0;bottom:0;height:44px;display:flex;align-items:center;justify-content:center;gap:14px}
+#ctl button{background:#2a8c82;color:#fff;border:0;border-radius:6px;padding:7px 16px;font:600 14px 'Segoe UI',system-ui,Arial;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="holder">
+<div id="stage">
+
+  <div class="win" id="main">
+    <div class="tb"><i></i>VeraCrypt<span class="x">– ▢ ✕</span></div>
+    <div class="menu"><span>Τόμοι</span><span>Σύστημα</span><span>Αγαπημένα</span><span>Εργαλεία</span><span>Ρυθμίσεις</span><span>Βοήθεια</span></div>
+    <div class="tbl">
+      <div class="h"><span class="c1">Μονάδα</span><span class="c2">Τόμος</span><span class="c3">Μέγεθος</span><span class="c4">Αλγόριθμος</span></div>
+      <div class="r"><span class="c1">F:</span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div>
+      <div class="r"><span class="c1">G:</span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div>
+      <div class="r"><span class="c1">H:</span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div>
+      <div class="r" id="rowz"><span class="c1">Z:</span><span class="c2" id="zvol"></span><span class="c3" id="zsize"></span><span class="c4" id="zalg"></span></div>
+      <div class="r"><span class="c1">Y:</span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div>
+      <div class="r"><span class="c1">X:</span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div>
+    </div>
+    <div class="row-btns"><span class="btn" id="bCreate" style="min-width:200px">Δημιουργία τόμου</span><span class="btn">Ιδιότητες τόμου...</span><span class="btn">Εκκαθάριση cache</span></div>
+    <div class="volbox"><span>Τόμος</span><div class="inp" id="vpath"></div><span class="btn">Επιλογή αρχείου...</span></div>
+    <div class="bot"><span class="btn" id="bMount" style="min-width:140px">Προσάρτηση</span><span class="btn">Αυτόματη προσάρτηση</span><span class="btn">Αποπροσάρτηση όλων</span><span class="btn">Έξοδος</span></div>
+  </div>
+
+  <div class="win" id="wiz">
+    <div class="tb"><i></i>Οδηγός δημιουργίας τόμου VeraCrypt<span class="x">✕</span></div>
+    <div class="wh"><b id="wt">Τύπος τόμου</b><span id="ws">Επιλέξτε τι θέλετε να δημιουργήσετε.</span></div>
+    <div class="wb">
+      <div class="pg on" id="p1">
+        <div class="rad sel" id="r1"><i></i><div>Δημιουργία κρυπτογραφημένου κοντέινερ αρχείου<small>Δημιουργεί ένα εικονικό κρυπτογραφημένο δίσκο μέσα σε ένα αρχείο.</small></div></div>
+        <div class="rad"><i></i><div>Κρυπτογράφηση μη συστημικής κατάτμησης/δίσκου<small>Για εξωτερικό δίσκο ή USB.</small></div></div>
+        <div class="rad"><i></i><div>Κρυπτογράφηση της κατάτμησης/δίσκου συστήματος<small>Για τον δίσκο των Windows.</small></div></div>
+      </div>
+      <div class="pg" id="p2">
+        <div class="rad sel" id="r2"><i></i><div>Τυπικός τόμος VeraCrypt<small>Επιλέξτε αυτό αν είναι η πρώτη φορά που χρησιμοποιείτε το VeraCrypt.</small></div></div>
+        <div class="rad"><i></i><div>Κρυφός τόμος VeraCrypt<small>Για προχωρημένους χρήστες.</small></div></div>
+      </div>
+      <div class="pg" id="p3">
+        <p class="lab">Τοποθεσία τόμου</p>
+        <div style="display:flex;gap:10px"><div class="inp" id="loc"></div><span class="btn" style="min-width:140px">Επιλογή αρχείου...</span></div>
+      </div>
+      <div class="pg" id="p4">
+        <p class="lab">Μέγεθος κοντέινερ</p>
+        <div style="display:flex;gap:18px;align-items:center"><div class="inp" id="siz" style="flex:none;width:120px"></div>
+          <span style="display:flex;gap:6px;align-items:center"><span class="rad" style="margin:0"><i></i>KB</span></span>
+          <span style="display:flex;gap:6px;align-items:center"><span class="rad" style="margin:0"><i></i>MB</span></span>
+          <span style="display:flex;gap:6px;align-items:center"><span class="rad sel" id="rgb" style="margin:0"><i></i>GB</span></span></div>
+      </div>
+      <div class="pg" id="p5">
+        <p class="lab">Κωδικός</p><div class="inp" id="pw1" style="margin-bottom:14px"></div>
+        <p class="lab">Επιβεβαίωση</p><div class="inp" id="pw2"></div>
+      </div>
+      <div class="pg" id="p6">
+        <p class="lab">Πατήστε «Μορφοποίηση» για να δημιουργηθεί ο κρυπτογραφημένος τόμος.</p>
+        <div class="pbar"><i id="pb"></i></div>
+        <p class="lab" id="pct" style="margin-top:8px">Έτοιμο</p>
+        <div class="ok" id="okm">Ο τόμος VeraCrypt δημιουργήθηκε με επιτυχία.</div>
+      </div>
+    </div>
+    <div class="wf"><span class="btn dis" style="min-width:90px">&lt; Πίσω</span><span class="btn" id="bNext" style="min-width:110px">Επόμενο &gt;</span><span class="btn" style="min-width:90px">Άκυρο</span></div>
+  </div>
+
+  <div class="win" id="dlg">
+    <div class="tb"><i></i>Εισαγωγή κωδικού<span class="x">✕</span></div>
+    <div style="padding:22px 24px;font-size:14px"><p class="lab">Κωδικός</p><div class="inp" id="mpw" style="margin-bottom:18px"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px"><span class="btn" id="bOk" style="min-width:90px">OK</span><span class="btn" style="min-width:90px">Άκυρο</span></div></div>
+  </div>
+
+  <div class="win" id="exp">
+    <div class="tb"><i></i>Αυτός ο υπολογιστής<span class="x">– ▢ ✕</span></div>
+    <div class="exb">
+      <div class="side">Αρχική<br>Συλλογή<br><b>Αυτός ο υπολογιστής</b><br>Δίκτυο</div>
+      <div class="main2"><h4>Συσκευές και μονάδες δίσκου</h4>
+        <div class="drv"><span class="ic"></span><div>Τοπικός δίσκος (C:)<div class="bar"><i style="width:58%"></i></div><small>98 GB ελεύθερα από 237 GB</small></div></div>
+        <div class="drv" id="drvz"><span class="ic z"></span><div>Τοπικός δίσκος (Z:)<div class="bar"><i style="width:2%"></i></div><small>4,93 GB ελεύθερα από 5,00 GB</small></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="task"><i></i><i></i><i></i><i></i><i></i></div>
+  <svg id="cur" viewBox="0 0 24 24"><path d="M3 2l16 10-7 1.5L8.5 21z" fill="#fff" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/></svg>
+</div>
+</div>
+<div id="ctl"><button id="rst">↻ Επανάληψη</button></div>
+
+<script>
+let run=0;
+const $=s=>document.querySelector(s), sleep=ms=>{const t=run;return new Promise((r,j)=>setTimeout(()=>t===run?r():j('stop'),ms))};
+const stage=$('#stage'), cur=$('#cur');
+function fit(){const s=Math.min(innerWidth/1280,(innerHeight-44)/720);stage.style.transform='scale('+s+')'}
+addEventListener('resize',fit);fit();
+const sc=()=>stage.getBoundingClientRect().width/1280;
+async function move(el,dx=.5,dy=.5,t=1000){
+  const r=el.getBoundingClientRect(),s=stage.getBoundingClientRect(),k=sc();
+  const x=(r.left-s.left)/k+r.width*dx, y=(r.top-s.top)/k+r.height*dy;
+  cur.style.transitionDuration=t+'ms';cur.style.transform='translate('+x+'px,'+y+'px)';
+  cur._x=x;cur._y=y;await sleep(t+120);
+}
+async function click(el){
+  const p=document.createElement('div');p.className='rip';p.style.left=(cur._x+3)+'px';p.style.top=(cur._y+3)+'px';stage.appendChild(p);
+  el.classList.add('pr');await sleep(200);el.classList.remove('pr');setTimeout(()=>p.remove(),600);await sleep(250);
+}
+async function type(el,txt,d=75,mask=false){el.classList.add('f');for(const c of txt){el.textContent+=mask?'●':c;await sleep(d)}el.classList.remove('f');await sleep(300)}
+function show(id,on=true){$(id).classList.toggle('on',on)}
+function page(n,t,s){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));$('#p'+n).classList.add('on');$('#wt').textContent=t;$('#ws').textContent=s}
+async function next(){await move($('#bNext'));await click($('#bNext'))}
+function reset(){
+  ['#main','#wiz','#dlg','#exp'].forEach(i=>show(i,false));
+  ['#vpath','#loc','#siz','#pw1','#pw2','#mpw','#zvol','#zsize','#zalg'].forEach(i=>$(i).textContent='');
+  $('#rowz').classList.remove('sel');$('#drvz').classList.remove('on');$('#okm').classList.remove('on');
+  $('#pb').style.width='0';$('#pct').textContent='Έτοιμο';$('#bNext').textContent='Επόμενο >';
+  $('#rgb').classList.remove('sel');page(1,'Τύπος τόμου','Επιλέξτε τι θέλετε να δημιουργήσετε.');
+  cur.style.transitionDuration='0ms';cur.style.transform='translate(640px,690px)';
+}
+async function play(){
+  const id=++run;reset();await sleep(700);
+  const alive=()=>id===run;
+  show('#main');await sleep(1400);
+  await move($('#bCreate'));await click($('#bCreate'));show('#wiz');await sleep(900);
+  await move($('#r1'),.3,.4);await click($('#r1'));await next();
+  page(2,'Τύπος τόμου','Επιλέξτε τον τύπο του τόμου.');await sleep(700);
+  await move($('#r2'),.3,.4);await click($('#r2'));await next();
+  page(3,'Τοποθεσία τόμου','Επιλέξτε πού θα αποθηκευτεί το κοντέινερ.');await sleep(700);
+  await move($('#loc'),.2);await click($('#loc'));await type($('#loc'),'D:\\Vault\\private.hc',60);await next();
+  page(4,'Μέγεθος τόμου','Ορίστε το μέγεθος του κρυπτογραφημένου κοντέινερ.');await sleep(700);
+  await move($('#siz'),.3);await click($('#siz'));await type($('#siz'),'5',200);
+  await move($('#rgb'),.4,.5,800);await click($('#rgb'));$('#rgb').classList.add('sel');await sleep(400);await next();
+  page(5,'Κωδικός τόμου','Επιλέξτε έναν ισχυρό κωδικό.');await sleep(700);
+  await move($('#pw1'),.2);await click($('#pw1'));await type($('#pw1'),'••••••••••••',110,false);
+  await move($('#pw2'),.2,.5,700);await click($('#pw2'));await type($('#pw2'),'••••••••••••',110,false);await next();
+  page(6,'Μορφοποίηση τόμου','Δημιουργία του κρυπτογραφημένου τόμου.');$('#bNext').textContent='Μορφοποίηση';await sleep(700);
+  await move($('#bNext'));await click($('#bNext'));
+  for(let i=0;i<=100;i+=2){$('#pb').style.width=i+'%';$('#pct').textContent='Ολοκληρώθηκε '+i+'%';await sleep(55)}
+  $('#okm').classList.add('on');$('#pct').textContent='Ολοκληρώθηκε 100%';await sleep(1800);
+  show('#wiz',false);await sleep(700);
+  $('#vpath').textContent='D:\\Vault\\private.hc';
+  await move($('#rowz'),.1);await click($('#rowz'));$('#rowz').classList.add('sel');await sleep(300);
+  await move($('#bMount'));await click($('#bMount'));show('#dlg');await sleep(800);
+  await move($('#mpw'),.2);await click($('#mpw'));await type($('#mpw'),'••••••••••••',110);
+  await move($('#bOk'));await click($('#bOk'));show('#dlg',false);await sleep(700);
+  $('#zvol').textContent='D:\\Vault\\private.hc';$('#zsize').textContent='5 GB';$('#zalg').textContent='AES';await sleep(1500);
+  show('#main',false);show('#exp');await sleep(900);
+  $('#drvz').classList.add('on');await sleep(3800);
+  if(id===run) setTimeout(()=>play().catch(()=>{}),500);
+}
+$('#rst').onclick=()=>{play().catch(()=>{})};
+play().catch(()=>{});
+</script>
+</body>
+</html>
