@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iPhone Screen Recording — Animated Demo</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0d12;--panel:#111821;--muted:#9ba8ba;--line:#273344;--blue:#0a84ff;--red:#ff453a;--green:#30d158}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0%,#1d2a42 0,#0a0d12 58%);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f7f8fb;min-height:100vh;display:grid;place-items:center;padding:28px 16px}
+.demo{width:min(100%,1040px);display:grid;grid-template-columns:minmax(260px,390px) minmax(280px,1fr);gap:clamp(24px,5vw,64px);align-items:center}
+.phone-wrap{display:flex;justify-content:center;perspective:1200px}
+.phone{width:min(78vw,310px);height:630px;max-height:78vh;min-height:530px;position:relative;padding:9px;border-radius:47px;background:linear-gradient(145deg,#59616d,#15191f 25%,#080a0d 70%,#525965);box-shadow:0 35px 90px #0009, inset 0 0 0 1px #ffffff45;transform:rotateY(-7deg) rotateX(2deg);transition:transform .7s}
+.phone:hover{transform:rotateY(0) rotateX(0)}
+.screen{height:100%;border-radius:39px;overflow:hidden;position:relative;background:#111827;isolation:isolate}
+.wallpaper{position:absolute;inset:0;background:radial-gradient(ellipse at 22% 20%,#f5a1b5 0,transparent 34%),radial-gradient(ellipse at 82% 33%,#8c7af4 0,transparent 35%),radial-gradient(ellipse at 40% 85%,#176bb5 0,transparent 42%),linear-gradient(145deg,#151d3e,#26204c 55%,#101c36);transition:filter .5s}
+.status{position:absolute;top:13px;left:22px;right:22px;z-index:8;display:flex;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:.2px}
+.status-icons{display:flex;gap:5px;align-items:center}
+.signal{width:13px;height:9px;background:linear-gradient(to right,#fff 25%,#ffffffbb 25%);clip-path:polygon(0 100%,0 65%,25% 65%,25% 40%,50% 40%,50% 20%,75% 20%,75% 0,100% 0,100% 100%)}
+.battery{width:17px;height:8px;border:1px solid #fff;border-radius:2px;padding:1px;position:relative}.battery:before{content:"";display:block;width:70%;height:100%;background:#fff;border-radius:1px}.battery:after{content:"";position:absolute;right:-3px;top:2px;width:2px;height:3px;background:#fff;border-radius:0 2px 2px 0}
+.dynamic{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:88px;height:23px;border-radius:18px;background:#050608;z-index:9}
+.home{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);height:4px;width:105px;border-radius:5px;background:#ffffffd9;z-index:20}
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transform:scale(1.025);transition:opacity .55s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.scene.active{opacity:1;pointer-events:auto;transform:scale(1)}
+.lock-title{position:absolute;top:74px;width:100%;text-align:center;font-size:12px;color:#ffffffcc}
+.lock-clock{position:absolute;top:91px;width:100%;text-align:center;font-size:62px;font-weight:250;letter-spacing:-3px}
+.app-grid{position:absolute;top:220px;left:24px;right:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:17px 10px}
+.app{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:8px;color:#fff;text-shadow:0 1px 5px #0008}
+.app-icon{width:43px;height:43px;border-radius:12px;box-shadow:0 4px 12px #0003;display:grid;place-items:center;font-size:20px;font-weight:600}
+.dock{position:absolute;bottom:28px;left:15px;right:15px;height:66px;border-radius:23px;background:#ffffff30;backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:space-evenly}
+.dock .app-icon{width:42px;height:42px}
+.cc{position:absolute;inset:0;background:linear-gradient(145deg,#6b7180bb,#202432eF);backdrop-filter:blur(30px);padding:57px 14px 30px}
+.cc-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#fff9;margin:0 3px 12px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tile{border-radius:18px;background:#ffffff28;padding:12px;min-height:90px;box-shadow:inset 0 1px 0 #ffffff1c}
+.connect{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.bubble{width:32px;height:32px;border-radius:50%;background:#ffffff3b;display:grid;place-items:center;font-size:15px}
+.bubble.on{background:#0a84ff}
+.tile-label{font-size:9px;color:#ffffffd9;margin-top:8px}
+.media-tile{display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:11px;gap:5px}
+.bars{height:65px;display:flex;align-items:end;gap:3px;justify-content:center}
+.bars i{display:block;width:5px;border-radius:4px;background:#ffffffad}
+.slider{height:100px;display:flex;align-items:center;gap:12px}
+.slider-track{height:76px;width:20px;border-radius:12px;background:#ffffff44;position:relative;overflow:hidden}
+.slider-track:after{content:"";position:absolute;bottom:0;left:0;right:0;height:70%;background:#fff;border-radius:12px}
+.record-tile{min-height:90px;display:grid;place-items:center;position:relative}
+.record-ring{width:37px;height:37px;border:3px solid #fff;border-radius:50%;display:grid;place-items:center;transition:.25s}
+.record-ring span{width:19px;height:19px;background:var(--red);border-radius:50%;transition:.25s}
+.record-ring.recording{border-color:#ffb2ad}
+.record-ring.recording span{width:15px;height:15px;border-radius:4px}
+.record-tile.highlight{outline:2px solid #ff6d62;outline-offset:3px;animation:pulse 1.3s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px #ff453a22}}
+.mic-panel{position:absolute;z-index:12;left:13px;right:13px;top:25%;border-radius:26px;padding:20px 18px 18px;background:#30333ceF;backdrop-filter:blur(24px);box-shadow:0 18px 45px #0008;border:1px solid #ffffff20;text-align:center}
+.mic-panel h3{font-size:14px;margin:0 0 16px}
+.save-dest{display:flex;align-items:center;gap:10px;text-align:left;background:#ffffff13;border-radius:12px;padding:10px;font-size:11px;margin-bottom:16px}
+.photos-icon{width:27px;height:27px;border-radius:8px;background:conic-gradient(#ff4b62,#ffb52e,#4cd964,#45b6ff,#aa6bff,#ff4b62);display:grid;place-items:center;color:#fff;font-size:16px}
+.mic-button{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:22px;background:#ff453a;font-size:11px;font-weight:700}
+.start-button{width:100%;border:0;border-radius:20px;background:var(--blue);color:#fff;font-weight:700;padding:12px;margin-top:13px;font-size:12px}
+.countdown{position:absolute;inset:0;display:grid;place-items:center;background:#05070bcc;z-index:15;font-size:94px;font-weight:200;opacity:0;pointer-events:none}
+.countdown.show{animation:count 2.6s ease both}
+@keyframes count{0%{opacity:0}10%,72%{opacity:1}100%{opacity:0}}
+.recording-pill{position:absolute;z-index:11;top:8px;left:19px;background:#ff453a;border-radius:15px;padding:4px 8px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:5px;opacity:0;transform:translateY(-8px);transition:.3s}
+.recording-pill.show{opacity:1;transform:translateY(0)}
+.rec-dot{width:6px;height:6px;border-radius:50%;background:white;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.photos-screen{background:#f4f4f8;color:#17171b;padding:62px 12px 25px}
+.photos-screen .status{color:#17171b}
+.photos-screen .dynamic{background:#080808}
+.photos-title{font-size:25px;font-weight:750;letter-spacing:-.7px;margin:5px 4px 16px}
+.photos-tabs{display:flex;gap:7px;margin-bottom:14px}
+.photos-tab{font-size:9px;padding:6px 10px;background:#e5e5eb;border-radius:12px;color:#555}
+.photos-tab.selected{background:#17171b;color:white}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.thumb{aspect-ratio:1;background:linear-gradient(140deg,#80b9df,#c8d8f5 50%,#7b6bd2);position:relative;overflow:hidden}
+.thumb:nth-child(2){background:linear-gradient(130deg,#edbb95,#c5687b,#473a69)}
+.thumb:nth-child(3){background:linear-gradient(145deg,#9fd2a6,#388b87,#233c63)}
+.thumb:nth-child(4){background:linear-gradient(140deg,#f2cf73,#d88162,#8a426b)}
+.thumb:nth-child(5){background:linear-gradient(130deg,#b9a0f2,#f1a2be,#f3d2a1)}
+.thumb.video{background:linear-gradient(145deg,#1a2848,#425ca0 50%,#111a30);outline:2px solid var(--red);outline-offset:-2px}
+.thumb.video:before{content:"";position:absolute;inset:17% 20%;border:1px solid #ffffff40;border-radius:5px;background:linear-gradient(135deg,#ffffff16,#ffffff02)}
+.thumb.video:after{content:"▶ 00:08";position:absolute;bottom:5px;right:4px;background:#000a;color:#fff;border-radius:4px;padding:3px 4px;font-size:8px}
+.gallery-label{font-size:11px;font-weight:650;margin:18px 4px 10px}
+.caption-chip{display:inline-block;border-radius:8px;padding:5px 8px;background:#e5e5eb;color:#4c4c54;font-size:9px;margin:4px}
+.copy{padding:20px 0}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#93b9ff;text-transform:uppercase;letter-spacing:.16em;font-size:10px;font-weight:800;margin-bottom:15px}
+.eyebrow:before{content:"";height:1px;width:23px;background:#93b9ff}
+h1{font-size:clamp(30px,4.3vw,49px);line-height:1.05;letter-spacing:-1.8px;margin:0 0 17px;font-weight:750}
+.lead{color:#aab6c8;font-size:15px;line-height:1.75;max-width:520px;margin:0 0 25px}
+.steps{display:flex;flex-direction:column;gap:10px;margin:0 0 23px}
+.step{display:flex;align-items:center;gap:12px;color:#718097;font-size:12px;transition:.25s}
+.step .num{width:27px;height:27px;border:1px solid #354256;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
+.step.active{color:#fff}
+.step.active .num{background:#dbe8ff;color:#12203b;border-color:#dbe8ff}
+.scene-title{font-size:16px;font-weight:750;margin-bottom:7px}
+.scene-desc{font-size:13px;line-height:1.65;color:#9eacbf;min-height:43px;max-width:450px}
+.controls{display:flex;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer}
+.play{border:0;border-radius:30px;background:#f3f6fc;color:#0b111c;font-weight:800;font-size:12px;padding:12px 18px;display:flex;align-items:center;gap:9px}
+.play:hover{background:#cfe0ff}
+.replay{border:1px solid #344155;border-radius:30px;background:transparent;color:#e6ebf4;padding:11px 16px;font-size:12px}
+.progress{height:3px;background:#273243;border-radius:9px;margin-top:25px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#71a5ff,#ff7067);transition:width .25s}
+.small-note{color:#637187;font-size:10px;margin-top:14px}
+@media(max-width:720px){.demo{grid-template-columns:1fr;gap:26px;max-width:430px}.phone{width:265px;height:540px;min-height:0;max-height:none;transform:none}.copy{padding:0 4px}.eyebrow{margin-bottom:10px}h1{font-size:35px}.lead{font-size:14px}.scene-desc{min-height:0}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="demo" aria-label="Animated iPhone screen recording demonstration">
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="wallpaper"></div>
+        <div class="status"><span>9:41</span><span class="status-icons"><i class="signal"></i><span>Wi-Fi</span><i class="battery"></i></span></div>
+        <div class="dynamic"></div>
+        <div class="scene active" id="scene0">
+          <div class="lock-title">Sunday, October 18</div><div class="lock-clock">9:41</div>
+          <div class="app-grid">
+            <div class="app"><div class="app-icon" style="background:#30d158">☎</div>Phone</div><div class="app"><div class="app-icon" style="background:#0a84ff">✉</div>Mail</div><div class="app"><div class="app-icon" style="background:#ff9f0a">☀</div>Weather</div><div class="app"><div class="app-icon" style="background:#af52de">♫</div>Music</div>
+            <div class="app"><div class="app-icon" style="background:#ff453a">●</div>Camera</div><div class="app"><div class="app-icon" style="background:#5ac8fa">◉</div>Photos</div><div class="app"><div class="app-icon" style="background:#ffd60a;color:#333">✎</div>Notes</div><div class="app"><div class="app-icon" style="background:#30d158">✓</div>Reminders</div>
+          </div>
+          <div class="dock"><div class="app-icon" style="background:#30d158">☎</div><div class="app-icon" style="background:#0a84ff">◉</div><div class="app-icon" style="background:#fff;color:#333">◎</div><div class="app-icon" style="background:#ff9f0a">♫</div></div>
+        </div>
+        <div class="scene" id="scene1">
+          <div class="cc">
+            <div class="cc-head"><span>Control Center</span><span>•••</span></div>
+            <div class="tiles">
+              <div class="tile"><div class="connect"><div class="bubble on">⌁</div><div class="bubble on">◉</div><div class="bubble">✈</div><div class="bubble">⌁</div></div><div class="tile-label">Connectivity</div></div>
+              <div class="tile media-tile"><div style="font-size:19px">♫</div><strong>Not Playing</strong><span style="font-size:9px;color:#ffffff99">Music controls</span></div>
+              <div class="tile slider"><div style="font-size:17px">☀</div><div class="slider-track"></div><div style="font-size:17px">◖</div><div class="slider-track" style="height:56px"></div></div>
+              <div class="tile record-tile highlight" id="recordTile"><div class="record-ring" id="recordRing"><span></span></div><div class="tile-label">Screen Recording</div></div>
+            </div>
+            <div style="text-align:center;font-size:9px;color:#ffffffa8;margin-top:18px">Tap the record control to begin</div>
+          </div>
+        </div>
+        <div class="scene" id="scene2">
+          <div class="cc"><div class="cc-head"><span>Control Center</span><span>•••</span></div>
+            <div class="tiles">
+              <div class="tile"><div class="connect"><div class="bubble on">⌁</div><div class="bubble on">◉</div><div class="bubble">✈</div><div class="bubble">⌁</div></div><div class="tile-label">Connectivity</div></div>
+              <div class="tile media-tile"><div style="font-size:19px">♫</div><strong>Not Playing</strong></div>
+              <div class="tile slider"><div style="font-size:17px">☀</div><div class="slider-track"></div><div class="slider-track" style="height:56px"></div></div>
+              <div class="tile record-tile"><div class="record-ring"><span></span></div><div class="tile-label">Screen Recording</div></div>
+            </div>
+          </div>
+          <div class="mic-panel"><h3>Screen Recording</h3><div class="save-dest"><div class="photos-icon">✿</div><div><strong>Photos</strong><div style="color:#ffffff99;margin-top:3px">Save recording to your library</div></div><span style="margin-left:auto;color:#5aa7ff">✓</span></div><div class="mic-button">● &nbsp; Microphone On</div><button class="start-button" id="startButton">Start Recording</button></div>
+        </div>
+        <div class="scene" id="scene3">
+          <div class="cc"><div class="cc-head"><span>Control Center</span><span>•••</span></div>
+            <div class="tiles"><div class="tile"><div class="connect"><div class="bubble on">⌁</div><div class="bubble on">◉</div><div class="bubble">✈</div><div class="bubble">⌁</div></div><div class="tile-label">Connectivity</div></div><div class="tile media-tile">♫<strong>Not Playing</strong></div><div class="tile slider"><div>☀</div><div class="slider-track"></div><div class="slider-track" style="height:56px"></div></div><div class="tile record-tile"><div class="record-ring recording"><span></span></div><div class="tile-label">Recording</div></div></div>
+          </div>
+          <div class="countdown" id="countdown">3</div>
+          <div class="recording-pill" id="recordPill"><span class="rec-dot"></span> REC&nbsp; 00:08</div>
+        </div>
+        <div class="scene" id="scene4">
+          <div class="photos-screen">
+            <div class="photos-title">Library</div><div class="photos-tabs"><span class="photos-tab selected">All</span><span class="photos-tab">Days</span><span class="photos-tab">Months</span></div>
+            <div class="photo-grid"><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div><div class="thumb video"></div><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div></div>
+            <div class="gallery-label">Media Types</div><span class="caption-chip">Videos</span><span class="caption-chip">Screenshots</span><span class="caption-chip" style="background:#ffe2df;color:#c62f26">Screen Recordings · 1</span>
+          </div>
+        </div>
+        <div class="home"></div>
+      </div>
+    </div>
+  </div>
+  <section class="copy">
+    <div class="eyebrow">Interactive article demo</div>
+    <h1>Record your iPhone screen.<br><span style="color:#8fb7ff">Step by step.</span></h1>
+    <p class="lead">A short animated walkthrough of the built-in Screen Recording feature — from Control Center and microphone settings to finding the finished video in Photos.</p>
+    <div class="steps" id="steps">
+      <div class="step active"><span class="num">1</span><span>Open Control Center</span></div>
+      <div class="step"><span class="num">2</span><span>Turn on the microphone</span></div>
+      <div class="step"><span class="num">3</span><span>Start recording</span></div>
+      <div class="step"><span class="num">4</span><span>Find the video in Photos</span></div>
+    </div>
+    <div class="scene-title" id="sceneTitle">1. Open Control Center</div>
+    <div class="scene-desc" id="sceneDesc">Swipe down from the top-right corner. Find the Screen Recording control — the circle inside a circle.</div>
+    <div class="controls"><button class="play" id="playBtn"><span>▶</span> Play walkthrough</button><button class="replay" id="replayBtn">↺ Replay</button></div>
+    <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="small-note">Illustrative interface mockup, not a live iPhone screen. Designed to embed in an article.</div>
+  </section>
+</main>
+<script>
+(() => {
+ const scenes=[...document.querySelectorAll('.scene')], steps=[...document.querySelectorAll('.step')];
+ const titles=[
+  ['1. Open Control Center','Swipe down from the top-right corner. Find the Screen Recording control — the circle inside a circle.'],
+  ['2. Enable your microphone','Touch and hold Screen Recording, switch Microphone on, then tap Start Recording.'],
+  ['3. Record your screen','The countdown gives you a moment to get ready. A red indicator means recording is active.'],
+  ['4. Find the finished video','Your clip is saved in Photos. Look in Media Types → Screen Recordings to find it quickly.']
+ ];
+ let current=0,timer=null,playing=false;
+ const title=document.getElementById('sceneTitle'),desc=document.getElementById('sceneDesc'),fill=document.getElementById('progressFill'),playBtn=document.getElementById('playBtn');
+ function show(n){
+   current=n;scenes.forEach((s,i)=>s.classList.toggle('active',i===n));
+   steps.forEach((s,i)=>s.classList.toggle('active',i===Math.min(n,3)));
+   const idx=n===0?0:n===1?0:n===2?1: n===3?2:3;
+   title.textContent=titles[idx][0];desc.textContent=titles[idx][1];
+   fill.style.width=((n+1)/5*100)+'%';
+   document.getElementById('recordTile').classList.toggle('highlight',n===1);
+   document.getElementById('recordPill').classList.toggle('show',n===3);
+   if(n===2){const c=document.getElementById('countdown');c.classList.remove('show');void c.offsetWidth;c.textContent='3';c.classList.add('show');setTimeout(()=>{if(current===2)c.textContent='2'},650);setTimeout(()=>{if(current===2)c.textContent='1'},1300);}
+   if(n===4){title.textContent=titles[3][0];desc.textContent=titles[3][1];}
+ }
+ const sequence=[0,1,2,3,4];
+ function stop(){if(timer)clearInterval(timer);timer=null;playing=false;playBtn.innerHTML='<span>▶</span> Play walkthrough';}
+ function start(){stop();playing=true;playBtn.innerHTML='<span>Ⅱ</span> Pause walkthrough';show(0);let i=0;timer=setInterval(()=>{i++;if(i>=sequence.length){stop();return;}show(sequence[i]);},3000);}
+ playBtn.addEventListener('click',()=>{if(playing){stop();}else{if(current>=4)start();else{playing=true;playBtn.innerHTML='<span>Ⅱ</span> Pause walkthrough';timer=setInterval(()=>{if(current>=4){stop();return;}show(current+1);},3000);}}});
+ document.getElementById('replayBtn').addEventListener('click',start);
+ document.getElementById('startButton').addEventListener('click',()=>{show(3);});
+ document.getElementById('recordTile').addEventListener('click',()=>show(2));
+ show(0);
+})();
+</script>
+</body>
+</html>
