@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDR5 vs DDR6 Sub-channels — Animated</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#0f172a;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:1.05rem;margin:0;font-weight:800}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-size:.82rem;font-weight:700;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:999px;padding:7px 14px;cursor:pointer;transition:.15s}
+button:hover{border-color:#0ea5e9;color:#0369a1}
+button.on{background:#0ea5e9;border-color:#0ea5e9;color:#fff}
+.panel{border:1px solid #e2e8f0;border-radius:14px;padding:12px 12px 6px;margin-bottom:14px;background:linear-gradient(#f8fafc,#fff)}
+.panel h2{font-size:.9rem;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.panel h2 span{font-weight:600;color:#64748b;font-size:.8rem}
+svg{width:100%;height:auto;display:block}
+.lane{cursor:pointer}
+.lane .track{fill:#e0f2fe;stroke:#bae6fd;transition:.2s}
+.lane:hover .track,.lane.sel .track{fill:#bae6fd;stroke:#0ea5e9}
+.pk{animation:flow linear infinite}
+.paused .pk{animation-play-state:paused}
+@keyframes flow{from{transform:translateX(0);opacity:0}8%{opacity:1}92%{opacity:1}to{transform:translateX(var(--d));opacity:0}}
+.info{border-left:4px solid #0ea5e9;background:#f0f9ff;border-radius:10px;padding:12px 14px;font-size:.9rem;line-height:1.55;color:#0c4a6e;min-height:64px}
+.note{font-size:.78rem;color:#64748b;margin-top:10px;line-height:1.5}
+.hidden{display:none}
+@media(prefers-reduced-motion:reduce){.pk{animation:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1 data-t="title">Inside the module: DDR5 vs DDR6 sub-channels</h1>
+  <div class="row">
+    <button id="bC" class="on" data-t="cmp">Compare</button>
+    <button id="b5">DDR5</button>
+    <button id="b6">DDR6</button>
+    <button id="bP" data-t="pause">Pause</button>
+    <button id="bL">🌐 EN / ΕΛ</button>
+  </div>
+</div>
+
+<div class="panel" id="p5">
+  <h2><b>DDR5 · 2 × 32-bit</b><span data-t="r5">JEDEC range 4,800 – 8,800 MT/s</span></h2>
+  <svg id="s5" viewBox="0 0 760 170" role="img" aria-label="DDR5 two 32-bit sub-channels"></svg>
+</div>
+<div class="panel" id="p6">
+  <h2><b>DDR6 · 4 × 24-bit</b><span data-t="r6">Target 8,800 – 17,600 MT/s</span></h2>
+  <svg id="s6" viewBox="0 0 760 300" role="img" aria-label="DDR6 four 24-bit sub-channels"></svg>
+</div>
+
+<div class="info" id="info" data-t="hint">Tap any lane to see what it does.</div>
+<div class="note" data-t="note">Schematic only. DDR6 figures are development targets reported by the industry, not a final JEDEC standard.</div>
+
+<script>
+var T={
+ en:{title:"Inside the module: DDR5 vs DDR6 sub-channels",cmp:"Compare",pause:"Pause",play:"Play",
+  r5:"JEDEC range 4,800 – 8,800 MT/s",r6:"Target 8,800 – 17,600 MT/s",
+  hint:"Tap any lane to see what it does.",
+  cpu:"CPU",mem:"DRAM",
+  l5:"DDR5 sub-channel: one of two independent 32-bit lanes. Each lane handles its own requests, so the memory controller can keep two conversations going at once.",
+  l6:"DDR6 sub-channel: one of four independent 24-bit lanes (reported design). More lanes mean more parallel requests, and each narrower lane is easier to keep electrically clean at very high speeds.",
+  note:"Schematic only. DDR6 figures are development targets reported by the industry, not a final JEDEC standard."},
+ el:{title:"Μέσα στη μνήμη: υπο-κανάλια DDR5 vs DDR6",cmp:"Σύγκριση",pause:"Παύση",play:"Αναπαραγωγή",
+  r5:"Εύρος JEDEC 4.800 – 8.800 MT/s",r6:"Στόχος 8.800 – 17.600 MT/s",
+  hint:"Πάτα σε οποιαδήποτε λωρίδα για να δεις τι κάνει.",
+  cpu:"CPU",mem:"DRAM",
+  l5:"Υπο-κανάλι DDR5: μία από δύο ανεξάρτητες λωρίδες των 32 bit. Κάθε λωρίδα εξυπηρετεί τα δικά της αιτήματα, οπότε ο ελεγκτής μνήμης κρατά δύο «συζητήσεις» ταυτόχρονα.",
+  l6:"Υπο-κανάλι DDR6: μία από τέσσερις ανεξάρτητες λωρίδες των 24 bit (όπως αναφέρεται το σχέδιο). Περισσότερες λωρίδες σημαίνουν περισσότερα παράλληλα αιτήματα, και κάθε στενότερη λωρίδα κρατιέται πιο εύκολα «καθαρή» ηλεκτρικά σε πολύ υψηλές ταχύτητες.",
+  note:"Σχηματικό διάγραμμα. Τα στοιχεία του DDR6 είναι στόχοι ανάπτυξης που αναφέρει ο κλάδος, όχι τελικό πρότυπο JEDEC."}
+};
+var lang="en",NS="http://www.w3.org/2000/svg";
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function build(svg,lanes,bits,dur,key){
+  svg.innerHTML="";
+  var H=+svg.viewBox.baseVal.height,gap=H/lanes,lh=Math.min(40,gap-28),x0=150,x1=610,len=x1-x0;
+  var g=el("g",{},svg);
+  el("rect",{x:14,y:10,width:112,height:H-20,rx:14,fill:"#0f172a"},g);
+  var c=el("text",{x:70,y:H/2+5,"text-anchor":"middle",fill:"#fff","font-size":15,"font-weight":800,"data-t":"cpu"},g);c.textContent="CPU";
+  el("rect",{x:634,y:10,width:112,height:H-20,rx:14,fill:"#0ea5e9"},g);
+  var m=el("text",{x:690,y:H/2+5,"text-anchor":"middle",fill:"#fff","font-size":15,"font-weight":800},g);m.textContent="DRAM";
+  for(var i=0;i<lanes;i++){
+    var cy=gap*i+gap/2,ln=el("g",{"class":"lane"},svg);
+    el("rect",{"class":"track",x:x0,y:cy-lh/2,width:len,height:lh,rx:lh/2,"stroke-width":1.5},ln);
+    var t=el("text",{x:x0+6,y:cy-lh/2-5,"text-anchor":"start","font-size":11.5,"font-weight":800,fill:"#0369a1","pointer-events":"none"},ln);t.textContent=bits+"-bit";
+    for(var k=0;k<4;k++){
+      var p=el("rect",{"class":"pk",x:x0+8,y:cy-lh/2+7,width:26,height:lh-14,rx:6,fill:"#0ea5e9"},ln);
+      p.style.setProperty("--d",(len-44)+"px");
+      p.style.animationDuration=dur+"s";
+      p.style.animationDelay=(-(dur/4)*k-i*dur*0.07)+"s";
+    }
+    (function(l,keyi){ln.addEventListener("click",function(){
+      document.querySelectorAll(".lane").forEach(function(x){x.classList.remove("sel")});
+      l.classList.add("sel");document.getElementById("info").textContent=T[lang][keyi];});})(ln,key);
+  }
+}
+build(document.getElementById("s5"),2,32,3.2,"l5");
+build(document.getElementById("s6"),4,24,1.6,"l6");
+function setMode(m){
+  document.getElementById("p5").classList.toggle("hidden",m==="6");
+  document.getElementById("p6").classList.toggle("hidden",m==="5");
+  ["C","5","6"].forEach(function(k){document.getElementById("b"+k).classList.toggle("on",(k==="C"&&m==="c")||k===m)});
+}
+document.getElementById("bC").onclick=function(){setMode("c")};
+document.getElementById("b5").onclick=function(){setMode("5")};
+document.getElementById("b6").onclick=function(){setMode("6")};
+var paused=false;
+document.getElementById("bP").onclick=function(){paused=!paused;document.body.classList.toggle("paused",paused);this.textContent=T[lang][paused?"play":"pause"]};
+function apply(){
+  document.querySelectorAll("[data-t]").forEach(function(e){var v=T[lang][e.getAttribute("data-t")];if(v&&e.tagName!=="text")e.textContent=v});
+  document.documentElement.lang=lang;
+}
+document.getElementById("bL").onclick=function(){lang=lang==="en"?"el":"en";apply();document.getElementById("bP").textContent=T[lang][paused?"play":"pause"]};
+</script>
+</body>
+</html>
