@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Bandwidth Race — Animated</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#0f172a;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px}
+h1{font-size:1.05rem;margin:0;font-weight:800}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:.82rem;font-weight:700;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:999px;padding:7px 14px;cursor:pointer;transition:.15s}
+button:hover{border-color:#0ea5e9;color:#0369a1}
+.bar{margin-bottom:12px;cursor:pointer}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.88rem;font-weight:700;margin-bottom:5px}
+.head small{font-weight:600;color:#64748b}
+.val{font-variant-numeric:tabular-nums;color:#0369a1}
+.track{background:#f1f5f9;border-radius:12px;height:30px;overflow:hidden;position:relative}
+.fill{height:100%;width:0;border-radius:12px;background:linear-gradient(90deg,#7dd3fc,#0ea5e9);position:relative;transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+.fill::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:shine 2.4s ease-in-out 1.2s infinite}
+@keyframes shine{to{transform:translateX(120%)}}
+.c1 .fill{background:linear-gradient(90deg,#cbd5e1,#94a3b8)}
+.c2 .fill{background:linear-gradient(90deg,#a5b4fc,#6366f1)}
+.c4 .fill{background:linear-gradient(90deg,#38bdf8,#0369a1)}
+.more{max-height:0;overflow:hidden;transition:max-height .3s;font-size:.85rem;line-height:1.55;color:#0c4a6e;background:#f0f9ff;border-left:4px solid #0ea5e9;border-radius:8px}
+.more div{padding:10px 12px}
+.bar.open .more{max-height:140px;margin-top:8px}
+.note{font-size:.78rem;color:#64748b;line-height:1.5;margin-top:14px}
+@media(prefers-reduced-motion:reduce){.fill,.fill::after{transition:none;animation:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1 data-t="title">Theoretical bandwidth per memory module</h1>
+  <div class="row"><button id="bR" data-t="replay">↻ Replay</button><button id="bL">🌐 EN / ΕΛ</button></div>
+</div>
+<div id="bars"></div>
+<div class="note" data-t="note">Theoretical peak for a 64-bit data path: MT/s × 8 bytes. Real applications never reach these numbers, and DDR6 speeds are development targets, not a final standard.</div>
+
+<script>
+var D=[
+ {id:1,mt:3200,cls:"c1",n:"DDR4-3200",k:"d1"},
+ {id:2,mt:6400,cls:"c2",n:"DDR5-6400",k:"d2"},
+ {id:3,mt:8800,cls:"c3",n:"DDR6-8800",k:"d3"},
+ {id:4,mt:17600,cls:"c4",n:"DDR6-17600",k:"d4"}
+];
+var T={
+ en:{title:"Theoretical bandwidth per memory module",replay:"↻ Replay",
+  note:"Theoretical peak for a 64-bit data path: MT/s × 8 bytes. Real applications never reach these numbers, and DDR6 speeds are development targets, not a final standard.",
+  d1:"The old workhorse. Still around in budget systems, but supply is being phased out as makers shift to newer chips.",
+  d2:"Today's mainstream standard at a common JEDEC speed. Faster commercial kits exist, but this is the fair baseline.",
+  d3:"The reported DDR6 starting point: roughly 38% more than DDR5-6400 on paper, from a new design with four sub-channels.",
+  d4:"The reported upper target. About 140 GB/s on paper (some sources quote 134.4 GB/s). Not expected in shops before 2028–2029."},
+ el:{title:"Θεωρητικό εύρος ζώνης ανά module μνήμης",replay:"↻ Επανάληψη",
+  note:"Θεωρητικό μέγιστο για διαδρομή δεδομένων 64 bit: MT/s × 8 bytes. Οι πραγματικές εφαρμογές δεν φτάνουν ποτέ τέτοιους αριθμούς, και οι ταχύτητες του DDR6 είναι στόχοι ανάπτυξης, όχι τελικό πρότυπο.",
+  d1:"Το παλιό «άλογο της δουλειάς». Υπάρχει ακόμα σε οικονομικά συστήματα, αλλά η προσφορά μειώνεται καθώς οι κατασκευαστές στρέφονται σε νεότερα chips.",
+  d2:"Το σημερινό mainstream πρότυπο σε συνηθισμένη ταχύτητα JEDEC. Υπάρχουν και πιο γρήγορα kits, αλλά αυτή είναι η δίκαιη βάση σύγκρισης.",
+  d3:"Η αναφερόμενη αφετηρία του DDR6: περίπου 38% περισσότερο από DDR5-6400 στα χαρτιά, από νέο σχεδιασμό με τέσσερα υπο-κανάλια.",
+  d4:"Ο αναφερόμενος ανώτερος στόχος. Περίπου 140 GB/s στα χαρτιά (κάποιες πηγές γράφουν 134,4 GB/s). Δεν αναμένεται στα μαγαζιά πριν το 2028–2029."}
+};
+var lang="en",max=17600*8/1000;
+var box=document.getElementById("bars");
+D.forEach(function(d){
+  var gb=d.mt*8/1000;d.gb=gb;
+  var b=document.createElement("div");b.className="bar "+d.cls;
+  b.innerHTML='<div class="head"><span>'+d.n+' <small>'+d.mt.toLocaleString("en-US")+' MT/s</small></span><span class="val" id="v'+d.id+'">0.0 GB/s</span></div><div class="track"><div class="fill" id="f'+d.id+'"></div></div><div class="more"><div data-t="'+d.k+'"></div></div>';
+  b.onclick=function(){b.classList.toggle("open")};
+  box.appendChild(b);
+});
+function run(){
+  D.forEach(function(d,i){
+    var f=document.getElementById("f"+d.id),v=document.getElementById("v"+d.id);
+    f.style.transition="none";f.style.width="0";v.textContent="0.0 GB/s";
+    void f.offsetWidth;
+    setTimeout(function(){
+      f.style.transition="";f.style.width=(d.gb/max*100)+"%";
+      var t0=performance.now(),dur=1600;
+      (function tick(now){var p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);
+        v.textContent=(d.gb*e).toFixed(1)+" GB/s";if(p<1)requestAnimationFrame(tick)})(t0);
+    },250+i*350);
+  });
+}
+function apply(){
+  document.querySelectorAll("[data-t]").forEach(function(e){var v=T[lang][e.getAttribute("data-t")];if(v)e.textContent=v});
+  document.documentElement.lang=lang;
+}
+document.getElementById("bR").onclick=run;
+document.getElementById("bL").onclick=function(){lang=lang==="en"?"el":"en";apply()};
+apply();run();
+</script>
+</body>
+</html>
