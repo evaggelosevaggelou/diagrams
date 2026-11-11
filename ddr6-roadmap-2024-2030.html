@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDR6 Roadmap 2024–2030 — Animated</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#0f172a;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px}
+h1{font-size:1.05rem;margin:0;font-weight:800}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:.82rem;font-weight:700;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:999px;padding:7px 14px;cursor:pointer;transition:.15s}
+button:hover{border-color:#0ea5e9;color:#0369a1}
+.tl{position:relative;padding-left:34px}
+.line{position:absolute;left:11px;top:6px;bottom:6px;width:4px;border-radius:4px;background:#e2e8f0;overflow:hidden}
+.line i{display:block;width:100%;height:0;background:linear-gradient(#0ea5e9,#6366f1);transition:height 4.2s ease-in-out}
+.go .line i{height:var(--p)}
+.it{position:relative;margin-bottom:14px;opacity:0;transform:translateY(14px);transition:opacity .5s,transform .5s;cursor:pointer}
+.go .it{opacity:1;transform:none}
+.dot{position:absolute;left:-30px;top:6px;width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid #0ea5e9}
+.it.fut .dot{border-color:#cbd5e1}
+.it.now .dot{border-color:#ef4444;background:#fecaca;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}100%{box-shadow:0 0 0 14px rgba(239,68,68,0)}}
+.card{border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px;background:#f8fafc}
+.it.now .card{border-color:#fca5a5;background:#fef2f2}
+.when{font-size:.78rem;font-weight:800;color:#0369a1;letter-spacing:.03em}
+.it.now .when{color:#b91c1c}
+.ttl{font-size:.92rem;font-weight:700;margin-top:2px}
+.more{max-height:0;overflow:hidden;transition:max-height .3s;font-size:.85rem;line-height:1.55;color:#334155}
+.it.open .more{max-height:160px;margin-top:6px}
+.hint{font-size:.78rem;color:#64748b;margin-top:4px}
+@media(prefers-reduced-motion:reduce){.it,.line i{transition:none}.it.now .dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1 data-t="title">DDR6 roadmap: where things stand in November 2026</h1>
+  <div class="row"><button id="bR" data-t="replay">↻ Replay</button><button id="bL">🌐 EN / ΕΛ</button></div>
+</div>
+<div class="tl" id="tl"><div class="line"><i id="ln"></i></div></div>
+<div class="hint" data-t="hint">Tap a step for details. Dates after November 2026 are industry estimates, not promises.</div>
+
+<script>
+var S=[
+ {w:"2024",k:1,s:"d"},
+ {w:"Jul 2025",k:2,s:"d"},
+ {w:"Mar 2026",k:3,s:"d"},
+ {w:"May 2026",k:4,s:"d"},
+ {w:"Sep 2026",k:5,s:"d"},
+ {w:"Nov 2026",k:6,s:"now"},
+ {w:"2027",k:7,s:"fut"},
+ {w:"2028–2029",k:8,s:"fut"},
+ {w:"2029–2030+",k:9,s:"fut"}
+];
+var T={
+ en:{title:"DDR6 roadmap: where things stand in November 2026",replay:"↻ Replay",
+  hint:"Tap a step for details. Dates after November 2026 are industry estimates, not promises.",
+  t1:"DDR6 enters the standards process",x1:"JEDEC starts work on the next DDR generation, aiming for much higher bandwidth and a new multi-sub-channel design.",
+  t2:"LPDDR6 standard published",x2:"The low-power sibling is finalized first, so mobile memory moves ahead of desktop DDR6.",
+  t3:"SK hynix announces 16Gb LPDDR6",x3:"Built on its 1c process, with speeds above 10.7 Gbps and a claimed 33% speed boost over LPDDR5X.",
+  t4:"Big three start DDR6 prototypes",x4:"Samsung, SK hynix and Micron reportedly ask substrate suppliers to begin early DDR6 development. The standard is still not final.",
+  t5:"LPDDR6 meets real phone chips",x5:"Samsung reportedly validates 16GB LPDDR6 on a new Snapdragon platform, while SK hynix prepares mass production for the second half of 2026.",
+  t6:"You are here",x6:"DDR6 for desktop PCs is still in development. DRAM prices keep rising on AI demand, so buy DDR5 only if you need a PC now.",
+  t7:"Validation, not shop shelves",x7:"Expect testing, engineering samples and maybe early specialized deployments. Not a guaranteed consumer year.",
+  t8:"First commercial DDR6",x8:"Current reports point here, with servers and AI systems likely to go first.",
+  t9:"Consumer adoption",x9:"CPUs, motherboards, modules and prices need to mature together before DDR6 becomes mainstream."},
+ el:{title:"Οδικός χάρτης DDR6: πού βρισκόμαστε τον Νοέμβριο 2026",replay:"↻ Επανάληψη",
+  hint:"Πάτα ένα βήμα για λεπτομέρειες. Οι ημερομηνίες μετά τον Νοέμβριο 2026 είναι εκτιμήσεις του κλάδου, όχι υποσχέσεις.",
+  t1:"Το DDR6 μπαίνει στη διαδικασία προτύπου",x1:"Η JEDEC ξεκινά δουλειά για την επόμενη γενιά DDR, με στόχο πολύ μεγαλύτερο εύρος ζώνης και νέο σχέδιο με πολλά υπο-κανάλια.",
+  t2:"Δημοσιεύεται το πρότυπο LPDDR6",x2:"Το «αδελφάκι» χαμηλής κατανάλωσης ολοκληρώνεται πρώτο, οπότε η μνήμη κινητών προηγείται του DDR6 για desktop.",
+  t3:"Η SK hynix ανακοινώνει LPDDR6 16Gb",x3:"Βασισμένο στη διεργασία 1c, με ταχύτητες πάνω από 10,7 Gbps και δηλωμένη αύξηση ταχύτητας 33% σε σχέση με το LPDDR5X.",
+  t4:"Οι τρεις μεγάλοι ξεκινούν πρωτότυπα DDR6",x4:"Samsung, SK hynix και Micron φέρονται να ζητούν από προμηθευτές υποστρωμάτων να ξεκινήσουν πρώιμη ανάπτυξη DDR6. Το πρότυπο δεν είναι ακόμα τελικό.",
+  t5:"Το LPDDR6 συναντά πραγματικά chips κινητών",x5:"Η Samsung φέρεται να επικυρώνει LPDDR6 16GB σε νέα πλατφόρμα Snapdragon, ενώ η SK hynix ετοιμάζει μαζική παραγωγή για το δεύτερο μισό του 2026.",
+  t6:"Είσαι εδώ",x6:"Το DDR6 για desktop PC βρίσκεται ακόμα σε ανάπτυξη. Οι τιμές DRAM συνεχίζουν να ανεβαίνουν λόγω ζήτησης AI, οπότε πάρε DDR5 μόνο αν χρειάζεσαι PC τώρα.",
+  t7:"Επικύρωση, όχι ράφια καταστημάτων",x7:"Αναμένονται δοκιμές, δείγματα μηχανικών και ίσως πρώιμες εξειδικευμένες εγκαταστάσεις. Όχι εγγυημένη χρονιά για καταναλωτές.",
+  t8:"Πρώτο εμπορικό DDR6",x8:"Οι τρέχουσες αναφορές δείχνουν εδώ, με τους servers και τα συστήματα AI να πηγαίνουν πρώτα.",
+  t9:"Υιοθέτηση από καταναλωτές",x9:"CPU, μητρικές, modules και τιμές πρέπει να ωριμάσουν μαζί πριν το DDR6 γίνει mainstream."}
+};
+var lang="en",tl=document.getElementById("tl");
+S.forEach(function(s,i){
+  var d=document.createElement("div");d.className="it"+(s.s==="now"?" now":s.s==="fut"?" fut":"");
+  d.style.transitionDelay=(i*0.45)+"s";
+  d.innerHTML='<span class="dot"></span><div class="card"><div class="when">'+s.w+'</div><div class="ttl" data-t="t'+s.k+'"></div><div class="more" data-t="x'+s.k+'"></div></div>';
+  d.onclick=function(){d.classList.toggle("open")};
+  tl.appendChild(d);
+});
+document.getElementById("ln").style.setProperty("--p","66%");
+function apply(){
+  document.querySelectorAll("[data-t]").forEach(function(e){var v=T[lang][e.getAttribute("data-t")];if(v)e.textContent=v});
+  document.documentElement.lang=lang;
+}
+function run(){
+  document.body.classList.remove("go");void document.body.offsetWidth;
+  setTimeout(function(){document.body.classList.add("go")},80);
+}
+document.getElementById("bR").onclick=run;
+document.getElementById("bL").onclick=function(){lang=lang==="en"?"el":"en";apply()};
+apply();run();
+</script>
+</body>
+</html>
